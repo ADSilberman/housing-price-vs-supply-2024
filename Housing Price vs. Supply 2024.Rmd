@@ -1,0 +1,77 @@
+---
+title: "Housing Price vs. Supply 2024"
+author: Ilgaz Kuscu, Alexander D. Silberman, Baylee W, Stephanie
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    code_folding: hide
+    number_sections: false
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+## Todo:
+
+- finish describing variables
+
+```{r}
+rm(list=ls())
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      root.dir = "C:\\Users\\alexa\\Code\\GW DATS\\6101 Intro to Data Science\\Project 1\\GitHub",
+                      warning = F, message = F)
+options(scientific = T, digits = 3)
+```
+
+## Load requisite packages and data
+
+```{r libraries}
+library(ezids)
+library(ggplot2)
+library(dplyr)
+```
+
+This project uses the Home Price Appreciation Index and Months' Remaining Inventory dataset from the American Enterprise Institute Housing Center, found [here](https://www.aei.org/home-price-appreciation-index-and-months-remaining-inventory/). The variables are:  
+
+Variable |  Definition  
+  :-:    |  :-- 
+metro	 | Metropolitan area
+price_tier | Category of price data
+time_period | Date when the data was collected
+hpa_cumul | 
+hpa_yoy | 
+months_supply | 
+decile_hpa_cumul | 
+decile_hpa_yoy | 
+decile_months_supply | 
+low_vs_low_med | 
+lo_med_vs_med_high | 
+med_high_vs_high | 
+
+```{r read_data}
+housing = read.csv("..\\Data\\Copy-of-hpa_supply_download_2025m7.csv")
+housing %>% slice_sample(n=5)
+```
+
+The data is limited to the year 2024 and cleaned of NA values.
+
+```{r clean_data}
+housing_2024 = housing %>% slice(grep("2024",housing$time_period)) %>% na.omit
+housing_2024$metro = as.factor(housing_2024$metro)
+housing_2024$price_tier = as.factor(housing_2024$price_tier)
+housing_2024 %>% slice_sample(n=5)
+```
+
+Take a look at the data
+
+```{r}
+xkablesummary(housing_2024)
+```
+
+
