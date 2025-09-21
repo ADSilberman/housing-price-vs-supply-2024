@@ -37,34 +37,34 @@ library(ggplot2)
 library(dplyr)
 ```
 
-This project uses the Home Price Appreciation Index and Months' Remaining Inventory dataset from the American Enterprise Institute Housing Center, found [here](https://www.aei.org/home-price-appreciation-index-and-months-remaining-inventory/). The variables are:  
+This project uses the State and County Housing Market Indicators dataset from the American Enterprise Institute Housing Center, found [here](https://www.aei.org/the-state-of-the-housing-market/). The variables are:  
 
 Variable |  Definition  
   :-:    |  :-- 
-metro	 | Metropolitan area
-price_tier | Category of price data: Low (<= 40th percentile FHA sales prices), Low-Medium (<=80th percentile FHA), Medium-High (<=125% of GSE loan limit), High (all others)
-time_period | Date when the data was collected
-hpa_cumul | Cumulative home price appreciation since Jan 2012
-hpa_yoy | Home price appreciation (year-over-year)
-months_supply | Number of months it would take for the inventory of existing homes for sale to be exhausted at the current sales pace
-decile_hpa_cumul | Decile cumulative home price appreciation since Jan 2012
-decile_hpa_yoy | Decile home price appreciation (year-over-year)
-decile_months_supply | Decile number of months it would take for the inventory of existing homes for sale to be exhausted at the current sales pace
-low_vs_low_med | Price tier cutoff for low vs. low-medium
-lo_med_vs_med_high | Price tier cutoff for low-medium vs. low-high
-med_high_vs_high | Price tier cutoff for medium-high vs. high
+State	| state
+County | County
+FIPS | 5-digit Federal Information Processing Series codes (first 2 digits indicate state, last 3 indicate county or equivalent entity)
+Year | Year when the data was collected
+Tier | Categorizes home sales into entry-level (<=80th percentile of FHA sales prices), move-up (all others), and all
+Median.Sale.Price..in.Thousands. | Median sale price in thousands of USD per county
+House.Price.Appreciation.since.2012 | Cumulative home price appreciation since 2012
+House.Price.Appreciation..Year.over.Year | Home price appreciation since the previous year
+Months..Supply | Number of months it would take for the inventory of existing homes for sale to be exhausted at the current sales pace
+New.Construction.Share.of.Sales | Percent of sales comprising new construction
+Mortgage.Default.Rate | AEI Mortgage Default Rate, a measure of how loans originating in a given month would perform under the same conditions as the 2007 financial crisis (<=7%: Low Risk; between 7.01% and 14%: Medium Risk; >14%: High Risk)
 
 ```{r read_data}
-housing = read.csv("..\\Data\\Copy-of-hpa_supply_download_2025m7.csv")
+housing = read.csv("..\\Data\\state_county_data_download_2025.csv")
 housing %>% slice_sample(n=5)
 ```
 
 The data is limited to the year 2024 and cleaned of NA values.
 
 ```{r clean_data}
-housing_2024 = housing %>% slice(grep("2024",housing$time_period)) %>% na.omit
-housing_2024$metro = as.factor(housing_2024$metro)
-housing_2024$price_tier = as.factor(housing_2024$price_tier)
+housing_2024 = housing %>% filter(housing$Year == 2024) %>% na.omit
+housing_2024$State = as.factor(housing_2024$State)
+housing_2024$County = as.factor(housing_2024$County)
+housing_2024$Tier = as.factor(housing_2024$Tier)
 housing_2024 %>% slice_sample(n=5)
 ```
 
