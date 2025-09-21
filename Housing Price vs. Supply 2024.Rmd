@@ -16,7 +16,7 @@ output:
 
 ## Todo:
 
-- finish describing variables
+- preliminary analysis
 
 ```{r}
 rm(list=ls())
@@ -42,17 +42,17 @@ This project uses the Home Price Appreciation Index and Months' Remaining Invent
 Variable |  Definition  
   :-:    |  :-- 
 metro	 | Metropolitan area
-price_tier | Category of price data
+price_tier | Category of price data: Low (<= 40th percentile FHA sales prices), Low-Medium (<=80th percentile FHA), Medium-High (<=125% of GSE loan limit), High (all others)
 time_period | Date when the data was collected
-hpa_cumul | 
-hpa_yoy | 
-months_supply | 
-decile_hpa_cumul | 
-decile_hpa_yoy | 
-decile_months_supply | 
-low_vs_low_med | 
-lo_med_vs_med_high | 
-med_high_vs_high | 
+hpa_cumul | Cumulative home price appreciation since Jan 2012
+hpa_yoy | Home price appreciation (year-over-year)
+months_supply | Number of months it would take for the inventory of existing homes for sale to be exhausted at the current sales pace
+decile_hpa_cumul | Decile cumulative home price appreciation since Jan 2012
+decile_hpa_yoy | Decile home price appreciation (year-over-year)
+decile_months_supply | Decile number of months it would take for the inventory of existing homes for sale to be exhausted at the current sales pace
+low_vs_low_med | Price tier cutoff for low vs. low-medium
+lo_med_vs_med_high | Price tier cutoff for low-medium vs. low-high
+med_high_vs_high | Price tier cutoff for medium-high vs. high
 
 ```{r read_data}
 housing = read.csv("..\\Data\\Copy-of-hpa_supply_download_2025m7.csv")
