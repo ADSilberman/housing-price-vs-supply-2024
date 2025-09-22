@@ -43,7 +43,7 @@ Variable |  Definition
   :-:    |  :-- 
 State	| state
 County | County
-FIPS | 5-digit Federal Information Processing Series codes (first 2 digits indicate state, last 3 indicate county or equivalent entity)
+FIPS | 5-digit Federal Information Processing Series codes (first 2 digits indicate state, last 3 indicate sub-county entity)
 Year | Year when the data was collected
 Tier | Categorizes home sales into entry-level (<=80th percentile of FHA sales prices), move-up (all others), and all
 Median.Sale.Price..in.Thousands. | Median sale price in thousands of USD per county
@@ -64,6 +64,7 @@ The data is limited to the year 2024 and cleaned of NA values.
 housing_2024 = housing %>% filter(housing$Year == 2024) %>% na.omit
 housing_2024$State = as.factor(housing_2024$State)
 housing_2024$County = as.factor(housing_2024$County)
+housing_2024$FIPS = as.factor(housing_2024$FIPS)
 housing_2024$Tier = as.factor(housing_2024$Tier)
 housing_2024 %>% slice_sample(n=5)
 ```
