@@ -249,7 +249,7 @@ housing_numeric <- housing_2024 %>%
 
 cor_matrix <- cor(housing_numeric)
 
-corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8, addCoef.col = "black")
+corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8, addCoef.col = "black", number.cex=0.5)
 #interesting to see positive and inverse relationships between variables 
 #did not scan for no relationships
 ```
