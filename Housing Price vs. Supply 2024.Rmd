@@ -16,7 +16,6 @@ output:
 
 ## Todo:
 
-- figure out why casting rounds to just one digit after the decimal
 - answer research question
 
 ```{r}
