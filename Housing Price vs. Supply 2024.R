@@ -49,14 +49,14 @@ str(housing_2024)
 #rename cols
 housing_2024 <- housing_2024%>%
   rename(
-    MedianSalePrice_per_k = Median.Sale.Price..in.Thousands.,
-    HousePriceAppreciation_yr_over_yr_percent = House.Price.Appreciation..Year.over.Year.,
-    HousePriceAppreciation_since_2012_percent = House.Price.Appreciation.since.2012,
-    MonthsSupply = Months..Supply,
-    NewConstr_byshare_ofsales_percent = New.Construction.Share.of.Sales,
-    MortgateDefaultRate_percent = Mortgage.Default.Rate,
-    CountyName = County,
-    CountyID = FIPS, 
+    Median_Sale_Price_per_k = Median.Sale.Price..in.Thousands.,
+    House_Price_Appreciation_yr_over_yr_percent = House.Price.Appreciation..Year.over.Year.,
+    House_Price_Appreciation_since_2012_percent = House.Price.Appreciation.since.2012,
+    Months_Supply = Months..Supply,
+    New_Constr_by_share_of_sales_percent = New.Construction.Share.of.Sales,
+    MortgageDefaultRate_percent = Mortgage.Default.Rate,
+    County_Name = County,
+    FIPS_County_Code = FIPS, 
     Affordability = Tier
   )
 head(housing_2024)
@@ -65,21 +65,21 @@ head(housing_2024)
 #ditch '$' and '%' from values
 housing_2024<- housing_2024%>%
   mutate(
-    MedianSalePrice_per_k = gsub("\\$", "", MedianSalePrice_per_k),
-    HousePriceAppreciation_since_2012_percent = gsub("%","",HousePriceAppreciation_since_2012_percent),
-    HousePriceAppreciation_yr_over_yr_percent = gsub("%","",HousePriceAppreciation_yr_over_yr_percent),
-    NewConstr_byshare_ofsales_percent = gsub("%","",NewConstr_byshare_ofsales_percent),
-    MortgateDefaultRate_percent = gsub("%","",MortgateDefaultRate_percent)
+    Median_Sale_Price_per_k = gsub("\\$", "", Median_Sale_Price_per_k),
+    House_Price_Appreciation_since_2012_percent = gsub("%","",House_Price_Appreciation_since_2012_percent),
+    House_Price_Appreciation_yr_over_yr_percent = gsub("%","",House_Price_Appreciation_yr_over_yr_percent),
+    New_Constr_by_share_of_sales_percent = gsub("%","",New_Constr_by_share_of_sales_percent),
+    MortgageDefaultRate_percent = gsub("%","",MortgageDefaultRate_percent)
   )
 
 str(housing_2024)
 
 #as int/num instead of chr
-housing_2024$MedianSalePrice_per_k = as.numeric(housing_2024$MedianSalePrice_per_k)
-housing_2024$HousePriceAppreciation_since_2012_percent = as.numeric(housing_2024$HousePriceAppreciation_since_2012_percent)
-housing_2024$HousePriceAppreciation_yr_over_yr_percent= as.numeric(housing_2024$HousePriceAppreciation_yr_over_yr_percent)
-housing_2024$NewConstr_byshare_ofsales_percent= as.numeric(housing_2024$NewConstr_byshare_ofsales_percent)
-housing_2024$MortgateDefaultRate_percent= as.numeric(housing_2024$MortgateDefaultRate_percent)
+housing_2024$Median_Sale_Price_per_k = as.numeric(housing_2024$Median_Sale_Price_per_k)
+housing_2024$House_Price_Appreciation_since_2012_percent = as.numeric(housing_2024$House_Price_Appreciation_since_2012_percent)
+housing_2024$House_Price_Appreciation_yr_over_yr_percent= as.numeric(housing_2024$House_Price_Appreciation_yr_over_yr_percent)
+housing_2024$New_Constr_by_share_of_sales_percent= as.numeric(housing_2024$New_Constr_by_share_of_sales_percent)
+housing_2024$MortgageDefaultRate_percent= as.numeric(housing_2024$MortgageDefaultRate_percent)
 
 str(housing_2024)
 xkablesummary(housing_2024)
@@ -87,8 +87,8 @@ xkablesummary(housing_2024)
 #run EDA####
 
 #boxplot of median sale price by state####
-ggplot(housing_2024, aes(x = reorder(State, -MedianSalePrice_per_k, median), 
-                         y = MedianSalePrice_per_k)) +
+ggplot(housing_2024, aes(x = reorder(State, -Median_Sale_Price_per_k, median), 
+                         y = Median_Sale_Price_per_k)) +
   geom_boxplot(fill = "steelblue", alpha = 0.7) +
   coord_flip() +
   labs(
@@ -121,7 +121,7 @@ housing_compare <- housing_2024 %>%
   )))
 
 #plot top bottom comparison ####
-ggplot(housing_compare, aes(x = State, y = MedianSalePrice_per_k, fill = StateGroup)) +
+ggplot(housing_compare, aes(x = State, y = Median_Sale_Price_per_k, fill = StateGroup)) +
   geom_boxplot() +
   facet_wrap(~ StateGroup, scales = "free_x") +
   labs(
@@ -135,7 +135,7 @@ ggplot(housing_compare, aes(x = State, y = MedianSalePrice_per_k, fill = StateGr
 
 
 #hist of median sale price ####
-ggplot(housing_2024, aes(x = MedianSalePrice_per_k)) +
+ggplot(housing_2024, aes(x = Median_Sale_Price_per_k)) +
   geom_histogram(binwidth = 50, fill = "skyblue", color = "black") +
   scale_x_continuous(labels = scales::dollar_format(prefix = "$", suffix = "k")) +
   labs(
@@ -147,7 +147,7 @@ ggplot(housing_2024, aes(x = MedianSalePrice_per_k)) +
 #needs a subtitle with commentary, just remembered all need a caption with the source named, and we can prob add other elements to this, because otherwise it seems to obvi to me
 
 #boxplot of sale price by affordability tier ####
-ggplot(housing_2024, aes(x = Affordability, y = MedianSalePrice_per_k, fill = Affordability)) +
+ggplot(housing_2024, aes(x = Affordability, y = Median_Sale_Price_per_k, fill = Affordability)) +
   geom_boxplot() +
   labs(
     title = "Median Sale Price by Affordability Tier (2024)",
@@ -159,7 +159,7 @@ ggplot(housing_2024, aes(x = Affordability, y = MedianSalePrice_per_k, fill = Af
 #not sure how useful this is, but maybe as a starting baseline 
 
 #scatterplot of months supply vs median price ####
-ggplot(housing_2024, aes(x = MonthsSupply, y = MedianSalePrice_per_k)) +
+ggplot(housing_2024, aes(x = Months_Supply, y = Median_Sale_Price_per_k)) +
   geom_point(aes(color = Affordability), alpha = 0.7) +
   geom_smooth(method = "lm", se = FALSE, color = "black") +
   labs(
@@ -192,7 +192,7 @@ names(bottom_states_colors) <- unique(housing_compare$State[housing_compare$Stat
 #last point in line for state label 
 label_points <- housing_compare %>%
   group_by(State) %>%
-  filter(MonthsSupply == max(MonthsSupply, na.rm = TRUE)) %>%
+  filter(Months_Supply == max(Months_Supply, na.rm = TRUE)) %>%
   ungroup()
 
 # Combine into one color vector
@@ -200,16 +200,16 @@ state_colors <- c(top_states_colors, bottom_states_colors)
 
 #all in gray with faceted compare in color with states labeled ####
 ggplot() +
-  geom_point(data = housing_2024, aes(x = MonthsSupply, y = MedianSalePrice_per_k),
+  geom_point(data = housing_2024, aes(x = Months_Supply, y = Median_Sale_Price_per_k),
              color = "gray70", alpha = 0.3, size = 1) +
   geom_path(data = housing_compare,
-            aes(x = MonthsSupply, y = MedianSalePrice_per_k, group = State, color = State),
+            aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
             size = 1, alpha = 0.8) +
   geom_point(data = housing_compare,
-             aes(x = MonthsSupply, y = MedianSalePrice_per_k, color = State),
+             aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
              size = 2, alpha = 0.8) +
   geom_text_repel(data = label_points,
-                  aes(x = MonthsSupply, y = MedianSalePrice_per_k, label = State, color = State),
+                  aes(x = Months_Supply, y = Median_Sale_Price_per_k, label = State, color = State),
                   size = 3, show.legend = FALSE) +
   facet_wrap(~ StateGroup) +
   scale_color_manual(values = state_colors) +
@@ -226,19 +226,19 @@ ggplot() +
 #all together in gray with compare in color with states labeled ####
 ggplot() +
   geom_point(data = housing_2024, 
-             aes(x = MonthsSupply, y = MedianSalePrice_per_k), 
+             aes(x = Months_Supply, y = Median_Sale_Price_per_k), 
              color = "gray70", alpha = 0.3, size = 1) +
   geom_path(data = housing_compare %>% filter(StateGroup == "States with the Most Houses"),
-            aes(x = MonthsSupply, y = MedianSalePrice_per_k, group = State, color = State),
+            aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
             alpha = 0.8, size = 1) +
   geom_point(data = housing_compare %>% filter(StateGroup == "States with the Most Houses"),
-             aes(x = MonthsSupply, y = MedianSalePrice_per_k, color = State),
+             aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
              alpha = 0.8, size = 2) +
   geom_path(data = housing_compare %>% filter(StateGroup == "States with the Fewest Houses"),
-            aes(x = MonthsSupply, y = MedianSalePrice_per_k, group = State, color = State),
+            aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
             alpha = 0.8, size = 1) +
   geom_point(data = housing_compare %>% filter(StateGroup == "States with the Fewest Houses"),
-             aes(x = MonthsSupply, y = MedianSalePrice_per_k, color = State),
+             aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
              alpha = 0.8, size = 2) +
   scale_color_manual(values = state_colors) +
   labs(
