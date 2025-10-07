@@ -229,7 +229,7 @@ ggplot(housing_2024, aes(x = Affordability, y = Median_Sale_Price_per_k, fill = 
 ```{r scatter_supply_vs_median_price}
 ggplot(housing_2024, aes(x = Months_Supply, y = Median_Sale_Price_per_k)) +
   geom_point(aes(color = Affordability), alpha = 0.7) +
-  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  # geom_smooth(method = "lm", se = FALSE, color = "black") +
   labs(
     title = "Housing Supply vs Median Sale Price",
     x = "Months of Supply",
@@ -258,10 +258,10 @@ corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8, addCoef.col
 
 ```{r compare_color_scale}
 # Create a vector of colors for top states (blue shades) and bottom states (red shades)
-top_states_colors <- scales::seq_gradient_pal("skyblue", "navy")(seq(0, 1, length.out = length(unique(housing_compare$State[housing_compare$StateGroup == "States with the Most Houses"]))))
+top_states_colors <- scales::seq_gradient_pal("lightblue", "navy")(seq(0, 1, length.out = length(unique(housing_compare$State[housing_compare$StateGroup == "States with the Most Houses"]))))
 names(top_states_colors) <- unique(housing_compare$State[housing_compare$StateGroup == "States with the Most Houses"])
 
-bottom_states_colors <- scales::seq_gradient_pal("pink", "red")(seq(0, 1, length.out = length(unique(housing_compare$State[housing_compare$StateGroup == "States with the Fewest Houses"]))))
+bottom_states_colors <- scales::seq_gradient_pal("lightpink", "darkred")(seq(0, 1, length.out = length(unique(housing_compare$State[housing_compare$StateGroup == "States with the Fewest Houses"]))))
 names(bottom_states_colors) <- unique(housing_compare$State[housing_compare$StateGroup == "States with the Fewest Houses"])
 
 #last point in line for state label 
@@ -276,16 +276,17 @@ state_colors <- c(top_states_colors, bottom_states_colors)
 #all in gray with faceted compare in color with states labeled ####
 ggplot() +
   geom_point(data = housing_2024, aes(x = Months_Supply, y = Median_Sale_Price_per_k),
-             color = "gray70", alpha = 0.3, size = 1) +
-  geom_path(data = housing_compare,
-            aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
-            size = 1, alpha = 0.8) +
+             color = "gray70", alpha = 0.3, size = 2) +
+  # geom_path(data = housing_compare,
+  #           aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
+  #           size = 1, alpha = 0.8) +
   geom_point(data = housing_compare,
              aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
-             size = 2, alpha = 0.8) +
+             size = 2, alpha = 0.5) +
   geom_text_repel(data = label_points,
-                  aes(x = Months_Supply, y = Median_Sale_Price_per_k, label = State, color = State),
-                  size = 3, show.legend = FALSE) +
+                  aes(x = Months_Supply, y = Median_Sale_Price_per_k, 
+                      label = State,color=State),
+                  size = 3.5, stroke=0.01, show.legend = FALSE) +
   facet_wrap(~ StateGroup) +
   scale_color_manual(values = state_colors) +
   labs(
@@ -306,18 +307,18 @@ ggplot() +
   geom_point(data = housing_2024, 
              aes(x = Months_Supply, y = Median_Sale_Price_per_k), 
              color = "gray70", alpha = 0.3, size = 1) +
-  geom_path(data = housing_compare %>% filter(StateGroup == "States with the Most Houses"),
-            aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
-            alpha = 0.8, size = 1) +
+  # geom_path(data = housing_compare %>% filter(StateGroup == "States with the Most Houses"),
+  #           aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
+  #           alpha = 0.8, size = 1) +
   geom_point(data = housing_compare %>% filter(StateGroup == "States with the Most Houses"),
              aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
-             alpha = 0.8, size = 2) +
-  geom_path(data = housing_compare %>% filter(StateGroup == "States with the Fewest Houses"),
-            aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
-            alpha = 0.8, size = 1) +
+             alpha = 0.5, size = 2) +
+  # geom_path(data = housing_compare %>% filter(StateGroup == "States with the Fewest Houses"),
+  #           aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
+  #           alpha = 0.8, size = 1) +
   geom_point(data = housing_compare %>% filter(StateGroup == "States with the Fewest Houses"),
              aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
-             alpha = 0.8, size = 2) +
+             alpha = 0.5, size = 2) +
   scale_color_manual(values = state_colors) +
   labs(
     title = "Housing Supply vs Median Price: All Counties with Highlights",
