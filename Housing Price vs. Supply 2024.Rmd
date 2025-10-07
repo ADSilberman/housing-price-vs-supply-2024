@@ -276,7 +276,7 @@ state_colors <- c(top_states_colors, bottom_states_colors)
 #all in gray with faceted compare in color with states labeled ####
 ggplot() +
   geom_point(data = housing_2024, aes(x = Months_Supply, y = Median_Sale_Price_per_k),
-             color = "gray70", alpha = 0.3, size = 2) +
+             color = "gray70", alpha = 0.3, size = 1) +
   # geom_path(data = housing_compare,
   #           aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
   #           size = 1, alpha = 0.8) +
@@ -285,7 +285,7 @@ ggplot() +
              size = 2, alpha = 0.5) +
   geom_text_repel(data = label_points,
                   aes(x = Months_Supply, y = Median_Sale_Price_per_k, 
-                      label = State,color=State),
+                      label = State, color=State),
                   size = 3.5, stroke=0.01, show.legend = FALSE) +
   facet_wrap(~ StateGroup) +
   scale_color_manual(values = state_colors) +
@@ -330,3 +330,36 @@ ggplot() +
   theme_minimal()
 ```
 
+### new construction vs median sale price
+
+```{r new_constr_vs_price}
+housing_constr = housing_2024
+housing_constr = housing_constr %>% 
+  mutate(constr_bins = cut(New_Constr_by_share_of_sales_percent, breaks=10))
+
+ggplot(housing_constr, aes(x = constr_bins, y = Median_Sale_Price_per_k,fill=constr_bins)) +
+  geom_boxplot() +
+  labs(
+    title = "Median Sale Price by Percent New Construction (2024)",
+    x = "New Construction by Share of Sales Percent",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal()
+
+# Perhaps new construction indicates high demand, and as such, the more new construction, the higher the median sale price?
+```
+
+#### Limit to Entry-Level houses
+
+```{r new_constr_vs_price_entrylevel}
+ggplot(filter(housing_constr,Affordability=="entrylevel"), aes(x = constr_bins, y = Median_Sale_Price_per_k,fill=constr_bins)) +
+  geom_boxplot() +
+  labs(
+    title = "Median Sale Price by Percent New Construction (2024)",
+    x = "New Construction by Share of Sales Percent",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal()
+
+# Even more pronounced here
+```
