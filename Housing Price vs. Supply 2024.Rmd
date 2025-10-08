@@ -297,8 +297,8 @@ ggplot(housing_2024, aes(x = Affordability, y = Median_Sale_Price_per_k, fill = 
 ### scatterplot of months supply vs median price
 
 ```{r scatter_supply_vs_median_price}
-ggplot(housing_2024, aes(x = Months_Supply, y = Median_Sale_Price_per_k)) +
-  geom_point(aes(color = Affordability), alpha = 0.7) +
+ggplot(housing_2024_all, aes(x = Months_Supply, y = Median_Sale_Price_per_k)) +
+  geom_point(alpha = 0.7) +
   # geom_smooth(method = "lm", se = FALSE, color = "black") +
   labs(
     title = "Housing Supply vs Median Sale Price",
@@ -308,6 +308,7 @@ ggplot(housing_2024, aes(x = Months_Supply, y = Median_Sale_Price_per_k)) +
   theme_minimal()
 #this is a good one, needs a commentary subtitle and some cleaning
 ```
+
 
 ### correlation heatmap of numeric variables
 
