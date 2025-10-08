@@ -24,7 +24,7 @@ rm(list=ls())
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
-                      root.dir = "/Users/ilgazkuscu/Documents/GitHub/housing-price-vs-supply-2024/Data/state_county_data_download_2025.csv"p,
+                      root.dir = "/Users/ilgazkuscu/Documents/GitHub/housing-price-vs-supply-2024/Data/state_county_data_download_2025.csv",
                       warning = F, message = F)
 options(scientific = T, digits = 3)
 ```
