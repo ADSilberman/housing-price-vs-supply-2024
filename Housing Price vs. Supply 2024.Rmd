@@ -121,24 +121,19 @@ housing_2024$Mortgage_Default_Rate_percent = as.numeric(housing_2024$Mortgage_De
 
 # view data
 housing_2024 %>% slice_sample(n=5)
-```
 
-```{r tier_def}
-# def= 
-#   {
-#     Low: all sales below the 40th percentile of FHA sales prices
-#     Low-medium: all sales at or below the 80th percentile of FHA sales prices
-#     Medium-high: all sales at or below 125% of the GSE loan limit
-#     High: all other sales
-#     entry-level: low and low-medium price tiers
-#     move-up: medium-high and high price tiers
-#   }
+#creating df w/ affordability all totals and then another with entry level/moving up totals
+housing_2024_all = housing_2024 %>% filter(housing_2024$Affordability == "all") 
+housing_2024_tiers = housing_2024 %>% filter(Affordability == "entrylevel" | Affordability == "moveup")
+
 ```
 
 ## Exploratory Data Analysis (EDA)
 
 ```{r}
 xkablesummary(housing_2024)
+xkablesummary(housing_2024_all)
+xkablesummary(housing_2024_tiers)
 ```
 
 ### boxplot of median sale price by state
