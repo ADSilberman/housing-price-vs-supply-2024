@@ -18,6 +18,7 @@ output:
 rm(list=ls())
 ```
 
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
                       root.dir = "C:\\Users\\alexa\\Code\\GW DATS\\6101 Intro to Data Science\\Project 1\\GitHub",
@@ -25,7 +26,9 @@ knitr::opts_chunk$set(echo = TRUE,
 options(scientific = T, digits = 3)
 ```
 
+
 ## Load requisite packages and data
+
 
 ```{r libraries}
 library(ezids)
@@ -39,6 +42,7 @@ library(scales)
 library(ggrepel)
 library(corrplot)
 ```
+
 
 This project uses the State and County Housing Market Indicators dataset from the American Enterprise Institute Housing Center, found [here](https://www.aei.org/the-state-of-the-housing-market/). The variables are:  
 
@@ -56,12 +60,15 @@ Months..Supply | Months_Supply | Number of months it would take for the inventor
 New.Construction.Share.of.Sales | New_Constr_by_share_of_sales_percent | Percent of sales comprising new construction
 Mortgage.Default.Rate | Mortgage_Default_Rate_percent | AEI Mortgage Default Rate, a measure of how loans originating in a given month would perform under the same conditions as the 2007 financial crisis (<=7%: Low Risk; between 7.01% and 14%: Medium Risk; >14%: High Risk)
 
+
 ```{r read_data}
 housing = read.csv("..\\Data\\state_county_data_download_2025.csv")
 housing %>% slice_sample(n=5)
 ```
 
+
 The data is limited to the year 2024 and cleaned of NA values, and the variables are renamed for clarity.
+
 
 ```{r clean_data}
 housing_2024 = housing %>% filter(housing$Year == 2024, 
@@ -84,6 +91,7 @@ rename(
 )
 head(housing_2024)
 ```
+
 
 The typing of the variables is also corrected. Some require the symbols "$" and "%" to be removed beforehand, so that is also done.
 
@@ -122,6 +130,7 @@ housing_2024$Mortgage_Default_Rate_percent = as.numeric(housing_2024$Mortgage_De
 housing_2024 %>% slice_sample(n=5)
 ```
 
+
 ```{r}
 #creating df w/ affordability all totals and then another with entry level/moving up totals
 housing_2024_all = housing_2024 %>% filter(housing_2024$Affordability == "all") 
@@ -131,9 +140,11 @@ housing_2024_tiers = housing_2024 %>% filter(Affordability == "entrylevel" | Aff
 
 ## Exploratory Data Analysis (EDA)
 
+
 ```{r}
 xkablesummary(housing_2024)
 ```
+
 
 ```{r}
 #separated df's
@@ -143,6 +154,7 @@ xkablesummary(housing_2024_tiers)
 
 
 ### boxplot of median sale price by state
+
 
 ```{r boxplot_median_sale_price_by_state}
 ggplot(housing_2024, aes(x = reorder(State, -Median_Sale_Price_per_k, median), 
@@ -157,7 +169,9 @@ ggplot(housing_2024, aes(x = reorder(State, -Median_Sale_Price_per_k, median),
   theme_minimal()
 ```
 
+
 There are too many to be particularly useful. You can see general trends, but I am going to run this with a smaller state sample.
+
 
 ```{r}
 #boxplotting med sale price by state w/ ..._all df
@@ -176,6 +190,7 @@ ggplot(housing_2024_all, aes(x = reorder(State, -Median_Sale_Price_per_k, median
 
 
 ### boxplot of top and bottom 5 states by housing count
+
 
 ```{r boxplot_top_bottom_5_by_count}
 top_states <- housing_2024 %>%
@@ -211,6 +226,7 @@ ggplot(housing_compare, aes(x = State, y = Median_Sale_Price_per_k, fill = State
   theme_minimal() +
   scale_fill_manual(values = c("States with the Most Houses" = "skyblue", "States with the Fewest Houses" = "red"))
 ```
+
 
 ```{r}
 #boxplotting with new df: ..._all
@@ -251,6 +267,7 @@ ggplot(housing_compare_all, aes(x = State, y = Median_Sale_Price_per_k, fill = S
 
 ### hist of median sale price
 
+
 ```{r hist_of_med_price}
 ggplot(housing_2024, aes(x = Median_Sale_Price_per_k)) +
   geom_histogram(binwidth = 50, fill = "skyblue", color = "black") +
@@ -263,6 +280,7 @@ ggplot(housing_2024, aes(x = Median_Sale_Price_per_k)) +
   theme_minimal()
 #needs a subtitle with commentary, just remembered all need a caption with the source named, and we can prob add other elements to this, because otherwise it seems to obvi to me
 ```
+
 
 ```{r}
 #hist plotting with df ..._all
@@ -281,6 +299,7 @@ ggplot(housing_2024_all, aes(x = Median_Sale_Price_per_k)) +
 
 ### boxplot of sale price by affordability tier
 
+
 ```{r boxplot_price_by_affordability}
 ggplot(housing_2024, aes(x = Affordability, y = Median_Sale_Price_per_k, fill = Affordability)) +
   geom_boxplot() +
@@ -294,7 +313,9 @@ ggplot(housing_2024, aes(x = Affordability, y = Median_Sale_Price_per_k, fill = 
 #not sure how useful this is, but maybe as a starting baseline 
 ```
 
+
 ### scatterplot of months supply vs median price
+
 
 ```{r scatter_supply_vs_median_price}
 ggplot(housing_2024, aes(x = Months_Supply, y = Median_Sale_Price_per_k)) +
@@ -309,7 +330,9 @@ ggplot(housing_2024, aes(x = Months_Supply, y = Median_Sale_Price_per_k)) +
 #this is a good one, needs a commentary subtitle and some cleaning
 ```
 
+
 ### correlation heatmap of numeric variables
+
 
 ```{r corr_heatmap_of_numerics}
 housing_numeric <- housing_2024 %>%
@@ -323,6 +346,7 @@ corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8, addCoef.col
 #did not scan for no relationships
 ```
 
+
 ```{r}
 #correlation heatmap of numeric variables w/ ..._all df
 housing_numeric_all <- housing_2024_all %>%
@@ -334,7 +358,9 @@ cor_matrix_all <- cor(housing_numeric_all)
 corrplot(cor_matrix_all, method = "color", type = "upper", tl.cex = 0.8, addCoef.col = "black", number.cex=0.5)
 ```
 
+
 ### compare color scale\
+
 
 ```{r compare_color_scale}
 # Create a vector of colors for top states (blue shades) and bottom states (red shades)
@@ -379,6 +405,7 @@ ggplot() +
   theme_minimal()
 #can't read state names, maybe find a way to make it stand out 
 ```
+
 
 ```{r}
 # compare color scale w/ ..._all df
@@ -427,6 +454,8 @@ ggplot() +
 
 
 ### both together in gray with compare in color with states labeled
+
+
 ```{r both_together}
 ggplot() +
   geom_point(data = housing_2024, 
@@ -454,6 +483,7 @@ ggplot() +
   ) +
   theme_minimal()
 ```
+
 
 ```{r}
 #both together in gray with compare in color with states labeled w/ ..._all df
@@ -487,6 +517,7 @@ ggplot() +
 
 ### new construction vs median sale price
 
+
 ```{r new_constr_vs_price}
 housing_constr = housing_2024
 housing_constr = housing_constr %>% 
@@ -503,6 +534,7 @@ ggplot(housing_constr, aes(x = constr_bins, y = Median_Sale_Price_per_k,fill=con
 
 # Perhaps new construction indicates high demand, and as such, the more new construction, the higher the median sale price?
 ```
+
 
 ```{r}
 #new construction vs median sale price w/ ..._all df
@@ -525,6 +557,7 @@ ggplot(housing_constr_all, aes(x = constr_bins, y = Median_Sale_Price_per_k, fil
 
 #### Limit to Entry-Level houses
 
+
 ```{r new_constr_vs_price_entrylevel}
 ggplot(filter(housing_constr,Affordability=="entrylevel"), aes(x = constr_bins, y = Median_Sale_Price_per_k,fill=constr_bins)) +
   geom_boxplot() +
@@ -537,3 +570,4 @@ ggplot(filter(housing_constr,Affordability=="entrylevel"), aes(x = constr_bins, 
 
 # Even more pronounced here
 ```
+
