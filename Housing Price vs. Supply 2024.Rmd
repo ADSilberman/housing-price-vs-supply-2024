@@ -575,3 +575,18 @@ ggplot(filter(housing_constr,Affordability=="entrylevel"), aes(x = constr_bins, 
 # Even more pronounced here
 ```
 
+
+#### Limit to Moveup houses
+
+```{r new_constr_vs_price_moveup}
+ggplot(filter(housing_constr,Affordability=="moveup"), aes(x = constr_bins, y = Median_Sale_Price_per_k,fill=constr_bins)) +
+  geom_boxplot() +
+  labs(
+    title = "Median Sale Price by Percent New Construction (2024)",
+    x = "New Construction by Share of Sales Percent",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal()
+
+# Even more pronounced here
+```
