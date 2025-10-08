@@ -319,7 +319,7 @@ ggplot(housing_2024, aes(x = Affordability, y = Median_Sale_Price_per_k, fill = 
 
 ```{r scatter_supply_vs_median_price}
 ggplot(housing_2024_all, aes(x = Months_Supply, y = Median_Sale_Price_per_k)) +
-  geom_point(alpha = 0.7) +
+  geom_point(color="steelblue", alpha = 0.7) +
   # geom_smooth(method = "lm", se = FALSE, color = "black") +
   labs(
     title = "Housing Supply vs Median Sale Price",
@@ -336,7 +336,7 @@ ggplot(housing_2024_all, aes(x = Months_Supply, y = Median_Sale_Price_per_k)) +
 
 ```{r corr_heatmap_of_numerics}
 housing_numeric <- housing_2024 %>%
-  select(where(is.numeric)) %>%
+  select(where(is.numeric) & !all_of("Year")) %>%
   drop_na()
 
 cor_matrix <- cor(housing_numeric)
@@ -350,7 +350,7 @@ corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8, addCoef.col
 ```{r}
 #correlation heatmap of numeric variables w/ ..._all df
 housing_numeric_all <- housing_2024_all %>%
-  select(where(is.numeric)) %>%
+  select(where(is.numeric) & !all_of("Year")) %>%
   drop_na()
 
 cor_matrix_all <- cor(housing_numeric_all)
@@ -364,7 +364,7 @@ corrplot(cor_matrix_all, method = "color", type = "upper", tl.cex = 0.8, addCoef
 
 ```{r compare_color_scale}
 # Create a vector of colors for top states (blue shades) and bottom states (red shades)
-top_states_colors <- scales::seq_gradient_pal("lightblue", "navy")(seq(0, 1, length.out = length(unique(housing_compare$State[housing_compare$StateGroup == "States with the Most Houses"]))))
+top_states_colors <- scales::seq_gradient_pal("lightblue", "darkslateblue")(seq(0, 1, length.out = length(unique(housing_compare$State[housing_compare$StateGroup == "States with the Most Houses"]))))
 names(top_states_colors) <- unique(housing_compare$State[housing_compare$StateGroup == "States with the Most Houses"])
 
 bottom_states_colors <- scales::seq_gradient_pal("lightpink", "darkred")(seq(0, 1, length.out = length(unique(housing_compare$State[housing_compare$StateGroup == "States with the Fewest Houses"]))))
@@ -410,7 +410,7 @@ ggplot() +
 ```{r}
 # compare color scale w/ ..._all df
 # Create a vector of colors for top states (blue shades) and bottom states (red shades)
-top_states_colors_all <- scales::seq_gradient_pal("lightblue", "navy")(seq(0, 1, length.out = length(unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Most Houses"]))))
+top_states_colors_all <- scales::seq_gradient_pal("lightblue", "darkslateblue")(seq(0, 1, length.out = length(unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Most Houses"]))))
 names(top_states_colors_all) <- unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Most Houses"])
 
 bottom_states_colors_all <- scales::seq_gradient_pal("lightpink", "darkred")(seq(0, 1, length.out = length(unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Fewest Houses"]))))
@@ -559,6 +559,10 @@ ggplot(housing_constr_all, aes(x = constr_bins, y = Median_Sale_Price_per_k, fil
 
 
 ```{r new_constr_vs_price_entrylevel}
+housing_constr_tiers = housing_2024_tiers
+housing_constr_tiers = housing_constr_tiers %>% 
+  mutate(constr_bins = cut(New_Constr_by_share_of_sales_percent, breaks=10))
+
 ggplot(filter(housing_constr,Affordability=="entrylevel"), aes(x = constr_bins, y = Median_Sale_Price_per_k,fill=constr_bins)) +
   geom_boxplot() +
   labs(
