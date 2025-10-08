@@ -68,7 +68,9 @@ housing %>% slice_sample(n=5)
 The data is limited to the year 2024 and cleaned of NA values, and the variables are renamed for clarity.
 
 ```{r clean_data}
-housing_2024 = housing %>% filter(housing$Year == 2024) %>% na.omit %>%
+
+housing_2024 = housing %>% filter(housing$Year == 2024, housing$State != 'AA National') %>% na.omit %>% #excluding the armed forces
+
 
 #rename cols
 rename(
