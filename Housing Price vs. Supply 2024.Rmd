@@ -122,18 +122,6 @@ housing_2024$Mortgage_Default_Rate_percent = as.numeric(housing_2024$Mortgage_De
 housing_2024 %>% slice_sample(n=5)
 ```
 
-```{r tier_def}
-# def= 
-#   {
-#     Low: all sales below the 40th percentile of FHA sales prices
-#     Low-medium: all sales at or below the 80th percentile of FHA sales prices
-#     Medium-high: all sales at or below 125% of the GSE loan limit
-#     High: all other sales
-#     entry-level: low and low-medium price tiers
-#     move-up: medium-high and high price tiers
-#   }
-```
-
 ## Exploratory Data Analysis (EDA)
 
 ```{r}
