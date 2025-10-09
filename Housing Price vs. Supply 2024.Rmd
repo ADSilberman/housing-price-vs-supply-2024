@@ -573,5 +573,84 @@ ggplot(filter(housing_constr,Affordability=="entrylevel"), aes(x = constr_bins, 
   theme_minimal()
 
 # Even more pronounced here
+
+## Entry-Level Focused Analysis
+
+### Boxplot of Median Sale Price by State (Entry-Level Only)
+```{r boxplot_median_price_by_state_entry}
+housing_entrylevel <- housing_2024_tiers %>%
+  filter(Affordability == "entrylevel")
+housing_moveup <- housing_2024_tiers %>%
+  filter(Affordability == "moveup")
+
+ggplot(housing_entrylevel, aes(x = reorder(State, -Median_Sale_Price_per_k, median), 
+                               y = Median_Sale_Price_per_k)) +
+  geom_boxplot(fill = "skyblue", alpha = 0.7) +
+  coord_flip() +
+  labs(
+    title = "Median Sale Price by State (Entry-Level Homes, 2024)",
+    x = "State",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal()
 ```
 
+### Histogram of Median Sale Prices (Entry-Level vs. Moveup)
+```{r hist_entrylevel_median_price}
+ggplot(housing_entrylevel, aes(x = Median_Sale_Price_per_k)) +
+  geom_histogram(binwidth = 50, fill = "lightgreen", color = "black") +
+  scale_x_continuous(labels = scales::dollar_format(prefix = "$", suffix = "k")) +
+  labs(
+    title = "Distribution of Median Sale Prices (Entry-Level Homes, 2024)",
+    x = "Median Sale Price (in thousands)",
+    y = "Number of Counties"
+  ) +
+  theme_minimal()
+
+ggplot(housing_2024_tiers, aes(x = Median_Sale_Price_per_k, fill = Affordability)) +
+  geom_histogram(
+    binwidth = 50,
+    color = "black",
+    alpha = 0.5,
+    position = "identity"
+  ) +
+  scale_fill_manual(
+    values = c("entrylevel" = "lightgreen", "moveup" = "steelblue"),
+    name = "Home Type",
+    labels = c("Entry-Level", "Move-Up")
+  ) +
+  scale_x_continuous(labels = scales::dollar_format(prefix = "$", suffix = "k")) +
+  labs(
+    title = "Distribution of Median Sale Prices (Entry-Level vs Move-Up, 2024)",
+    x = "Median Sale Price (in thousands)",
+    y = "Count"
+  ) +
+  theme_minimal()
+
+
+```
+
+### Scatterplot: Months of Supply vs Price (Entry-Level)
+```{r scatter_supply_vs_price_entry}
+ggplot(housing_entrylevel, aes(x = Months_Supply, y = Median_Sale_Price_per_k)) +
+  geom_point(color = "tomato", alpha = 0.6) +
+  labs(
+    title = "Months of Supply vs Median Sale Price (Entry-Level Homes, 2024)",
+    x = "Months of Supply",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal()
+```
+
+### Correlation Heatmap of Numeric Variables (Entry-Level)
+```{r corr_entrylevel}
+housing_numeric <- housing_2024 %>%
+  select(where(is.numeric), -Year) %>%
+  drop_na()
+
+cor_matrix <- cor(housing_numeric)
+
+corrplot(cor_matrix, method = "color", type = "upper",
+         tl.cex = 0.8, addCoef.col = "black", number.cex = 0.5)
+
+```
