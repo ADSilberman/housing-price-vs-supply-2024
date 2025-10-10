@@ -41,8 +41,9 @@ library(janitor)
 library(scales)
 library(ggrepel)
 library(corrplot)
+library(tigris)
+library(sf)
 ```
-
 
 This project uses the State and County Housing Market Indicators dataset from the American Enterprise Institute Housing Center, found [here](https://www.aei.org/the-state-of-the-housing-market/). The variables are:  
 
@@ -590,3 +591,107 @@ ggplot(filter(housing_constr,Affordability=="moveup"), aes(x = constr_bins, y = 
 
 # Even more pronounced here
 ```
+
+
+###mapping US counties by median sale price
+
+
+```{r}
+##basemap
+
+#reading in counties spatial file from tigris package
+counties_2024 <- counties(year = 2024, 
+                          cb = TRUE, 
+                          class = "sf")
+
+#excluding territories and shifting AK/HI
+counties_2024 <- counties_2024 %>%
+  filter(as.numeric(STATEFP) < 60) %>%
+  shift_geometry()
+
+#removing duplicate columns
+counties_2024 <- counties_2024 %>%
+  select(-NAME)
+
+#creating basemap and checking
+counties_2024_basemap <- ggplot() +
+  geom_sf(data = counties_2024) +
+  theme_void()
+
+counties_2024_basemap
+
+##merging housing_2014_all w/ counties_2014
+
+#creating merge df and prepping counties df
+housing_merge <- housing_2024_all
+
+counties_2024 <- counties_2024 %>%
+  mutate(GEOID = as.numeric(GEOID))
+
+#adding id variables to track observations
+counties_2024$id1 <- 1
+housing_merge$id2 <- 1
+
+#merging
+housing_counties_merge <- merge(x = counties_2024,
+                                y = housing_merge,
+                                by.x = "GEOID",
+                                by.y = "FIPS_County_Code")
+
+#converting NAs to zeros and finding problem observations
+  #looks like it merged just fine
+housing_counties_merge <- housing_counties_merge %>%
+  mutate(id1 = ifelse(is.na(id1), 0, id1),
+         id2 = ifelse(is.na(id2), 0, id2))
+
+no_merge <- housing_counties_merge %>%
+  filter(id1 + id2 != 2)
+
+unique(no_merge$GEOID)
+
+#plotting and checking
+housing_counties_plot <- ggplot() +
+  geom_sf(data = housing_counties_merge,
+          mapping = aes(fill = Median_Sale_Price_per_k),
+          color = "white",
+          linewidth = .4) +
+  #scale_fill_brewer(palette = "GnBi") +
+  theme(legend.position = "none") +
+  theme_void()
+
+housing_counties_plot
+
+#for fun: trying st_simplify to see if it looks better
+housing_counties_merge_simple <- st_simplify(housing_counties_merge, dTolerance = 75)
+
+housing_counties_plot2 <- ggplot() +
+  geom_sf(data = housing_counties_merge_simple,
+          mapping = aes(fill = Median_Sale_Price_per_k),
+          color = "white",
+          linewidth = .4) +
+  #scale_fill_brewer(palette = "GnBi") +
+  theme(legend.position = "none") +
+  theme_void()
+
+housing_counties_plot2
+
+####looks like there are just missing data for counties as they show up as white or gray in my map. guessing it has something to do with the removing na's code not working that alex and i were wondering about. will need to get to the bottom of this.
+####i could of course leave the color gradient and show the concentration or i could bin ranges of prices to different colors on the gradient scale. perhaps by affordability or something else that's useful? want to convene with team.
+####i plan to add useful titles, labels, and commentary where necessary when i work on this next.
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
