@@ -1,0 +1,647 @@
+Baylee’s 10/10 r code 
+
+---
+title: "Housing Price vs. Supply 2024"
+author: Stephanie Armstrong, Ilgaz Kuscu, Alexander D. Silberman, Baylee Wechsler
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    code_folding: hide
+    number_sections: false
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+```{r}
+rm(list=ls())
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      root.dir = "C:\\Users\\alexa\\Code\\GW DATS\\6101 Intro to Data Science\\Project 1\\GitHub",
+                      warning = F, message = F)
+options(scientific = T, digits = 3)
+```
+
+
+## Load requisite packages and data
+
+
+```{r libraries}
+library(ezids)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(tidyverse)
+library (tidyr)
+library(janitor)
+library(scales)
+library(ggrepel)
+library(corrplot)
+library(tigris)
+library(sf)
+```
+
+This project uses the State and County Housing Market Indicators dataset from the American Enterprise Institute Housing Center, found [here](https://www.aei.org/the-state-of-the-housing-market/). The variables are:  
+
+Original Variable Name | New Variable Name | Definition  
+  :-: |  :-: | :-- 
+State	| State |state
+County | County_Name |County
+FIPS | FIPS_County_Code | 5-digit Federal Information Processing Series codes (first 2 digits indicate state, last 3 indicate sub-county entity)
+Year | Year | Year when the data was collected
+Tier | Affordability | Categorizes home sales into entry-level (<=80th percentile of FHA sales prices), move-up (all others), and all
+Median.Sale.Price..in.Thousands. | Median_Sale_Price_in_k | Median sale price in thousands of USD per county
+House.Price.Appreciation.since.2012 | House_Price_Appreciation_since_2012_percent | Cumulative home price appreciation since 2012
+House.Price.Appreciation..Year.over.Year | House_Price_Appreciation_yr_over_yr_percent |Home price appreciation since the previous year
+Months..Supply | Months_Supply | Number of months it would take for the inventory of existing homes for sale to be exhausted at the current sales pace
+New.Construction.Share.of.Sales | New_Constr_by_share_of_sales_percent | Percent of sales comprising new construction
+Mortgage.Default.Rate | Mortgage_Default_Rate_percent | AEI Mortgage Default Rate, a measure of how loans originating in a given month would perform under the same conditions as the 2007 financial crisis (<=7%: Low Risk; between 7.01% and 14%: Medium Risk; >14%: High Risk)
+
+
+```{r read_data}
+housing = read.csv("..//Data//state_county_data_download_2025.csv")
+housing %>% slice_sample(n=5)
+```
+
+
+The data is limited to the year 2024 and cleaned of NA values, and the variables are renamed for clarity.
+
+
+```{r clean_data}
+housing_2024 = housing %>% filter(housing$Year == 2024, 
+                                  housing$State != 'AA National', 
+                                  housing$County != 'AA State') %>% na.omit %>% 
+  #excluding the armed forces
+
+
+#rename cols
+rename(
+  Median_Sale_Price_per_k = Median.Sale.Price..in.Thousands.,
+  House_Price_Appreciation_yr_over_yr_percent = House.Price.Appreciation..Year.over.Year.,
+  House_Price_Appreciation_since_2012_percent = House.Price.Appreciation.since.2012,
+  Months_Supply = Months..Supply,
+  New_Constr_by_share_of_sales_percent = New.Construction.Share.of.Sales,
+  Mortgage_Default_Rate_percent = Mortgage.Default.Rate,
+  County_Name = County,
+  FIPS_County_Code = FIPS, 
+  Affordability = Tier
+)
+head(housing_2024)
+```
+
+
+The typing of the variables is also corrected. Some require the symbols "$" and "%" to be removed beforehand, so that is also done.
+
+
+```{r correct_var_typing}
+# as factors
+housing_2024$State = as.factor(housing_2024$State)
+housing_2024$County_Name = as.factor(housing_2024$County_Name)
+housing_2024$FIPS_County_Code = as.factor(housing_2024$FIPS_County_Code)
+housing_2024$Affordability = as.factor(housing_2024$Affordability)
+
+# remove prefixes '$' and '%' from values
+housing_2024 = housing_2024 %>%
+  mutate(Median_Sale_Price_per_k = gsub("\\$", "", Median_Sale_Price_per_k),
+         House_Price_Appreciation_since_2012_percent =
+           gsub("%","",House_Price_Appreciation_since_2012_percent),
+         House_Price_Appreciation_yr_over_yr_percent =
+           gsub("%","",House_Price_Appreciation_yr_over_yr_percent),
+         New_Constr_by_share_of_sales_percent = gsub("%","",New_Constr_by_share_of_sales_percent),
+         Mortgage_Default_Rate_percent = gsub("%","",Mortgage_Default_Rate_percent)
+  )
+
+# as num instead of chr
+housing_2024$Median_Sale_Price_per_k = as.numeric(housing_2024$Median_Sale_Price_per_k)
+housing_2024$House_Price_Appreciation_since_2012_percent =
+  as.numeric(housing_2024$House_Price_Appreciation_since_2012_percent)
+housing_2024$House_Price_Appreciation_yr_over_yr_percent =
+  as.numeric(housing_2024$House_Price_Appreciation_yr_over_yr_percent)
+housing_2024$New_Constr_by_share_of_sales_percent = 
+  as.numeric(housing_2024$New_Constr_by_share_of_sales_percent)
+housing_2024$Mortgage_Default_Rate_percent = as.numeric(housing_2024$Mortgage_Default_Rate_percent)
+
+# For some reason is rounding the data in quite a weird way—inaccurately
+
+# view data
+housing_2024 %>% slice_sample(n=5)
+```
+
+
+```{r}
+#creating df w/ affordability all totals and then another with entry level/moving up totals
+housing_2024_all = housing_2024 %>% filter(housing_2024$Affordability == "all") 
+housing_2024_tiers = housing_2024 %>% filter(Affordability == "entrylevel" | Affordability == "moveup")
+#BW- we need to explain why we did this (not in the comments, in the write-up and presentation). Steph?
+```
+
+
+## Exploratory Data Analysis (EDA)
+
+
+```{r}
+xkablesummary(housing_2024)
+```
+
+
+```{r}
+#separated df's
+xkablesummary(housing_2024_all)
+xkablesummary(housing_2024_tiers)
+```
+
+
+### boxplot of median sale price by state
+
+
+```{r boxplot_median_sale_price_by_state}
+ggplot(housing_2024, aes(x = reorder(State, -Median_Sale_Price_per_k, median), 
+                         y = Median_Sale_Price_per_k)) +
+  geom_boxplot(fill = "steelblue", alpha = 0.7) +
+  coord_flip() +
+  labs(
+    title = "Distribution of Median Sale Prices by State (2024)",
+    x = "State",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal()
+```
+
+
+There are too many to be particularly useful. You can see general trends, but I am going to run this with a smaller state sample.
+
+
+```{r}
+#boxplotting med sale price by state w/ ..._all df
+#all
+ggplot(housing_2024_all, aes(x = reorder(State, -Median_Sale_Price_per_k, median), 
+                         y = Median_Sale_Price_per_k)) +
+  geom_boxplot(fill = "steelblue", alpha = 0.7) +
+  coord_flip() +
+  labs(
+    title = "Distribution of Median Sale Prices by State (2024)",
+    x = "State",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal()
+```
+
+
+### boxplot of top and bottom 5 states by housing count
+The states broken out by housing count extremes are:  
+
+#Bottom 5 States  
+DC | District of Columbia 
+DE | Delaware
+HI | Hawaii
+RI | Rhode Island 
+CT | Connecticut 
+ #yeah this makes sense given landmass. Landmass and population/ #jobs would have
+ #been another interesting point of comparison
+ 
+#Top 5 States	
+TX| Texas
+GA | Georgia
+KY | Kentucky
+MO | Missouri
+VA | Virginia
+
+
+
+```{r}
+#boxplotting with new df: ..._all
+top_states_all <- housing_2024_all %>%
+  dplyr::count(State, sort = TRUE) %>%
+  dplyr::slice_max(n, n = 5)
+
+bottom_states_all <- housing_2024_all %>%
+  dplyr::count(State, sort = TRUE) %>%
+  dplyr::slice_min(n, n = 5)
+
+# merge top and bottom states
+housing_compare_all <- housing_2024_all %>%
+  filter(State %in% c(top_states_all$State, bottom_states_all$State)) %>%
+  mutate(StateGroup = case_when(
+    State %in% top_states_all$State ~ "States with the Most Houses",
+    State %in% bottom_states_all$State ~ "States with the Fewest Houses"
+  ))%>%
+  mutate(StateGroup = factor(StateGroup, levels = c(
+    "States with the Most Houses",
+    "States with the Fewest Houses"
+  )))
+
+#plot top bottom comparison ####
+ggplot(housing_compare_all, aes(x = State, y = Median_Sale_Price_per_k, fill = StateGroup)) +
+  geom_boxplot() +
+  facet_wrap(~ StateGroup, scales = "free_x") +
+  labs(
+    title = "Median Sale Price in States with Most vs Least Housing Records",
+    subtitle = "The Median Sale Price in States with a Larger Supply of Houses is Significantly Lower\nthan States with a Smaller Supply of Houses",
+    x = "State",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal() +
+  scale_fill_manual(values = c("States with the Most Houses" = "skyblue", "States with the Fewest Houses" = "red"))
+```
+```{r}
+# compare color scale w/ ..._all df
+# Create a vector of colors for top states (blue shades) and bottom states (red shades)
+top_states_colors_all <- scales::seq_gradient_pal("lightblue", "darkslateblue")(seq(0, 1, length.out = length(unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Most Houses"]))))
+names(top_states_colors_all) <- unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Most Houses"])
+
+bottom_states_colors_all <- scales::seq_gradient_pal("lightpink", "darkred")(seq(0, 1, length.out = length(unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Fewest Houses"]))))
+names(bottom_states_colors_all) <- unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Fewest Houses"])
+
+#last point in line for state label 
+label_points_all <- housing_compare_all %>%
+  group_by(State) %>%
+  filter(Months_Supply == max(Months_Supply, na.rm = TRUE)) %>%
+  ungroup()
+
+# Combine into one color vector
+state_colors_all <- c(top_states_colors_all, bottom_states_colors_all)
+
+#all in gray with faceted compare in color with states labeled ####
+ggplot() +
+  geom_point(data = housing_2024_all, aes(x = Months_Supply, y = Median_Sale_Price_per_k),
+             color = "gray70", alpha = 0.3, size = 1) +
+  # geom_path(data = housing_compare,
+  #           aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
+  #           size = 1, alpha = 0.8) +
+  geom_point(data = housing_compare_all,
+             aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
+             size = 2, alpha = 0.75) +
+  geom_text_repel(data = label_points_all,
+                  aes(x = Months_Supply, y = Median_Sale_Price_per_k, 
+                      label = State),
+                  size = 3.5, color= "black",stroke=0.01, segment.color = "black", segment.size = 0.3,
+                  segment.alpha = 1,min.segment.length = 0,show.legend = FALSE) +
+  facet_wrap(~ StateGroup) +
+  scale_color_manual(values = state_colors_all) +
+  labs(
+    title = "Housing Supply vs Median Price by State with Grouped Colors",
+    subtitle = "Some commentary here",
+    x = "Months of Supply",
+    y = "Median Sale Price (in thousands)",
+    color = "State"
+  ) +
+  theme_minimal()
+#can't read state names, maybe find a way to make it stand out 
+```
+
+
+```{r}
+#boxplotting med sale price by state w/ ..._compare_all df
+#all
+ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_per_k, median), 
+                         y = Median_Sale_Price_per_k)) +
+  geom_boxplot(fill = state_colors_all, alpha = 0.7) +
+  coord_flip() +
+  labs(
+    title = "Distribution of Median Sale Prices by State (2024)",
+    x = "State",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal()
+```
+
+
+
+### hist of median sale price
+
+
+```{r hist_of_med_price}
+ggplot(housing_2024, aes(x = Median_Sale_Price_per_k)) +
+  geom_histogram(binwidth = 50, fill = "skyblue", color = "black") +
+  scale_x_continuous(labels = scales::dollar_format(prefix = "$", suffix = "k")) +
+  labs(
+    title = "Distribution of Median Sale Prices (2024)",
+    x = "Median Sale Price (in thousands)",
+    y = "Count"
+  ) +
+  theme_minimal()
+#needs a subtitle with commentary, just remembered all need a caption with the source named, and we can prob add other elements to this, because otherwise it seems to obvi to me
+```
+
+
+```{r}
+#hist plotting with df ..._all
+ggplot(housing_2024_all, aes(x = Median_Sale_Price_per_k)) +
+  geom_histogram(binwidth = 50, fill = "skyblue", color = "black") +
+  scale_x_continuous(labels = scales::dollar_format(prefix = "$", suffix = "k")) +
+  labs(
+    title = "Distribution of Median Sale Prices (2024)",
+    x = "Median Sale Price (in thousands)",
+    y = "Count"
+  ) +
+  theme_minimal()
+#needs a subtitle with commentary, just remembered all need a caption with the source named, and we can prob add other elements to this, because otherwise it seems to obvi to me
+```
+
+
+### boxplot of sale price by affordability tier
+
+
+```{r boxplot_price_by_affordability}
+ggplot(housing_2024, aes(x = Affordability, y = Median_Sale_Price_per_k, fill = Affordability)) +
+  geom_boxplot() +
+  labs(
+    title = "Median Sale Price by Affordability Tier (2024)",
+    x = "Affordability Tier",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal()
+#no duh, there are more unpurchased expensive houses because people can't afford it 
+#not sure how useful this is, but maybe as a starting baseline 
+```
+
+
+### scatterplot of months supply vs median price
+
+
+```{r scatter_supply_vs_median_price}
+ggplot(housing_2024_all, aes(x = Months_Supply, y = Median_Sale_Price_per_k)) +
+  geom_point(color="steelblue", alpha = 0.7) +
+  # geom_smooth(method = "lm", se = FALSE, color = "black") +
+  labs(
+    title = "Housing Supply vs Median Sale Price",
+    x = "Months of Supply",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal()
+#this is a good one, needs a commentary subtitle and some cleaning
+```
+
+
+### correlation heatmap of numeric variables
+
+
+```{r corr_heatmap_of_numerics}
+housing_numeric <- housing_2024 %>%
+  select(where(is.numeric) & !all_of("Year")) %>%
+  drop_na()
+
+cor_matrix <- cor(housing_numeric)
+
+corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8, addCoef.col = "black", number.cex=0.5)
+#interesting to see positive and inverse relationships between variables 
+#did not scan for no relationships
+```
+
+
+```{r}
+#correlation heatmap of numeric variables w/ ..._all df
+housing_numeric_all <- housing_2024_all %>%
+  select(where(is.numeric) & !all_of("Year")) %>%
+  drop_na()
+
+cor_matrix_all <- cor(housing_numeric_all)
+
+corrplot(cor_matrix_all, method = "color", type = "upper", tl.cex = 0.8, addCoef.col = "black", number.cex=0.5)
+```
+### both together in gray with compare in color with states labeled
+
+```{r}
+#both together in gray with compare in color with states labeled w/ ..._all df
+ggplot() +
+  geom_point(data = housing_2024_all, 
+             aes(x = Months_Supply, y = Median_Sale_Price_per_k), 
+             color = "gray70", alpha = 0.3, size = 1) +
+  # geom_path(data = housing_compare %>% filter(StateGroup == "States with the Most Houses"),
+  #           aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
+  #           alpha = 0.8, size = 1) +
+  geom_point(data = housing_compare_all %>% filter(StateGroup == "States with the Most Houses"),
+             aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
+             alpha = 0.5, size = 2) +
+  # geom_path(data = housing_compare %>% filter(StateGroup == "States with the Fewest Houses"),
+  #           aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
+  #           alpha = 0.8, size = 1) +
+  geom_point(data = housing_compare_all %>% filter(StateGroup == "States with the Fewest Houses"),
+             aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
+             alpha = 0.5, size = 2) +
+  scale_color_manual(values = state_colors_all) +
+  labs(
+    title = "Housing Supply vs Median Price: All Counties with Highlights",
+    subtitle = "Gray points: All counties | Blue shades: States with Most Houses | Red shades: States with Fewest Houses",
+    x = "Months of Supply",
+    y = "Median Sale Price (in thousands)",
+    color = "State"
+  ) +
+  theme_minimal()
+```
+
+
+### new construction vs median sale price
+
+
+```{r new_constr_vs_price}
+housing_constr = housing_2024
+housing_constr = housing_constr %>% 
+  mutate(constr_bins = cut(New_Constr_by_share_of_sales_percent, breaks=10))
+
+ggplot(housing_constr, aes(x = constr_bins, y = Median_Sale_Price_per_k,fill=constr_bins)) +
+  geom_boxplot() +
+  labs(
+    title = "Median Sale Price by Percent New Construction (2024)",
+    x = "New Construction by Share of Sales Percent",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal()
+
+# Perhaps new construction indicates high demand, and as such, the more new construction, the higher the median sale price?
+#I would like to know which states fall into these buckets. In which states are the top quarter and bottom quarter? BW
+#I'm going to break this into smaller buckets and investigate.BW
+```
+
+
+```{r}
+#new construction vs median sale price w/ ..._all df
+housing_constr_all = housing_2024_all
+housing_constr_all = housing_constr_all %>% 
+  mutate(constr_bins = cut(New_Constr_by_share_of_sales_percent, breaks=10))
+
+ggplot(housing_constr_all, aes(x = constr_bins, y = Median_Sale_Price_per_k, fill=constr_bins)) +
+  geom_boxplot() +
+  labs(
+    title = "Median Sale Price by Percent New Construction (2024)",
+    x = "New Construction by Share of Sales Percent",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal()
+
+# Perhaps new construction indicates high demand, and as such, the more new construction, the higher the median sale price?
+```
+
+
+#### Limit to Entry-Level houses
+
+
+```{r new_constr_vs_price_entrylevel}
+housing_constr_tiers = housing_2024_tiers
+housing_constr_tiers = housing_constr_tiers %>% 
+  mutate(constr_bins = cut(New_Constr_by_share_of_sales_percent, breaks=10))
+
+ggplot(filter(housing_constr,Affordability=="entrylevel"), aes(x = constr_bins, y = Median_Sale_Price_per_k,fill=constr_bins)) +
+  geom_boxplot() +
+  labs(
+    title = "Median Sale Price by Percent New Construction (2024)",
+    x = "New Construction by Share of Sales Percent",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal()
+
+# Even more pronounced here
+```
+
+
+#### Limit to Moveup houses
+
+```{r new_constr_vs_price_moveup}
+ggplot(filter(housing_constr,Affordability=="moveup"), aes(x = constr_bins, y = Median_Sale_Price_per_k,fill=constr_bins)) +
+  geom_boxplot() +
+  labs(
+    title = "Median Sale Price by Percent New Construction (2024)",
+    x = "New Construction by Share of Sales Percent",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal()
+
+# Even more pronounced here
+```
+
+
+###mapping US counties by median sale price
+
+
+```{r}
+##basemap
+
+#reading in counties spatial file from tigris package
+counties_2024 <- counties(year = 2024, 
+                          cb = TRUE, 
+                          class = "sf")
+
+#excluding territories and shifting AK/HI
+counties_2024 <- counties_2024 %>%
+  filter(as.numeric(STATEFP) < 60) %>%
+  shift_geometry()
+
+#removing duplicate columns
+counties_2024 <- counties_2024 %>%
+  select(-NAME)
+
+#creating basemap and checking
+counties_2024_basemap <- ggplot() +
+  geom_sf(data = counties_2024) +
+  theme_void()
+
+counties_2024_basemap
+
+##merging housing_2014_all w/ counties_2014
+
+#creating merge df and prepping counties df
+housing_merge <- housing_2024_all
+
+counties_2024 <- counties_2024 %>%
+  mutate(GEOID = as.numeric(GEOID))
+
+#adding id variables to track observations
+counties_2024$id1 <- 1
+housing_merge$id2 <- 1
+
+#merging
+housing_counties_merge <- merge(x = counties_2024,
+                                y = housing_merge,
+                                by.x = "GEOID",
+                                by.y = "FIPS_County_Code")
+
+#converting NAs to zeros and finding problem observations
+  #looks like it merged just fine
+housing_counties_merge <- housing_counties_merge %>%
+  mutate(id1 = ifelse(is.na(id1), 0, id1),
+         id2 = ifelse(is.na(id2), 0, id2))
+
+no_merge <- housing_counties_merge %>%
+  filter(id1 + id2 != 2)
+
+unique(no_merge$GEOID)
+
+#plotting and checking
+housing_counties_plot <- ggplot() +
+  geom_sf(data = housing_counties_merge,
+          mapping = aes(fill = Median_Sale_Price_per_k),
+          color = "white",
+          linewidth = .4) +
+  #scale_fill_brewer(palette = "GnBi") +
+  theme(legend.position = "none") +
+  theme_void()
+
+housing_counties_plot
+
+#for fun: trying st_simplify to see if it looks better
+housing_counties_merge_simple <- st_simplify(housing_counties_merge, dTolerance = 75)
+
+housing_counties_plot2 <- ggplot() +
+  geom_sf(data = housing_counties_merge_simple,
+          mapping = aes(fill = Median_Sale_Price_per_k),
+          color = "white",
+          linewidth = .4) +
+  #scale_fill_brewer(palette = "GnBi") +
+  theme(legend.position = "none") +
+  theme_void()
+
+housing_counties_plot2
+
+####looks like there are just missing data for counties as they show up as white or gray in my map. guessing it has something to do with the removing na's code not working that alex and i were wondering about. will need to get to the bottom of this.
+####i could of course leave the color gradient and show the concentration or i could bin ranges of prices to different colors on the gradient scale. perhaps by affordability or something else that's useful? want to convene with team.
+#BW: I think bins and/or a more drastic color scale could help readability. Like- dark purple, medium pink, orangey-yellow would be immediately visibly different
+####i plan to add useful titles, labels, and commentary where necessary when i work on this next.
+#BW: when the regional differences are more clear, we need to think about the story this map tells and how it fits into our overall narrative. 
+```
+```{r}
+#hist of months supply
+
+#hist plotting months supply with df ...top_states_all
+ggplot(housing_compare_all, aes(x = reorder(State, Months_Supply, median), 
+                         y = Months_Supply)) +
+  geom_boxplot(fill = state_colors_all, alpha = 0.7) +
+  coord_flip() +
+  labs(
+    title = "Distribution of Months Supply (2024)",
+    x = "State",
+    y = "Months Supply"
+  ) +
+  theme_minimal()
+
+#needs a subtitle with commentary, just remembered all need a caption with the source named, and we can prob add other elements to this, because otherwise it seems to obvi to me
+
+
+
+
+#z score
+#confidence interval (on what tho, maybe median sale price and months supply)
+#then add Zscore and CI onto scatterplot somehow?
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
