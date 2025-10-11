@@ -1,3 +1,5 @@
+Baylee’s 10/10 r code 
+
 ---
 title: "Housing Price vs. Supply 2024"
 author: Stephanie Armstrong, Ilgaz Kuscu, Alexander D. Silberman, Baylee Wechsler
@@ -211,56 +213,6 @@ MO | Missouri
 VA | Virginia
 
 
-```{r}
-#boxplotting med sale price by state w/ ..._compare_all df
-#all
-ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_per_k, median), 
-                         y = Median_Sale_Price_per_k)) +
-  geom_boxplot(fill = state_colors_all, alpha = 0.7) +
-  coord_flip() +
-  labs(
-    title = "Distribution of Median Sale Prices by State (2024)",
-    x = "State",
-    y = "Median Sale Price (in thousands)"
-  ) +
-  theme_minimal()
-```
-
-```{r boxplot_top_bottom_5_by_count}
-top_states <- housing_2024 %>%
-  dplyr::count(State, sort = TRUE) %>%
-  dplyr::slice_max(n, n = 5)
-
-bottom_states <- housing_2024 %>%
-  dplyr::count(State, sort = TRUE) %>%
-  dplyr::slice_min(n, n = 5)
-
-# merge top and bottom states
-housing_compare <- housing_2024 %>%
-  filter(State %in% c(top_states$State, bottom_states$State)) %>%
-  mutate(StateGroup = case_when(
-    State %in% top_states$State ~ "States with the Most Houses",
-    State %in% bottom_states$State ~ "States with the Fewest Houses"
-  ))%>%
-  mutate(StateGroup = factor(StateGroup, levels = c(
-    "States with the Most Houses",
-    "States with the Fewest Houses"
-  )))
-
-#plot top bottom comparison ####
-ggplot(housing_compare, aes(x = State, y = Median_Sale_Price_per_k, fill = StateGroup)) +
-  geom_boxplot() +
-  facet_wrap(~ StateGroup, scales = "free_x") +
-  labs(
-    title = "Median Sale Price in States with Most vs Least Housing Records",
-    subtitle = "The Median Sale Price in States with a Larger Supply of Houses is Significantly Lower\nthan States with a Smaller Supply of Houses",
-    x = "State",
-    y = "Median Sale Price (in thousands)"
-  ) +
-  theme_minimal() +
-  scale_fill_manual(values = c("States with the Most Houses" = "skyblue", "States with the Fewest Houses" = "red"))
-```
-
 
 ```{r}
 #boxplotting with new df: ..._all
@@ -297,6 +249,68 @@ ggplot(housing_compare_all, aes(x = State, y = Median_Sale_Price_per_k, fill = S
   theme_minimal() +
   scale_fill_manual(values = c("States with the Most Houses" = "skyblue", "States with the Fewest Houses" = "red"))
 ```
+```{r}
+# compare color scale w/ ..._all df
+# Create a vector of colors for top states (blue shades) and bottom states (red shades)
+top_states_colors_all <- scales::seq_gradient_pal("lightblue", "darkslateblue")(seq(0, 1, length.out = length(unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Most Houses"]))))
+names(top_states_colors_all) <- unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Most Houses"])
+
+bottom_states_colors_all <- scales::seq_gradient_pal("lightpink", "darkred")(seq(0, 1, length.out = length(unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Fewest Houses"]))))
+names(bottom_states_colors_all) <- unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Fewest Houses"])
+
+#last point in line for state label 
+label_points_all <- housing_compare_all %>%
+  group_by(State) %>%
+  filter(Months_Supply == max(Months_Supply, na.rm = TRUE)) %>%
+  ungroup()
+
+# Combine into one color vector
+state_colors_all <- c(top_states_colors_all, bottom_states_colors_all)
+
+#all in gray with faceted compare in color with states labeled ####
+ggplot() +
+  geom_point(data = housing_2024_all, aes(x = Months_Supply, y = Median_Sale_Price_per_k),
+             color = "gray70", alpha = 0.3, size = 1) +
+  # geom_path(data = housing_compare,
+  #           aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
+  #           size = 1, alpha = 0.8) +
+  geom_point(data = housing_compare_all,
+             aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
+             size = 2, alpha = 0.75) +
+  geom_text_repel(data = label_points_all,
+                  aes(x = Months_Supply, y = Median_Sale_Price_per_k, 
+                      label = State),
+                  size = 3.5, color= "black",stroke=0.01, segment.color = "black", segment.size = 0.3,
+                  segment.alpha = 1,min.segment.length = 0,show.legend = FALSE) +
+  facet_wrap(~ StateGroup) +
+  scale_color_manual(values = state_colors_all) +
+  labs(
+    title = "Housing Supply vs Median Price by State with Grouped Colors",
+    subtitle = "Some commentary here",
+    x = "Months of Supply",
+    y = "Median Sale Price (in thousands)",
+    color = "State"
+  ) +
+  theme_minimal()
+#can't read state names, maybe find a way to make it stand out 
+```
+
+
+```{r}
+#boxplotting med sale price by state w/ ..._compare_all df
+#all
+ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_per_k, median), 
+                         y = Median_Sale_Price_per_k)) +
+  geom_boxplot(fill = state_colors_all, alpha = 0.7) +
+  coord_flip() +
+  labs(
+    title = "Distribution of Median Sale Prices by State (2024)",
+    x = "State",
+    y = "Median Sale Price (in thousands)"
+  ) +
+  theme_minimal()
+```
+
 
 
 ### hist of median sale price
@@ -391,135 +405,7 @@ cor_matrix_all <- cor(housing_numeric_all)
 
 corrplot(cor_matrix_all, method = "color", type = "upper", tl.cex = 0.8, addCoef.col = "black", number.cex=0.5)
 ```
-
-
-### compare color scale\
-
-
-```{r compare_color_scale}
-# Create a vector of colors for top states (blue shades) and bottom states (red shades)
-top_states_colors <- scales::seq_gradient_pal("lightblue", "darkslateblue")(seq(0, 1, length.out = length(unique(housing_compare$State[housing_compare$StateGroup == "States with the Most Houses"]))))
-names(top_states_colors) <- unique(housing_compare$State[housing_compare$StateGroup == "States with the Most Houses"])
-
-bottom_states_colors <- scales::seq_gradient_pal("lightpink", "darkred")(seq(0, 1, length.out = length(unique(housing_compare$State[housing_compare$StateGroup == "States with the Fewest Houses"]))))
-names(bottom_states_colors) <- unique(housing_compare$State[housing_compare$StateGroup == "States with the Fewest Houses"])
-
-#last point in line for state label 
-label_points <- housing_compare %>%
-  group_by(State) %>%
-  filter(Months_Supply == max(Months_Supply, na.rm = TRUE)) %>%
-  ungroup()
-
-# Combine into one color vector
-state_colors <- c(top_states_colors, bottom_states_colors)
-
-#all in gray with faceted compare in color with states labeled ####
-ggplot() +
-  geom_point(data = housing_2024, aes(x = Months_Supply, y = Median_Sale_Price_per_k),
-             color = "gray70", alpha = 0.3, size = 1) +
-  # geom_path(data = housing_compare,
-  #           aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
-  #           size = 1, alpha = 0.8) +
-  geom_point(data = housing_compare,
-             aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
-             size = 2, alpha = 0.5) +
-  geom_text_repel(data = label_points,
-                  aes(x = Months_Supply, y = Median_Sale_Price_per_k, 
-                      label = State),
-                  size = 3.5, color= "black",stroke=0.01, segment.color = "black", segment.size = 0.3,
-                  segment.alpha = 0.6,min.segment.length = 0,show.legend = FALSE) +
-  facet_wrap(~ StateGroup) +
-  scale_color_manual(values = state_colors) +
-  labs(
-    title = "Housing Supply vs Median Price by State with Grouped Colors",
-    subtitle = "Some commentary here",
-    x = "Months of Supply",
-    y = "Median Sale Price (in thousands)",
-    color = "State"
-  ) +
-  theme_minimal()
-#can't read state names, maybe find a way to make it stand out 
-```
-
-
-```{r}
-# compare color scale w/ ..._all df
-# Create a vector of colors for top states (blue shades) and bottom states (red shades)
-top_states_colors_all <- scales::seq_gradient_pal("lightblue", "darkslateblue")(seq(0, 1, length.out = length(unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Most Houses"]))))
-names(top_states_colors_all) <- unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Most Houses"])
-
-bottom_states_colors_all <- scales::seq_gradient_pal("lightpink", "darkred")(seq(0, 1, length.out = length(unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Fewest Houses"]))))
-names(bottom_states_colors_all) <- unique(housing_compare_all$State[housing_compare_all$StateGroup == "States with the Fewest Houses"])
-
-#last point in line for state label 
-label_points_all <- housing_compare_all %>%
-  group_by(State) %>%
-  filter(Months_Supply == max(Months_Supply, na.rm = TRUE)) %>%
-  ungroup()
-
-# Combine into one color vector
-state_colors_all <- c(top_states_colors_all, bottom_states_colors_all)
-
-#all in gray with faceted compare in color with states labeled ####
-ggplot() +
-  geom_point(data = housing_2024_all, aes(x = Months_Supply, y = Median_Sale_Price_per_k),
-             color = "gray70", alpha = 0.3, size = 1) +
-  # geom_path(data = housing_compare,
-  #           aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
-  #           size = 1, alpha = 0.8) +
-  geom_point(data = housing_compare_all,
-             aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
-             size = 2, alpha = 0.75) +
-  geom_text_repel(data = label_points_all,
-                  aes(x = Months_Supply, y = Median_Sale_Price_per_k, 
-                      label = State),
-                  size = 3.5, color= "black",stroke=0.01, segment.color = "black", segment.size = 0.3,
-                  segment.alpha = 1,min.segment.length = 0,show.legend = FALSE) +
-  facet_wrap(~ StateGroup) +
-  scale_color_manual(values = state_colors_all) +
-  labs(
-    title = "Housing Supply vs Median Price by State with Grouped Colors",
-    subtitle = "Some commentary here",
-    x = "Months of Supply",
-    y = "Median Sale Price (in thousands)",
-    color = "State"
-  ) +
-  theme_minimal()
-#can't read state names, maybe find a way to make it stand out 
-```
-
-
 ### both together in gray with compare in color with states labeled
-
-
-```{r both_together}
-ggplot() +
-  geom_point(data = housing_2024, 
-             aes(x = Months_Supply, y = Median_Sale_Price_per_k), 
-             color = "gray70", alpha = 0.3, size = 1) +
-  # geom_path(data = housing_compare %>% filter(StateGroup == "States with the Most Houses"),
-  #           aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
-  #           alpha = 0.8, size = 1) +
-  geom_point(data = housing_compare %>% filter(StateGroup == "States with the Most Houses"),
-             aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
-             alpha = 0.5, size = 2) +
-  # geom_path(data = housing_compare %>% filter(StateGroup == "States with the Fewest Houses"),
-  #           aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
-  #           alpha = 0.8, size = 1) +
-  geom_point(data = housing_compare %>% filter(StateGroup == "States with the Fewest Houses"),
-             aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
-             alpha = 0.5, size = 2) +
-  scale_color_manual(values = state_colors) +
-  labs(
-    title = "Housing Supply vs Median Price: All Counties with Highlights",
-    subtitle = "Gray points: All counties | Blue shades: States with Most Houses | Red shades: States with Fewest Houses",
-    x = "Months of Supply",
-    y = "Median Sale Price (in thousands)",
-    color = "State"
-  ) +
-  theme_minimal()
-```
-
 
 ```{r}
 #both together in gray with compare in color with states labeled w/ ..._all df
@@ -742,6 +628,7 @@ ggplot(housing_compare_all, aes(x = reorder(State, Months_Supply, median),
 #confidence interval (on what tho, maybe median sale price and months supply)
 #then add Zscore and CI onto scatterplot somehow?
 ```
+
 
 
 
