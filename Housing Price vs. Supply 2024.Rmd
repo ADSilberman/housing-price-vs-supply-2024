@@ -520,7 +520,12 @@ counties_2024_basemap <- ggplot() +
 
 counties_2024_basemap
 
-##merging housing_2014_all w/ counties_2014
+##prepping and merging housing_2014_all w/ counties_2014
+
+housing_2024_all <- housing_2024_all %>%
+  mutate(price_bin = cut(Median_Sale_Price_per_k,
+                         breaks = c(0, 150, 300, 500, 750, 1000, Inf),
+                         labels = c("<150k", "150-300k", "300-500k", "500-750k", "750k-1M", ">1M")))
 
 #creating merge df and prepping counties df
 housing_merge <- housing_2024_all
@@ -569,12 +574,16 @@ housing_counties_merge_simple <- st_simplify(housing_counties_merge, dTolerance 
 
 housing_counties_plot2 <- ggplot() +
   geom_sf(data = housing_counties_merge_simple,
-          mapping = aes(fill = Median_Sale_Price_per_k),
+          mapping = aes(fill = price_bin),
           color = "white",
           linewidth = .4) +
-  labs(title = "County-Level Median Home Sale Price in the U.S.",
-       subtitle = "Median sale price by county, 2024",
-       caption = "Source: AEI Housing Center (2024). Counties in gray have missing or suppressed data.") +
+  scale_fill_brewer(palette = "RdYlBu",
+                    direction = -1,
+                    name = "Median Sale Price",
+                    na.value = "grey85") +
+  labs(title = "Geographic Variation in U.S. Home Prices, 2024",
+       subtitle = "County-level median sale price",
+       caption = "Source: AEI Housing Center (2024)") +
   theme_minimal(base_size = 11) +
   theme(plot.title = element_text(face = "bold", 
                                   size = 16),
@@ -599,6 +608,8 @@ housing_counties_plot2
 ####i plan to add useful titles, labels, and commentary where necessary when i work on this next.
 #BW: when the regional differences are more clear, we need to think about the story this map tells and how it fits into our overall narrative. 
 ```
+
+
 ```{r}
 #hist of months supply
 
