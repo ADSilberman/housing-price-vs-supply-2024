@@ -495,7 +495,7 @@ ggplot(filter(housing_constr,Affordability=="moveup"), aes(x = constr_bins, y = 
 ##basemap
 
 #reading in counties spatial file from tigris package
-counties_2024 <- counties(year = 2024, 
+counties_2024 <- counties(year = 2013, 
                           cb = TRUE, 
                           class = "sf")
 
@@ -567,9 +567,24 @@ housing_counties_plot2 <- ggplot() +
           mapping = aes(fill = Median_Sale_Price_per_k),
           color = "white",
           linewidth = .4) +
-  #scale_fill_brewer(palette = "GnBi") +
-  theme(legend.position = "none") +
-  theme_void()
+  labs(title = "County-Level Median Home Sale Price in the U.S.",
+       subtitle = "Median sale price by county, 2024",
+       caption = "Source: AEI Housing Center (2024). Counties in gray have missing or suppressed data.") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 16),
+        plot.subtitle = element_text(size = 12, 
+                                     margin = margin(b = 8)),
+        plot.caption = element_text(color = "gray40", 
+                                    margin = margin(t = 8)),
+        legend.title = element_text(face = "bold"),
+        legend.position = "right",
+        legend.key.height = unit(0.6, "cm"),
+        panel.grid = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        plot.margin = margin(8, 12, 8, 12))
+#+ theme_void()
 
 housing_counties_plot2
 
