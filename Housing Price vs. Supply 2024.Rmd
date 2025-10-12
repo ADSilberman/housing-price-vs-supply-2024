@@ -264,7 +264,7 @@ names(bottom_states_colors_all) <- unique(housing_compare_all_plot$State[housing
 state_colors_all <- c(top_states_colors_all, bottom_states_colors_all)
 
 #all in gray with faceted compare in color with states labeled ####
-ggplot() +
+tierhighlightscatterplot <-ggplot() +
   geom_point(data = housing_2024_all_plot, aes(x = Months_Supply, y = Median_Sale_Price_per_k),
              color = "gray70", alpha = 0.3, size = 1.5) +
   geom_point(data = housing_compare_all_plot,
@@ -285,6 +285,10 @@ ggplot() +
     color = "State",
     caption = "SOURCE: American Enterprise Institute") +
   theme_minimal()
+
+ggsave("housing_supply_vs_price_tierhighlight.png", plot = tierhighlightscatterplot, width = 10, height = 6, dpi = 300)
+
+tierhighlightscatterplot
 ```
 
 
@@ -343,7 +347,7 @@ ggplot(housing_2024, aes(x = Affordability, y = Median_Sale_Price_per_k, fill = 
 
 
 ```{r scatter_supply_vs_median_price total all}
-ggplot(housing_2024_all_plot, aes(x = Months_Supply, y = Median_Sale_Price_per_k)) +
+allstatescatterplot <-ggplot(housing_2024_all_plot, aes(x = Months_Supply, y = Median_Sale_Price_per_k)) +
   geom_point(color="steelblue", alpha = 0.7) +
   # geom_smooth(method = "lm", se = FALSE, color = "black") +
   labs(
@@ -353,6 +357,10 @@ ggplot(housing_2024_all_plot, aes(x = Months_Supply, y = Median_Sale_Price_per_k
     y = "Median Sale Price (in thousands)",
     caption = "SOURCE: American Enterprise Institute") +
   theme_minimal()
+
+ggsave("housing_supply_vs_price_allstates.png", plot = allstatescatterplot, width = 10, height = 6, dpi = 300)
+
+allstatescatterplot
 
 #next round, add line of best fit/ regression line
 ```
@@ -574,7 +582,7 @@ housing_counties_plot2
 #hist of months supply
 
 #hist plotting months supply with df ...top_states_all
-ggplot(housing_compare_all, aes(x = reorder(State, Months_Supply, median), 
+supply12hist<- ggplot(housing_compare_all, aes(x = reorder(State, Months_Supply, median), 
                          y = Months_Supply)) +
   geom_boxplot(fill = state_colors_all, alpha = 0.7) +
   coord_flip() +
@@ -585,23 +593,136 @@ ggplot(housing_compare_all, aes(x = reorder(State, Months_Supply, median),
     caption = "SOURCE: American Enterprise Institute") +
   theme_minimal()
 
+ggsave("housing_supply_12_hist.png", plot = supply12hist, width = 10, height = 6, dpi = 300)
+
+supply12hist
+
 #needs a subtitle with commentary, just remembered all need a caption with the source named, and we can prob add other elements to this, because otherwise it seems to obvi to me
 
-
+#some other supply dist graph? full 50 I think
 
 
 #z score
 #confidence interval (on what tho, maybe median sale price and months supply)
 #then add Zscore and CI onto scatterplot somehow?
+
 ```
 
 
 
+```{r supply option 1}
+#housing supply dist w all states for context, all df
+housing_median_supply <- housing_2024_all %>%
+  group_by(State) %>%
+  summarize(Median_Months_Supply = median(Months_Supply, na.rm = TRUE)) %>%
+  arrange(desc(Median_Months_Supply))
+
+ggplot(housing_median_supply, aes(x = reorder(State, Median_Months_Supply), y = Median_Months_Supply)) +
+  geom_segment(aes(xend = State, y = 0, yend = Median_Months_Supply), color = "gray80") +
+  geom_point(color = "steelblue", size = 3) +
+  coord_flip() +
+  labs(
+    title = "Median Months Supply by State (2024)",
+    x = "State",
+    y = "Median Months of Supply",
+    caption = "SOURCE: American Enterprise Institute"
+  ) +
+  theme_minimal()
+#this one is fine, would prob be better with just 12
+```
+
+```{r supply option 2}
+#housing supply dist w all states for context, all df
+#install.packages("ggridges")
+library(ggridges)
+library(ggridges)
+
+ggplot(housing_2024_all, 
+       aes(x = pmin(Months_Supply, 12), y = reorder(State, Months_Supply))) +
+  geom_density_ridges(
+    fill = "steelblue", alpha = 0.7, scale = 2
+  ) +
+  labs(
+    title = "Distribution of Months Supply by State (Capped at 12 Months)",
+    subtitle = "Months supply values greater than 12 are capped for visualization purposes",
+    x = "Months of Supply (Capped at 12)",
+    y = "State",
+    caption = "SOURCE: American Enterprise Institute"
+  ) +
+  theme_minimal()
+#this is crazy to look at- don't plan to include
+```
 
 
 
+```{r supply option 2- 12}
+#housing supply dist w 12 states for context, all df
+library(ggridges)
+library(scales)
 
+#prep
+max_months <- 12
+housing_ridge <- housing_compare_all %>%
+  mutate(Months_Supply_Capped = pmin(Months_Supply, max_months))
 
+#medians per state
+state_medians <- housing_ridge %>%
+  group_by(State) %>%
+  summarize(
+    Median_Sale_Price = median(Median_Sale_Price_per_k, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+#normalize sale price to match the x-axis range (e.g. 0–12 months)
+sale_price_min <- min(state_medians$Median_Sale_Price, na.rm = TRUE)
+sale_price_max <- max(state_medians$Median_Sale_Price, na.rm = TRUE)
+
+#normalize price into 0-12 scale
+scale_price_to_months <- function(price_k) {
+  scales::rescale(price_k, to = c(0, max_months), from = c(sale_price_min, sale_price_max))
+}
+
+#apply scaled value
+state_medians <- state_medians %>%
+  mutate(Scaled_Sale_Price = scale_price_to_months(Median_Sale_Price))
+
+#reorder
+state_order <- state_medians %>%
+  arrange(Median_Sale_Price) %>%
+  pull(State)
+housing_ridge <- housing_ridge %>%
+  mutate(State = factor(State, levels = state_order))
+
+#save plot as object
+supplyridge_12medianprice_plot <- ggplot(housing_ridge, aes(x = Months_Supply_Capped, y = State, fill = StateGroup), fill = StateGroup) +
+  geom_density_ridges(scale = 1.5, alpha = 0.8, color = "white") +
+  geom_point(data = state_medians, 
+             aes(x = Scaled_Sale_Price, y = State), 
+             inherit.aes = FALSE,
+             shape = 21, fill = "black", color = "white", size = 2) +
+  scale_fill_manual(values = c("Low Months Supply" = "indianred", "High Months Supply" = "steelblue")) +
+  scale_x_continuous(
+    name = "Months of Supply (capped at 12)",
+    sec.axis = sec_axis(
+      trans = ~ scales::rescale(., to = c(sale_price_min, sale_price_max), from = c(0, max_months)),
+      name = "Median Sale Price (in thousands)",
+      labels = dollar_format(prefix = "$", suffix = "k"))) +
+  labs(
+    title = "Distribution of Months Supply by State with Median Sale Price Overlay",
+    subtitle = "Each ridge shows the supply distribution for a state; black dots show scaled median sale prices",
+    y = "State",
+    fill = "State Group",
+    caption = "SOURCE: American Enterprise Institute") +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    axis.title.x.top = element_text(margin = margin(b = 10)))
+
+ggsave("supply_ridge_12_saleprice_plot.png", plot = supplyridge_12medianprice_plot, width = 10, height = 6, dpi = 300)
+
+supplyridge_12medianprice_plot
+
+```
 
 
 
