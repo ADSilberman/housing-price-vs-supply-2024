@@ -1,5 +1,3 @@
-Baylee’s 10/12 r code 
-
 ---
 title: "Housing Price vs. Supply 2024"
 author: Stephanie Armstrong, Ilgaz Kuscu, Alexander D. Silberman, Baylee Wechsler
