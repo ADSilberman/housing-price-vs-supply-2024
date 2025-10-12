@@ -160,6 +160,24 @@ xkablesummary(housing_2024)
 #separated df's
 xkablesummary(housing_2024_all)
 xkablesummary(housing_2024_tiers)
+
+#comparing tiers entrylevel and 
+#entrylevel
+xkablesummary(df = subset(housing_2024_tiers, 
+                          Affordability == "entrylevel"),
+              title = "Summary Statistics: Entry-Level Homes",
+              digits = 2,
+              pos = "left",
+              bso = "striped")
+
+#moveup
+xkablesummary(df = subset(housing_2024_tiers, 
+                          Affordability == "moveup"),
+              title = "Summary Statistics: Move-Up Homes",
+              digits = 2,
+              pos = "left",
+              bso = "striped"
+)
 ```
 
 
