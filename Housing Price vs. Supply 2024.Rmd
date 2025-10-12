@@ -74,7 +74,9 @@ The data is limited to the year 2024 and cleaned of NA values, and the variables
 ```{r clean_data}
 housing_2024 = housing %>% filter(housing$Year == 2024, 
                                   housing$State != 'AA National', 
-                                  housing$County != 'AA State') %>% na.omit %>% 
+                                  housing$County != 'AA State') %>% 
+  #moving this na removal to the end after the cleaning
+  #na.omit %>% 
   #excluding the armed forces
 
 
@@ -106,14 +108,15 @@ housing_2024$Affordability = as.factor(housing_2024$Affordability)
 
 # remove prefixes '$' and '%' from values
 housing_2024 = housing_2024 %>%
-  mutate(Median_Sale_Price_per_k = gsub("\\$", "", Median_Sale_Price_per_k),
+  mutate(Median_Sale_Price_per_k = gsub("[\\$,]", "", Median_Sale_Price_per_k),
          House_Price_Appreciation_since_2012_percent =
-           gsub("%","",House_Price_Appreciation_since_2012_percent),
+           gsub("[%,]","",House_Price_Appreciation_since_2012_percent),
          House_Price_Appreciation_yr_over_yr_percent =
-           gsub("%","",House_Price_Appreciation_yr_over_yr_percent),
-         New_Constr_by_share_of_sales_percent = gsub("%","",New_Constr_by_share_of_sales_percent),
-         Mortgage_Default_Rate_percent = gsub("%","",Mortgage_Default_Rate_percent)
+           gsub("[%,]","",House_Price_Appreciation_yr_over_yr_percent),
+         New_Constr_by_share_of_sales_percent = gsub("[%,]","",New_Constr_by_share_of_sales_percent),
+         Mortgage_Default_Rate_percent = gsub("[%,]","",Mortgage_Default_Rate_percent)
   )
+###I included the commas to be removed as well indicated in the brackets. SA
 
 # as num instead of chr
 housing_2024$Median_Sale_Price_per_k = as.numeric(housing_2024$Median_Sale_Price_per_k)
@@ -124,6 +127,11 @@ housing_2024$House_Price_Appreciation_yr_over_yr_percent =
 housing_2024$New_Constr_by_share_of_sales_percent = 
   as.numeric(housing_2024$New_Constr_by_share_of_sales_percent)
 housing_2024$Mortgage_Default_Rate_percent = as.numeric(housing_2024$Mortgage_Default_Rate_percent)
+###I included the commas to be removed as well indicated in the brackets. SA
+
+#moving the na dropping to after the parsing
+housing_2024 <- housing_2024 %>%
+  tidyr::drop_na(Median_Sale_Price_per_k)
 
 # For some reason is rounding the data in quite a weird way—inaccurately
 
@@ -523,10 +531,13 @@ housing_merge$id2 <- 1
 housing_counties_merge <- merge(x = counties_2024,
                                 y = housing_merge,
                                 by.x = "GEOID",
-                                by.y = "FIPS_County_Code")
+                                by.y = "FIPS_County_Code",
+                                all = TRUE)
 
 #converting NAs to zeros and finding problem observations
   #looks like it merged just fine
+    #i lied, coded wrong and fixed, now i realize theres a  
+    #lot of problem observations 
 housing_counties_merge <- housing_counties_merge %>%
   mutate(id1 = ifelse(is.na(id1), 0, id1),
          id2 = ifelse(is.na(id2), 0, id2))
