@@ -74,9 +74,9 @@ The data is limited to the year 2024 and cleaned of NA values, and the variables
 ```{r clean_data}
 housing_2024 = housing %>% filter(housing$Year == 2024, 
                                   housing$State != 'AA National', 
-                                  housing$County != 'AA State') %>% 
+                                  housing$County != 'AA State') %>%
   #moving this na removal to the end after the cleaning
-  #na.omit %>% 
+  na.omit %>% 
   #excluding the armed forces
 
 
@@ -178,7 +178,6 @@ ggplot(housing_2024_all, aes(x = reorder(State, -Median_Sale_Price_per_k, median
     y = "Median Sale Price (in thousands)",
     caption = "SOURCE: American Enterprise Institute") +
   theme_minimal()
-#next round, would want to nix outliers
 ```
 
 There are too many to be particularly useful. You can see general trends, but I am going to run this with a smaller state sample.
@@ -186,14 +185,14 @@ There are too many to be particularly useful. You can see general trends, but I 
 ### boxplot of top and bottom 5 states by housing count
 The states broken out by housing count extremes are:  
 
-#Top Months Supply States  
+####Top Months Supply States  
 HI | Hawaii
 DC | District of Columbia 
 FL | Florida
 MT | Montana
 CO | Colorado 
  
-#Bottom Months Supply States	
+####Bottom Months Supply States	
 MA| Massachusetts
 WI | Wisconsin
 KY | Kentucky
@@ -205,16 +204,14 @@ OH | Ohio
 
 ```{r}
 #boxplotting with new df: ..._all
-#Find top/bottom 5 by *median Months Supply*, not row count
-top_states_all <- housing_2024_all %>%
+#Find top/bottom 5 by *mean Months Supply*, not row count
+states_by_mean_months_supply <- housing_2024_all %>%
   group_by(State) %>%
-  summarize(Median_Months_Supply = median(Months_Supply, na.rm = TRUE)) %>%
-  slice_max(order_by = Median_Months_Supply, n = 5)
+  summarize(Mean_Months_Supply = mean(Months_Supply))
 
-bottom_states_all <- housing_2024_all %>%
-  group_by(State) %>%
-  summarize(Median_Months_Supply = median(Months_Supply, na.rm = TRUE)) %>%
-  slice_min(order_by = Median_Months_Supply, n = 5)
+top_states_all = states_by_mean_months_supply %>% slice_max(order_by = Mean_Months_Supply, n = 5)
+
+bottom_states_all <- states_by_mean_months_supply %>% slice_min(order_by = Mean_Months_Supply, n = 5)
 
 #merge top and bottom states
 housing_compare_all <- housing_2024_all %>%
@@ -229,14 +226,22 @@ ggplot(housing_compare_all, aes(x = State, y = Median_Sale_Price_per_k, fill = S
   geom_boxplot() +
   facet_wrap(~ StateGroup, scales = "free_x") +
   labs(
-    title = "Median Sale Price in States by Months Supply of Housing",
-    subtitle = "The Median Sale Price in States with a Larger Months Supply of Housing is Significantly Lower\nthan States with a Smaller Months Supply of Housing",
+    title = "Mean Sale Price in States by Months Supply of Housing",
+    subtitle = "The Mean Sale Price in States with a Larger Months Supply of Housing is Significantly Lower\nthan States with a Smaller Months Supply of Housing",
     x = "State",
-    y = "Median Sale Price (in thousands)",
+    y = "Mean Sale Price (in thousands)",
     caption = "SOURCE: American Enterprise Institute") +
   theme_minimal() +
   scale_fill_manual(values = c("High Months Supply" = "skyblue", "Low Months Supply" = "red"))
 ```
+
+#### Significance Testing
+
+```{r}
+#states_mean_sale_price_anova = aov(data = housing_compare_all)
+```
+
+
 ```{r}
 # compare color scale w/ ..._all df
 #fix color assigning for side by side compare scatterplots- too many blue showing up
