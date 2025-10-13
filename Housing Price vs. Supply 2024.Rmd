@@ -337,16 +337,39 @@ ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_per_k, med
 
 ```{r}
 #hist plotting with df ..._all
-ggplot(housing_2024_all, aes(x = Median_Sale_Price_per_k)) +
+housing_price_hist <- ggplot(housing_2024_all, aes(x = Median_Sale_Price_per_k)) +
   geom_histogram(binwidth = 25, fill = "skyblue", color = "black") +
   scale_x_continuous(labels = scales::dollar_format(prefix = "$", suffix = "k")) +
   labs(
-    title = "Distribution of Median Sale Prices (2024)",
+    title = "Distribution of Median Sale Prices",
+    subtitle = "Most U.S. counties cluster below $300k, with a long right-skewed tail in higher-priced markets",
     x = "Median Sale Price (in thousands)",
-    y = "Count",
+    y = "Number of Counties",
     caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal()
-#needs a subtitle with commentary, just remembered all need a caption with the source named, and we can prob add other elements to this, because otherwise it seems to obvi to me
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        plot.background = element_blank()) 
+
+#ggsaving
+ggsave(plot = housing_price_hist,
+       filename = "housing_price_hist.png",
+       width = 7,
+       height = 4,
+       dpi = 500,
+       bg = "transparent")
 ```
 
 
