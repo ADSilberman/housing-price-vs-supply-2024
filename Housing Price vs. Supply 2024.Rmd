@@ -434,27 +434,6 @@ ggplot() +
 
 ### new construction vs median sale price
 
-
-```{r new_constr_vs_price}
-housing_constr = housing_2024
-housing_constr = housing_constr %>% 
-  mutate(constr_bins = cut(New_Constr_by_share_of_sales_percent, breaks=10))
-
-ggplot(housing_constr, aes(x = constr_bins, y = Median_Sale_Price_per_k,fill=constr_bins)) +
-  geom_boxplot() +
-  labs(
-    title = "Median Sale Price by Percent New Construction (2024)",
-    x = "New Construction by Share of Sales Percent",
-    y = "Median Sale Price (in thousands)",
-    caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal()
-
-# Perhaps new construction indicates high demand, and as such, the more new construction, the higher the median sale price?
-#I would like to know which states fall into these buckets. In which states are the top quarter and bottom quarter? BW
-#I'm going to break this into smaller buckets and investigate.BW
-```
-
-
 ```{r}
 #new construction vs median sale price w/ ..._all df
 housing_constr_all = housing_2024_all
@@ -474,44 +453,7 @@ ggplot(housing_constr_all, aes(x = constr_bins, y = Median_Sale_Price_per_k, fil
 ```
 
 
-#### Limit to Entry-Level houses
-
-
-```{r new_constr_vs_price_entrylevel}
-housing_constr_tiers = housing_2024_tiers
-housing_constr_tiers = housing_constr_tiers %>% 
-  mutate(constr_bins = cut(New_Constr_by_share_of_sales_percent, breaks=10))
-
-ggplot(filter(housing_constr,Affordability=="entrylevel"), aes(x = constr_bins, y = Median_Sale_Price_per_k,fill=constr_bins)) +
-  geom_boxplot() +
-  labs(
-    title = "Median Sale Price by Percent New Construction (2024)",
-    x = "New Construction by Share of Sales Percent",
-    y = "Median Sale Price (in thousands)",
-    caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal()
-
-# Even more pronounced here
-```
-
-
-#### Limit to Moveup houses
-
-```{r new_constr_vs_price_moveup}
-ggplot(filter(housing_constr,Affordability=="moveup"), aes(x = constr_bins, y = Median_Sale_Price_per_k,fill=constr_bins)) +
-  geom_boxplot() +
-  labs(
-    title = "Median Sale Price by Percent New Construction (2024)",
-    x = "New Construction by Share of Sales Percent",
-    y = "Median Sale Price (in thousands)",
-    caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal()
-
-# Even more pronounced here
-```
-
-
-###mapping US counties by median sale price
+### mapping US counties by median sale price
 
 
 ```{r}
