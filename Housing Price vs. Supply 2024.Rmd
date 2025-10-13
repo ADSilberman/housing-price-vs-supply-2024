@@ -628,7 +628,7 @@ housing_counties_plot2 <- ggplot() +
                     na.value = "grey85") +
   labs(title = "Geographic Variation in U.S. Home Prices, 2024",
        subtitle = "County-level median sale price",
-       caption = "Source: AEI Housing Center (2024)") +
+       caption = "Source: AEI Enterprise Institute") +
   theme_minimal(base_size = 11) +
   theme(plot.title = element_text(face = "bold", 
                                   size = 16),
@@ -642,10 +642,21 @@ housing_counties_plot2 <- ggplot() +
         panel.grid = element_blank(),
         axis.title = element_blank(),
         axis.text = element_blank(),
-        plot.margin = margin(8, 12, 8, 12))
+        plot.margin = margin(8, 12, 8, 12),
+        panel.background = element_rect(fill = "transparent", 
+                                        color = NA),
+        plot.background  = element_rect(fill = "transparent", 
+                                        color = NA))
 #+ theme_void()
 
 housing_counties_plot2
+
+ggsave(plot = housing_counties_plot2,
+       filename = "housing_counties_plot2.png",
+       width = 7,
+       height = 4,
+       dpi = 500,
+       bg = "transparent")
 
 ####i could of course leave the color gradient and show the concentration or i could bin ranges of prices to different colors on the gradient scale. perhaps by affordability or something else that's useful? want to convene with team.
 #BW: I think bins and/or a more drastic color scale could help readability. Like- dark purple, medium pink, orangey-yellow would be immediately visibly different
