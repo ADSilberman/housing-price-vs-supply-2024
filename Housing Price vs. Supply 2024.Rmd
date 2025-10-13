@@ -520,7 +520,8 @@ ggplot(filter(housing_constr,Affordability=="moveup"), aes(x = constr_bins, y = 
 #reading in counties spatial file from tigris package
 counties_2024 <- counties(year = 2013, 
                           cb = TRUE, 
-                          class = "sf")
+                          class = "sf",
+                          progress_bar = FALSE)
 
 #excluding territories and shifting AK/HI
 counties_2024 <- counties_2024 %>%
@@ -536,7 +537,7 @@ counties_2024_basemap <- ggplot() +
   geom_sf(data = counties_2024) +
   theme_void()
 
-counties_2024_basemap
+#counties_2024_basemap
 
 ##prepping and merging housing_2014_all w/ counties_2014
 
@@ -573,19 +574,18 @@ housing_counties_merge <- housing_counties_merge %>%
 no_merge <- housing_counties_merge %>%
   filter(id1 + id2 != 2)
 
-unique(no_merge$GEOID)
+#unique(no_merge$GEOID)
 
 #plotting and checking
 housing_counties_plot <- ggplot() +
   geom_sf(data = housing_counties_merge,
           mapping = aes(fill = Median_Sale_Price_per_k),
-          color = "white",
-          linewidth = .4) +
+          linetype = 0) +
   #scale_fill_brewer(palette = "GnBi") +
   theme(legend.position = "none") +
   theme_void()
 
-housing_counties_plot
+#housing_counties_plot
 
 #for fun: trying st_simplify to see if it looks better
 housing_counties_merge_simple <- st_simplify(housing_counties_merge, dTolerance = 75)
@@ -593,8 +593,7 @@ housing_counties_merge_simple <- st_simplify(housing_counties_merge, dTolerance 
 housing_counties_plot2 <- ggplot() +
   geom_sf(data = housing_counties_merge_simple,
           mapping = aes(fill = price_bin),
-          color = "white",
-          linewidth = .4) +
+          linetype = 0) +
   scale_fill_brewer(palette = "RdYlBu",
                     direction = -1,
                     name = "Median Sale Price",
@@ -620,7 +619,6 @@ housing_counties_plot2 <- ggplot() +
 
 housing_counties_plot2
 
-####looks like there are just missing data for counties as they show up as white or gray in my map. guessing it has something to do with the removing na's code not working that alex and i were wondering about. will need to get to the bottom of this.
 ####i could of course leave the color gradient and show the concentration or i could bin ranges of prices to different colors on the gradient scale. perhaps by affordability or something else that's useful? want to convene with team.
 #BW: I think bins and/or a more drastic color scale could help readability. Like- dark purple, medium pink, orangey-yellow would be immediately visibly different
 ####i plan to add useful titles, labels, and commentary where necessary when i work on this next.
