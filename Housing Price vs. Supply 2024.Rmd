@@ -462,7 +462,18 @@ housing_numeric_all <- housing_2024_all %>%
 
 cor_matrix_all <- cor(housing_numeric_all)
 
-corrplot(cor_matrix_all, method = "color", type = "upper", tl.cex = 0.8, addCoef.col = "black", number.cex=0.5)
+# saves plot
+png(file = "housing_corr_plot.png", type="windows", bg = "transparent")
+
+corrplot(cor_matrix_all, method = "color", 
+         type = "lower", 
+         # tl.cex = 0.7, 
+         addCoef.col = "black",
+         # number.cex=0.6,
+         #cl.cex = 0.5,
+         bg = "transparent")
+
+dev.off()
 #interesting to see positive and inverse relationships between variables 
 #did not scan for no relationships
 ```
