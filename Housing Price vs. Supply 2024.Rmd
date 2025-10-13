@@ -79,7 +79,7 @@ housing_2024 = housing %>% filter(housing$Year == 2024,
 
 #rename cols
 rename(
-  Median_Sale_Price_per_k = Median.Sale.Price..in.Thousands.,
+  Median_Sale_Price_in_k = Median.Sale.Price..in.Thousands.,
   House_Price_Appreciation_yr_over_yr_percent = House.Price.Appreciation..Year.over.Year.,
   House_Price_Appreciation_since_2012_percent = House.Price.Appreciation.since.2012,
   Months_Supply = Months..Supply,
@@ -105,7 +105,7 @@ housing_2024$Affordability = as.factor(housing_2024$Affordability)
 
 # remove prefixes '$' and '%' from values
 housing_2024 = housing_2024 %>%
-  mutate(Median_Sale_Price_per_k = gsub("[\\$,]", "", Median_Sale_Price_per_k),
+  mutate(Median_Sale_Price_in_k = gsub("[\\$,]", "", Median_Sale_Price_in_k),
          House_Price_Appreciation_since_2012_percent =
            gsub("[%,]","",House_Price_Appreciation_since_2012_percent),
          House_Price_Appreciation_yr_over_yr_percent =
@@ -116,7 +116,7 @@ housing_2024 = housing_2024 %>%
 ###I included the commas to be removed as well indicated in the brackets. SA
 
 # as num instead of chr
-housing_2024$Median_Sale_Price_per_k = as.numeric(housing_2024$Median_Sale_Price_per_k)
+housing_2024$Median_Sale_Price_in_k = as.numeric(housing_2024$Median_Sale_Price_in_k)
 housing_2024$House_Price_Appreciation_since_2012_percent =
   as.numeric(housing_2024$House_Price_Appreciation_since_2012_percent)
 housing_2024$House_Price_Appreciation_yr_over_yr_percent =
@@ -128,7 +128,7 @@ housing_2024$Mortgage_Default_Rate_percent = as.numeric(housing_2024$Mortgage_De
 
 #moving the na dropping to after the parsing
 housing_2024 <- housing_2024 %>%
-  tidyr::drop_na(Median_Sale_Price_per_k)
+  tidyr::drop_na(Median_Sale_Price_in_k)
 
 # view data
 housing_2024 %>% slice_sample(n=5)
@@ -188,8 +188,8 @@ xkablesummary(df = subset(housing_2024_tiers,
 ```{r}
 #boxplotting med sale price by state w/ ..._all df
 #all
-ggplot(housing_2024_all, aes(x = reorder(State, -Median_Sale_Price_per_k, median), 
-                         y = Median_Sale_Price_per_k)) +
+ggplot(housing_2024_all, aes(x = reorder(State, -Median_Sale_Price_in_k, median), 
+                         y = Median_Sale_Price_in_k)) +
   geom_boxplot(fill = "steelblue", alpha = 0.7) +
   coord_flip() +
   labs(
@@ -243,7 +243,7 @@ housing_compare_all <- housing_2024_all %>%
   mutate(StateGroup = factor(StateGroup, levels = c("Low Months' Supply", "High Months' Supply")))
 
 #plot top bottom comparison ####
-ggplot(housing_compare_all, aes(x = State, y = Median_Sale_Price_per_k, fill = StateGroup)) +
+ggplot(housing_compare_all, aes(x = State, y = Median_Sale_Price_in_k, fill = StateGroup)) +
   geom_boxplot() +
   facet_wrap(~ StateGroup, scales = "free_x") +
   labs(
@@ -271,7 +271,7 @@ ggplot(housing_compare_all, aes(x = State, y = Median_Sale_Price_per_k, fill = S
 housing_compare_all_plot <- housing_compare_all %>%
   group_by(State, StateGroup) %>%
   summarize(
-    Median_Sale_Price_per_k = median(Median_Sale_Price_per_k, na.rm = TRUE),
+    Median_Sale_Price_in_k = median(Median_Sale_Price_in_k, na.rm = TRUE),
     Months_Supply = median(Months_Supply, na.rm = TRUE),
     .groups = "drop") %>%
   mutate(State = forcats::fct_drop(State))
@@ -280,7 +280,7 @@ housing_compare_all_plot <- housing_compare_all %>%
 housing_2024_all_plot <- housing_2024_all %>%
   group_by(State) %>%
   summarize(
-    Median_Sale_Price_per_k = median(Median_Sale_Price_per_k, na.rm = TRUE),
+    Median_Sale_Price_in_k = median(Median_Sale_Price_in_k, na.rm = TRUE),
     Months_Supply = median(Months_Supply, na.rm = TRUE),
     .groups = "drop")
 
@@ -298,13 +298,13 @@ state_colors_all <- c(top_states_colors_all, bottom_states_colors_all)
 
 #all in gray with faceted compare in color with states labeled ####
 tierhighlightscatterplot <- ggplot() +
-  geom_point(data = housing_2024_all_plot, aes(x = Months_Supply, y = Median_Sale_Price_per_k),
+  geom_point(data = housing_2024_all_plot, aes(x = Months_Supply, y = Median_Sale_Price_in_k),
              color = "gray70", alpha = 0.3, size = 1.5) +
   geom_point(data = housing_compare_all_plot,
-             aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
+             aes(x = Months_Supply, y = Median_Sale_Price_in_k, color = State),
              size = 1.5, alpha = 0.9) +
   geom_text_repel(data = label_points_all,
-                  aes(x = Months_Supply, y = Median_Sale_Price_per_k, 
+                  aes(x = Months_Supply, y = Median_Sale_Price_in_k, 
                       label = State),
                   size = 3.5, color= "black", stroke=0.01, segment.color = NA, segment.size = 0.3,
                   segment.alpha = 1, min.segment.length = 0, show.legend = FALSE) +
@@ -328,8 +328,8 @@ tierhighlightscatterplot
 ```{r}
 #boxplotting med sale price by state w/ ..._compare_all df
 #all
-ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_per_k, median), 
-                         y = Median_Sale_Price_per_k)) +
+ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_in_k, median), 
+                         y = Median_Sale_Price_in_k)) +
   geom_boxplot(fill = state_colors_all, alpha = 0.7) +
   coord_flip() +
   labs(
@@ -346,7 +346,7 @@ ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_per_k, med
 
 ```{r}
 #hist plotting with df ..._all
-housing_price_hist <- ggplot(housing_2024_all, aes(x = Median_Sale_Price_per_k)) +
+housing_price_hist <- ggplot(housing_2024_all, aes(x = Median_Sale_Price_in_k)) +
   geom_histogram(binwidth = 25, fill = "skyblue", color = "black") +
   scale_x_continuous(labels = scales::dollar_format(prefix = "$", suffix = "k")) +
   labs(
@@ -390,7 +390,7 @@ ggsave(plot = housing_price_hist,
 #box plotting by affordability tiers from tiers df
 housing_afford_box <- ggplot(housing_2024_tiers, 
                              aes(x = Affordability, 
-                                 y = Median_Sale_Price_per_k, 
+                                 y = Median_Sale_Price_in_k, 
                                  fill = Affordability)) +
   geom_boxplot(width = 0.6, 
                outlier.alpha = 0.25) +
@@ -434,7 +434,7 @@ ggsave(plot = housing_afford_box,
 
 
 ```{r scatter_supply_vs_median_price total all}
-allstatescatterplot <- ggplot(housing_2024_all_plot, aes(x = Months_Supply, y = Median_Sale_Price_per_k)) +
+allstatescatterplot <- ggplot(housing_2024_all_plot, aes(x = Months_Supply, y = Median_Sale_Price_in_k)) +
   geom_point(color="steelblue", alpha = 0.7) +
   # geom_smooth(method = "lm", se = FALSE, color = "black") +
   labs(
@@ -491,19 +491,19 @@ dev.off()
 #both together in gray with compare in color with states labeled w/ ..._all df
 ggplot() +
   geom_point(data = housing_2024_all, 
-             aes(x = Months_Supply, y = Median_Sale_Price_per_k), 
+             aes(x = Months_Supply, y = Median_Sale_Price_in_k), 
              color = "gray70", alpha = 0.3, size = 1) +
   # geom_path(data = housing_compare %>% filter(StateGroup == "States with the Most Houses"),
-  #           aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
+  #           aes(x = Months_Supply, y = Median_Sale_Price_in_k, group = State, color = State),
   #           alpha = 0.8, size = 1) +
   geom_point(data = housing_compare_all %>% filter(StateGroup == "States with the Most Houses"),
-             aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
+             aes(x = Months_Supply, y = Median_Sale_Price_in_k, color = State),
              alpha = 0.5, size = 2) +
   # geom_path(data = housing_compare %>% filter(StateGroup == "States with the Fewest Houses"),
-  #           aes(x = Months_Supply, y = Median_Sale_Price_per_k, group = State, color = State),
+  #           aes(x = Months_Supply, y = Median_Sale_Price_in_k, group = State, color = State),
   #           alpha = 0.8, size = 1) +
   geom_point(data = housing_compare_all %>% filter(StateGroup == "States with the Fewest Houses"),
-             aes(x = Months_Supply, y = Median_Sale_Price_per_k, color = State),
+             aes(x = Months_Supply, y = Median_Sale_Price_in_k, color = State),
              alpha = 0.5, size = 2) +
   scale_color_manual(values = state_colors_all) +
   labs(
@@ -524,7 +524,7 @@ housing_constr = housing_2024
 housing_constr = housing_constr %>% 
   mutate(constr_bins = cut(New_Constr_by_share_of_sales_percent, breaks=10))
 
-ggplot(housing_constr, aes(x = constr_bins, y = Median_Sale_Price_per_k,fill=constr_bins)) +
+ggplot(housing_constr, aes(x = constr_bins, y = Median_Sale_Price_in_k,fill=constr_bins)) +
   geom_boxplot() +
   labs(
     title = "Median Sale Price by Percent New Construction (2024)",
@@ -545,7 +545,7 @@ housing_constr_all = housing_2024_all
 housing_constr_all = housing_constr_all %>% 
   mutate(constr_bins = cut(New_Constr_by_share_of_sales_percent, breaks=10))
 
-ggplot(housing_constr_all, aes(x = constr_bins, y = Median_Sale_Price_per_k, fill=constr_bins)) +
+ggplot(housing_constr_all, aes(x = constr_bins, y = Median_Sale_Price_in_k, fill=constr_bins)) +
   geom_boxplot() +
   labs(
     title = "Median Sale Price by Percent New Construction (2024)",
@@ -588,7 +588,7 @@ counties_2024_basemap <- ggplot() +
 ##prepping and merging housing_2024_all w/ counties_2024
 
 housing_2024_all <- housing_2024_all %>%
-  mutate(price_bin = cut(Median_Sale_Price_per_k,
+  mutate(price_bin = cut(Median_Sale_Price_in_k,
                          breaks = c(0, 150, 300, 500, 750, 1000, Inf),
                          labels = c("<150k", "150-300k", "300-500k", "500-750k", "750k-1M", ">1M")))
 
@@ -626,7 +626,7 @@ no_merge <- housing_counties_merge %>%
 #plotting and checking
 housing_counties_plot <- ggplot() +
   geom_sf(data = housing_counties_merge,
-          mapping = aes(fill = Median_Sale_Price_per_k),
+          mapping = aes(fill = Median_Sale_Price_in_k),
           linetype = 0) +
   #scale_fill_brewer(palette = "GnBi") +
   theme(legend.position = "none") +
@@ -768,7 +768,7 @@ housing_ridge <- housing_compare_all %>%
 state_medians <- housing_ridge %>%
   group_by(State) %>%
   summarize(
-    Median_Sale_Price = median(Median_Sale_Price_per_k, na.rm = TRUE),
+    Median_Sale_Price = median(Median_Sale_Price_in_k, na.rm = TRUE),
     .groups = "drop"
   )
 
