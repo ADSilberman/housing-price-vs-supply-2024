@@ -398,16 +398,45 @@ ggplot(housing_2024, aes(x = Affordability, y = Median_Sale_Price_per_k, fill = 
 
 ```{r boxplot_price_by_affordability}
 #box plotting by affordability tiers from tiers df
-housing_afford_box <- ggplot(housing_2024_tiers, aes(x = Affordability, y = Median_Sale_Price_per_k, fill = Affordability)) +
-  geom_boxplot() +
+housing_afford_box <- ggplot(housing_2024_tiers, 
+                             aes(x = Affordability, 
+                                 y = Median_Sale_Price_per_k, 
+                                 fill = Affordability)) +
+  geom_boxplot(width = 0.6, 
+               outlier.alpha = 0.25) +
+  scale_fill_brewer(palette = "RdYlBu", direction = -1, guide = "none") +
   labs(
-    title = "Median Sale Price by Affordability Tier (2024)",
+    title = "Median Sale Price by Affordability Tier",
+     subtitle = "Move-Up homes command higher prices, while Entry-Level markets remain more affordable",
     x = "Affordability Tier",
     y = "Median Sale Price (in thousands)",
     caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal()
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        plot.background  = element_blank())
 
 housing_afford_box
+
+#ggsaving
+ggsave(plot = housing_afford_box,
+       filename = "housing_afford_box.png",
+       width = 7,
+       height = 4,
+       dpi = 500,
+       bg = "transparent")
 ```
 
 
