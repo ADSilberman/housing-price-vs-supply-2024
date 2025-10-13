@@ -157,9 +157,8 @@ xkablesummary(housing_2024)
 
 
 ```{r}
-#separated df's
+#summary stats on new df's
 xkablesummary(housing_2024_all)
-xkablesummary(housing_2024_tiers)
 
 #comparing tiers entrylevel and 
 #entrylevel
@@ -339,7 +338,7 @@ ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_per_k, med
 ```{r}
 #hist plotting with df ..._all
 ggplot(housing_2024_all, aes(x = Median_Sale_Price_per_k)) +
-  geom_histogram(binwidth = 50, fill = "skyblue", color = "black") +
+  geom_histogram(binwidth = 25, fill = "skyblue", color = "black") +
   scale_x_continuous(labels = scales::dollar_format(prefix = "$", suffix = "k")) +
   labs(
     title = "Distribution of Median Sale Prices (2024)",
