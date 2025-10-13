@@ -657,3 +657,33 @@ ggplot(housing_compare_all,
 
 ```
 
+
+```{r state_counts}
+# Count number of observations (homes / county entries) per state
+state_counts <- housing_compare_all %>%
+  group_by(State) %>%
+  summarise(
+    n_entries = n(),
+    median_MoS = median(Months_Supply, na.rm = TRUE),
+    median_price = median(Median_Sale_Price_per_k, na.rm = TRUE)
+  ) %>%
+  arrange(desc(n_entries))
+
+knitr::kable(state_counts, caption = "Count of Observations by State (2024)")
+
+```
+```{r state_counts_all}
+# Count number of observations (homes / county entries) per state
+state_counts <- housing_2024_all %>%
+  group_by(State) %>%
+  summarise(
+    n_entries = n(),
+    median_MoS = median(Months_Supply, na.rm = TRUE),
+    median_price = median(Median_Sale_Price_per_k, na.rm = TRUE)
+  ) %>%
+  arrange(desc(n_entries))
+
+knitr::kable(state_counts, caption = "Count of Observations by State (2024)")
+
+```
+
