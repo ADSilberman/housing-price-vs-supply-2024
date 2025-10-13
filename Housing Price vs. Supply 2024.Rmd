@@ -142,9 +142,15 @@ housing_2024 %>% slice_sample(n=5)
 
 ```{r}
 #creating df w/ affordability all totals and then another with entry level/moving up totals
-housing_2024_all = housing_2024 %>% filter(housing_2024$Affordability == "all") 
-housing_2024_tiers = housing_2024 %>% filter(Affordability == "entrylevel" | Affordability == "moveup")
+housing_2024_tiers <- housing_2024 %>%
+  dplyr::filter(Affordability %in% c("entrylevel","moveup")) %>%
+  dplyr::mutate(
+    Affordability = factor(Affordability,
+                           levels = c("entrylevel","moveup"),
+                           labels = c("Entry-Level","Move-Up"))
+  )
 #BW- we need to explain why we did this (not in the comments, in the write-up and presentation). Steph?
+  #you bet!
 ```
 
 
@@ -387,6 +393,21 @@ ggplot(housing_2024, aes(x = Affordability, y = Median_Sale_Price_per_k, fill = 
   theme_minimal()
 #no duh, there are more unpurchased expensive houses because people can't afford it 
 #not sure how useful this is, but maybe as a starting baseline 
+```
+
+
+```{r boxplot_price_by_affordability}
+#box plotting by affordability tiers from tiers df
+housing_afford_box <- ggplot(housing_2024_tiers, aes(x = Affordability, y = Median_Sale_Price_per_k, fill = Affordability)) +
+  geom_boxplot() +
+  labs(
+    title = "Median Sale Price by Affordability Tier (2024)",
+    x = "Affordability Tier",
+    y = "Median Sale Price (in thousands)",
+    caption = "SOURCE: American Enterprise Institute") +
+  theme_minimal()
+
+housing_afford_box
 ```
 
 
