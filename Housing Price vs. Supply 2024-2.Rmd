@@ -686,4 +686,15 @@ state_counts <- housing_2024_all %>%
 knitr::kable(state_counts, caption = "Count of Observations by State (2024)")
 
 ```
+```{r correlation_MoS_price}
+# Calculate correlation between Months of Supply and Median Sale Price
+correlation_result <- cor(housing_2024_all$Months_Supply,
+                          housing_2024_all$Median_Sale_Price_per_k,
+                          use = "complete.obs",
+                          method = "pearson")
+
+# Print result
+cat("Correlation between Months of Supply and Median Sale Price (2024):", 
+    round(correlation_result, 3))
+
 
