@@ -206,14 +206,14 @@ There are too many to be particularly useful. You can see general trends, but I 
 ### boxplot of top and bottom 5 states by housing count
 The states broken out by housing count extremes are:  
 
-####Top Months Supply States  
+####Top Months' Supply States  
 HI | Hawaii
 DC | District of Columbia 
 FL | Florida
 MT | Montana
 CO | Colorado 
  
-####Bottom Months Supply States	
+####Bottom Months' Supply States	
 MA| Massachusetts
 WI | Wisconsin
 KY | Kentucky
@@ -225,7 +225,7 @@ OH | Ohio
 
 ```{r}
 #boxplotting with new df: ..._all
-#Find top/bottom 5 by *mean Months Supply*, not row count
+#Find top/bottom 5 by *mean Months' Supply*, not row count
 states_by_median_months_supply <- housing_2024_all %>%
   group_by(State) %>%
   summarize(Median_Months_Supply = median(Months_Supply))
@@ -238,22 +238,22 @@ bottom_states_all <- states_by_median_months_supply %>% slice_min(order_by = Med
 housing_compare_all <- housing_2024_all %>%
   filter(State %in% c(top_states_all$State, bottom_states_all$State)) %>%
   mutate(StateGroup = case_when(
-    State %in% top_states_all$State ~ "High Months Supply",
-    State %in% bottom_states_all$State ~ "Low Months Supply")) %>%
-  mutate(StateGroup = factor(StateGroup, levels = c("Low Months Supply", "High Months Supply")))
+    State %in% top_states_all$State ~ "High Months' Supply",
+    State %in% bottom_states_all$State ~ "Low Months' Supply")) %>%
+  mutate(StateGroup = factor(StateGroup, levels = c("Low Months' Supply", "High Months' Supply")))
 
 #plot top bottom comparison ####
 ggplot(housing_compare_all, aes(x = State, y = Median_Sale_Price_per_k, fill = StateGroup)) +
   geom_boxplot() +
   facet_wrap(~ StateGroup, scales = "free_x") +
   labs(
-    title = "Median Sale Price in States by Months Supply of Housing",
-    subtitle = "The Median Sale Price in States with a Larger Months Supply of Housing is Significantly Lower\nthan States with a Smaller Months Supply of Housing",
+    title = "Median Sale Price in States by Months' Supply of Housing",
+    subtitle = "The Median Sale Price in States with a Larger Months' Supply of Housing is Significantly Lower\nthan States with a Smaller Months' Supply of Housing",
     x = "State",
     y = "Median Sale Price (in thousands)",
     caption = "SOURCE: American Enterprise Institute") +
   theme_minimal() +
-  scale_fill_manual(values = c("High Months Supply" = "skyblue", "Low Months Supply" = "red"))
+  scale_fill_manual(values = c("High Months' Supply" = "skyblue", "Low Months' Supply" = "red"))
 ```
 
 
@@ -288,11 +288,11 @@ housing_2024_all_plot <- housing_2024_all %>%
 label_points_all <- housing_compare_all_plot
 
 #usig cleaned version of plot data to assign colors
-top_states_colors_all <- scales::seq_gradient_pal("lightblue", "darkslateblue")(seq(0, 1, length.out = length(unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "High Months Supply"]))))
-names(top_states_colors_all) <- unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "High Months Supply"])
+top_states_colors_all <- scales::seq_gradient_pal("lightblue", "darkslateblue")(seq(0, 1, length.out = length(unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "High Months' Supply"]))))
+names(top_states_colors_all) <- unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "High Months' Supply"])
 
-bottom_states_colors_all <- scales::seq_gradient_pal("lightpink", "darkred")(seq(0, 1, length.out = length(unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "Low Months Supply"]))))
-names(bottom_states_colors_all) <- unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "Low Months Supply"])
+bottom_states_colors_all <- scales::seq_gradient_pal("lightpink", "darkred")(seq(0, 1, length.out = length(unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "Low Months' Supply"]))))
+names(bottom_states_colors_all) <- unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "Low Months' Supply"])
 
 state_colors_all <- c(top_states_colors_all, bottom_states_colors_all)
 
@@ -311,8 +311,8 @@ tierhighlightscatterplot <- ggplot() +
   facet_wrap(~ StateGroup) +
   scale_color_manual(values = state_colors_all) +
   labs(
-    title = "Months Supply vs Median Price by State",
-    subtitle = "The association between Low Months Supply and High Median Sale Price is Immediately Visible, While the",
+    title = "Months' Supply vs Median Price by State",
+    subtitle = "The association between Low Months' Supply and High Median Sale Price is Immediately Visible, While the",
     x = "Months of Supply",
     y = "Median Sale Price (in thousands)",
     color = "State",
@@ -430,7 +430,7 @@ ggsave(plot = housing_afford_box,
 ```
 
 
-### scatterplot of months supply vs median price
+### scatterplot of Months' Supply vs median price
 
 
 ```{r scatter_supply_vs_median_price total all}
@@ -438,8 +438,8 @@ allstatescatterplot <- ggplot(housing_2024_all_plot, aes(x = Months_Supply, y = 
   geom_point(color="steelblue", alpha = 0.7) +
   # geom_smooth(method = "lm", se = FALSE, color = "black") +
   labs(
-    title = "Months Supply of Housing vs Median Sale Price",
-    subtitle= "A Scatterplot Reveals a Positive Correlation Between Months Supply\nof Housing and Median Sale Price",
+    title = "Months' Supply of Housing vs Median Sale Price",
+    subtitle= "A Scatterplot Reveals a Positive Correlation Between Months' Supply\nof Housing and Median Sale Price",
     x = "Months of Supply",
     y = "Median Sale Price (in thousands)",
     caption = "SOURCE: American Enterprise Institute") +
@@ -665,17 +665,17 @@ ggsave(plot = housing_counties_plot2,
 ```
 
 ```{r}
-#hist of months supply
+#hist of Months' Supply
 
-#hist plotting months supply with df ...top_states_all
+#hist plotting Months' Supply with df ...top_states_all
 supply12hist <- ggplot(housing_compare_all, aes(x = reorder(State, Months_Supply, median),
                         y = Months_Supply)) +
   geom_boxplot(fill = state_colors_all, alpha = 0.7) +
   coord_flip() +
   labs(
-    title = "Distribution of Months Supply (2024)",
+    title = "Distribution of Months' Supply (2024)",
     x = "State",
-    y = "Months Supply",
+    y = "Months' Supply",
     caption = "SOURCE: American Enterprise Institute") +
   theme_minimal()
 
@@ -688,7 +688,7 @@ supply12hist
 #some other supply dist graph? full 50 I think
 
 #z score
-#confidence interval (on what tho, maybe median sale price and months supply)
+#confidence interval (on what tho, maybe median sale price and Months' Supply)
 #then add Zscore and CI onto scatterplot somehow?
 ```
 
@@ -706,7 +706,7 @@ ggplot(housing_median_supply, aes(x = reorder(State, Median_Months_Supply), y = 
   geom_point(color = "steelblue", size = 3) +
   coord_flip() +
   labs(
-    title = "Median Months Supply by State (2024)",
+    title = "Median Months' Supply by State (2024)",
     x = "State",
     y = "Median Months of Supply",
     caption = "SOURCE: American Enterprise Institute"
@@ -723,8 +723,8 @@ ggplot(housing_2024_all,
     fill = "steelblue", alpha = 0.7, scale = 2
   ) +
   labs(
-    title = "Distribution of Months Supply by State (Capped at 12 Months)",
-    subtitle = "Months supply values greater than 12 are capped for visualization purposes",
+    title = "Distribution of Months' Supply by State (Capped at 12 Months)",
+    subtitle = "Months' Supply values greater than 12 are capped for visualization purposes",
     x = "Months of Supply (Capped at 12)",
     y = "State",
     caption = "SOURCE: American Enterprise Institute"
@@ -780,7 +780,7 @@ supplyridge_12medianprice_plot <- ggplot(housing_ridge, aes(x = Months_Supply_Ca
              aes(x = Scaled_Sale_Price, y = State), 
              inherit.aes = FALSE,
              shape = 21, fill = "black", color = "white", size = 2) +
-  scale_fill_manual(values = c("Low Months Supply" = "indianred", "High Months Supply" = "steelblue")) +
+  scale_fill_manual(values = c("Low Months' Supply" = "indianred", "High Months' Supply" = "steelblue")) +
   scale_x_continuous(
     name = "Months of Supply (capped at 12)",
     sec.axis = sec_axis(
@@ -788,7 +788,7 @@ supplyridge_12medianprice_plot <- ggplot(housing_ridge, aes(x = Months_Supply_Ca
       name = "Median Sale Price (in thousands)",
       labels = dollar_format(prefix = "$", suffix = "k"))) +
   labs(
-    title = "Distribution of Months Supply by State with Median Sale Price Overlay",
+    title = "Distribution of Months' Supply by State with Median Sale Price Overlay",
     subtitle = "Each ridge shows the supply distribution for a state; black dots show scaled median sale prices",
     y = "State",
     fill = "State Group",
