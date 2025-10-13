@@ -21,12 +21,12 @@ rm(list=ls())
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
-                      root.dir = "C:\\Users\\alexa\\Code\\GW DATS\\6101 Intro to Data Science\\Project 1\\GitHub",
+                      root.dir = "/Users/ilgazkuscu/Documents/GitHub/housing-price-vs-supply-2024",
                       warning = F, message = F)
 options(scientific = T, digits = 3)
 ```
 
-
+/Users/ilgazkuscu/Downloads/state_county_data_download_2025.csv
 ## Load requisite packages and data
 
 
@@ -63,8 +63,9 @@ Mortgage.Default.Rate | Mortgage_Default_Rate_percent | AEI Mortgage Default Rat
 
 
 ```{r read_data}
-housing = read.csv("..//Data//state_county_data_download_2025.csv")
-housing %>% slice_sample(n=5)
+housing <- read.csv("/Users/ilgazkuscu/Documents/GitHub/housing-price-vs-supply-2024/Data/state_county_data_download_2025.csv")
+dplyr::slice_sample(housing, n = 5)
+
 ```
 
 
@@ -78,7 +79,6 @@ housing_2024 = housing %>% filter(housing$Year == 2024,
   #moving this na removal to the end after the cleaning
   na.omit %>% 
   #excluding the armed forces
-
 
 #rename cols
 rename(
