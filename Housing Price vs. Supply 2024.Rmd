@@ -206,14 +206,14 @@ There are too many to be particularly useful. You can see general trends, but I 
 ### boxplot of top and bottom 5 states by housing count
 The states broken out by housing count extremes are:  
 
-####Top Months' Supply States  
+#### Top Months' Supply States  
 HI | Hawaii
 DC | District of Columbia 
 FL | Florida
 MT | Montana
 CO | Colorado 
  
-####Bottom Months' Supply States	
+#### Bottom Months' Supply States	
 MA| Massachusetts
 WI | Wisconsin
 KY | Kentucky
@@ -259,9 +259,29 @@ ggplot(housing_compare_all, aes(x = State, y = Median_Sale_Price_in_k, fill = St
 
 #### Significance Testing
 
+Though the graphs have proven quite conclusive, we proceed with ANOVA to confirm.
+
+$H_0: \mu_{AK} = \mu_{AL} = ... = \mu_{WY}$
+
+$H_1:$ At least one $\mu$ is different
+
 ```{r}
-#states_mean_sale_price_anova = aov(data = housing_compare_all)
+states_median_sale_price_anova = aov(Median_Sale_Price_in_k ~ State, data = housing_2024_all)
+xkabledply(states_median_sale_price_anova, title = "ANOVA result summary")
 ```
+
+Median sale price varies highly significantly by state, with a p-value smaller than r can store. As such, we reject the null hypothesis, concluding that it is improbable that states have the same true median sale price.
+
+##### Post-hoc Tukey HSD
+
+It is best practices to follow a significant ANOVA with a post-hoc Tukey HSD; as there are 2450 possible pairings, rather than display the full output, we will instead list all of the pairwise combinations which have a P-value less than 0.05, of which there are 550:
+
+```{r median_sale_price_tukey_hsd}
+states_median_sale_price_tukey <- TukeyHSD(states_median_sale_price_anova)
+states_median_sale_price_tukey$State[, "p adj"] %>%
+  subset(states_median_sale_price_tukey$State[, "p adj"] < 0.05)
+```
+
 
 
 ```{r}
@@ -624,13 +644,13 @@ no_merge <- housing_counties_merge %>%
 #unique(no_merge$GEOID)
 
 #plotting and checking
-housing_counties_plot <- ggplot() +
-  geom_sf(data = housing_counties_merge,
-          mapping = aes(fill = Median_Sale_Price_in_k),
-          linetype = 0) +
-  #scale_fill_brewer(palette = "GnBi") +
-  theme(legend.position = "none") +
-  theme_void()
+# housing_counties_plot <- ggplot() +
+#   geom_sf(data = housing_counties_merge,
+#           mapping = aes(fill = Median_Sale_Price_in_k),
+#           linetype = 0) +
+#   #scale_fill_brewer(palette = "GnBi") +
+#   theme(legend.position = "none") +
+#   theme_void()
 
 #housing_counties_plot
 
