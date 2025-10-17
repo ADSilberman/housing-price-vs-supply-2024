@@ -197,6 +197,7 @@ ggplot(housing_2024_all, aes(x = reorder(State, -Median_Sale_Price_in_k, median)
     x = "State",
     y = "Median Sale Price (in thousands)",
     caption = "SOURCE: American Enterprise Institute") +
+  theme(axis.text.y = element_text(size = 5))
   theme_minimal()
 #next round, would want to nix outliers
 ```
@@ -210,15 +211,17 @@ The states broken out by housing count extremes are:
 HI | Hawaii
 DC | District of Columbia 
 FL | Florida
-MT | Montana
 CO | Colorado 
+OR | Oregon
  
 #### Bottom Months' Supply States	
 MA| Massachusetts
 WI | Wisconsin
 KY | Kentucky
 NH | New Hampshire
+IL | Illinois
 IN | Indiana
+MS | Mississippi
 ND | North Dakota
 OH | Ohio
 
