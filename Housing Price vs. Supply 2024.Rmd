@@ -21,12 +21,11 @@ rm(list=ls())
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
-                      root.dir = "/Users/ilgazkuscu/Documents/GitHub/housing-price-vs-supply-2024",
+                      root.dir = "C:\\Users\\alexa\\Code\\GW DATS\\6101 Intro to Data Science\\Project 1\\GitHub",
                       warning = F, message = F)
 options(scientific = T, digits = 3)
 ```
 
-/Users/ilgazkuscu/Downloads/state_county_data_download_2025.csv
 ## Load requisite packages and data
 
 
@@ -65,7 +64,7 @@ Mortgage.Default.Rate | Mortgage_Default_Rate_percent | AEI Mortgage Default Rat
 
 
 ```{r read_data}
-housing <- read.csv("/Users/ilgazkuscu/Documents/GitHub/housing-price-vs-supply-2024/Data/state_county_data_download_2025.csv")
+housing <- read.csv("..\\Data\\state_county_data_download_2025.csv")
 dplyr::slice_sample(housing, n = 5)
 
 ```
@@ -203,17 +202,17 @@ corrplot(cor_matrix_all, method = "color",
          bg = "transparent")
 
 # saves plot
-png(file = "housing_corr_plot.png", type="windows", bg = "transparent")
-
-corrplot(cor_matrix_all, method = "color", 
-         type = "lower", 
-         # tl.cex = 0.7, 
-         addCoef.col = "black",
-         # number.cex=0.6,
-         #cl.cex = 0.5,
-         bg = "transparent")
-
-dev.off()
+# png(file = "housing_corr_plot.png", type="windows", bg = "transparent")
+# 
+# corrplot(cor_matrix_all, method = "color", 
+#          type = "lower", 
+#          # tl.cex = 0.7, 
+#          addCoef.col = "black",
+#          # number.cex=0.6,
+#          #cl.cex = 0.5,
+#          bg = "transparent")
+# 
+# dev.off()
 #interesting to see positive and inverse relationships between variables 
 #did not scan for no relationships
 ```
@@ -248,25 +247,6 @@ There are too many to be particularly useful. You can see general trends, but I 
 ### boxplot of top and bottom 5 states by housing count
 The states broken out by housing count extremes are:  
 
-#### Top Months' Supply States  
-HI | Hawaii
-DC | District of Columbia 
-FL | Florida
-CO | Colorado 
-OR | Oregon
- 
-#### Bottom Months' Supply States	
-MA| Massachusetts
-WI | Wisconsin
-KY | Kentucky
-NH | New Hampshire
-IL | Illinois
-IN | Indiana
-MS | Mississippi
-ND | North Dakota
-OH | Ohio
-
-
 ```{r}
 #boxplotting with new df: ..._all
 #Find top/bottom 5 by median Months' Supply, not row count
@@ -277,7 +257,29 @@ states_by_median_months_supply <- housing_2024_all %>%
 top_states_all = states_by_median_months_supply %>% slice_max(order_by = Median_Months_Supply, n = 5)
 
 bottom_states_all <- states_by_median_months_supply %>% slice_min(order_by = Median_Months_Supply, n = 5)
+```
 
+#### Top Months' Supply States
+```{r top-months-supply-states}
+top_states_all %>% 
+  add_column(State_Name = c("Hawaii","District of Columbia", "Florida", "Colorado", "Oregon")) %>%
+  relocate(State_Name, .after = State) %>%
+  xkabledply
+```
+
+
+#### Bottom Months' Supply States	
+```{r bottom-months-supply-states}
+bottom_states_all %>% 
+  add_column(State_Name = c("Massachusetts","Wisconsin", "Kentucky", 
+                            "New Hampshire", "Illinois","Indiana","Mississippi",
+                            "North Dakota","Ohio")) %>%
+  relocate(State_Name, .after = State) %>%
+  xkabledply
+```
+
+
+```{r}
 #merge top and bottom states
 housing_compare_all <- housing_2024_all %>%
   filter(State %in% c(top_states_all$State, bottom_states_all$State)) %>%
