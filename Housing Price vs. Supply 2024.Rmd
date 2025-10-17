@@ -48,6 +48,14 @@ Supply and demand is a classic and well-known economic model. However, real life
 
 In 2024, the housing market had more sellers than buyers. Normally, the excess supply in a buyer’s market would place downward pressure on prices, but concurrent economic monetary inflation stalled that natural phenomenon.
 
+The relevance of our question extends economics, since housing prices directly affect households, companies, and wealth inequality. Rising home prices lead to wage raises, which in turn increase the cost of goods and services—creating a vicious cycle that fuels inflation. 
+As uncontrolled inflation deteriorates the living standards, companies fall short of workers due reduced labor mobility. Consequently, some firms may relocate to more affordable states to balance operational costs.
+At the same time, while rising housing costs create financial burden for renters, homeowners benefit from accumulating wealth through year over year appreciation and rental income. In fact, the wealth gap between homeowners and renters has reached a historic high, as housing costs have grown faster than incomes (https://www.urban.org/urban-wire/wealth-gap-between-homeowners-and-renters-has-reached-historic-high). 
+
+
+
+
+
 ## Data
 This project uses the State and County Housing Market Indicators dataset from the American Enterprise Institute Housing Center, found [here](https://www.aei.org/the-state-of-the-housing-market/). The variables are:  
 
@@ -68,7 +76,7 @@ Mortgage.Default.Rate | Mortgage_Default_Rate_percent | AEI Mortgage Default Rat
 ### Load and Clean Data
 
 ```{r read_data}
-housing <- read.csv("..\\Data\\state_county_data_download_2025.csv")
+housing <- read.csv("/Users/ilgazkuscu/Documents/GitHub/housing-price-vs-supply-2024/Data/state_county_data_download_2025.csv")
 #dplyr::slice_sample(housing, n = 5) %>% xkabledply()
 ```
 
