@@ -211,6 +211,41 @@ xkablesummary(df = subset(housing_2024_tiers,
               bso = "striped")
 ```
 
+### Correlation Heatmap of Numeric Variables
+
+Before we began analyzing specific variables, we constructed a heatmap to see the general magnitude and direction of correlational relationships among our variables. 
+
+```{r}
+#correlation heatmap of numeric variables w/ ..._all df
+housing_numeric_all <- housing_2024_all %>%
+  select(where(is.numeric) & !all_of("Year")) %>%
+  drop_na()
+
+cor_matrix_all <- cor(housing_numeric_all)
+
+corrplot(cor_matrix_all, method = "color", 
+         type = "lower", 
+         tl.cex = 0.7, 
+         addCoef.col = "black",
+         number.cex=0.6,
+         cl.cex = 0.5,
+         bg = "transparent")
+
+# saves plot
+# png(file = "housing_corr_plot.png", type="windows", bg = "transparent")
+# 
+# corrplot(cor_matrix_all, method = "color", 
+#          type = "lower", 
+#          # tl.cex = 0.7, 
+#          addCoef.col = "black",
+#          # number.cex=0.6,
+#          #cl.cex = 0.5,
+#          bg = "transparent")
+# 
+# dev.off()
+#interesting to see positive and inverse relationships between variables 
+#did not scan for no relationships
+```
 
 ### Price Distributions by Tier
 
@@ -389,41 +424,6 @@ housing_counties_plot2
 ```
 
 
-## Correlation Heatmap of Numeric Variables
-
-
-```{r}
-#correlation heatmap of numeric variables w/ ..._all df
-housing_numeric_all <- housing_2024_all %>%
-  select(where(is.numeric) & !all_of("Year")) %>%
-  drop_na()
-
-cor_matrix_all <- cor(housing_numeric_all)
-
-corrplot(cor_matrix_all, method = "color", 
-         type = "lower", 
-         tl.cex = 0.7, 
-         addCoef.col = "black",
-         number.cex=0.6,
-         cl.cex = 0.5,
-         bg = "transparent")
-
-# saves plot
-# png(file = "housing_corr_plot.png", type="windows", bg = "transparent")
-# 
-# corrplot(cor_matrix_all, method = "color", 
-#          type = "lower", 
-#          # tl.cex = 0.7, 
-#          addCoef.col = "black",
-#          # number.cex=0.6,
-#          #cl.cex = 0.5,
-#          bg = "transparent")
-# 
-# dev.off()
-#interesting to see positive and inverse relationships between variables 
-#did not scan for no relationships
-```
-
 ### Median Sale Price by State
 
 ```{r}
@@ -594,7 +594,7 @@ ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_in_k, medi
 
 
 
-### hist of median sale price
+### Histogram of Median Sale Prices by State
 
 ```{r}
 #hist plotting with df ..._all
