@@ -827,7 +827,7 @@ Median sale price varies highly significantly by state, with a p-value smaller t
 
 #### Post-hoc Tukey HSD
 
-It is best practice to follow a significant ANOVA with a post-hoc Tukey HSD; as there are 2450 possible pairings, rather than display the full output, we will instead list all of the pairwise combinations which have a P-value less than 0.05, of which there are 550:
+It is best practice to follow a significant ANOVA with a post-hoc Tukey HSD; as there are 2550 possible pairings, rather than display the full output, we will instead list all of the pairwise combinations which have a P-value less than 0.05, of which there are 550:
 
 ```{r median_sale_price_tukey_hsd}
 states_median_sale_price_tukey <- TukeyHSD(states_median_sale_price_anova)
