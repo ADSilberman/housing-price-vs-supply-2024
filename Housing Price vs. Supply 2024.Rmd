@@ -26,9 +26,6 @@ knitr::opts_chunk$set(echo = TRUE,
 options(scientific = T, digits = 3)
 ```
 
-## Load requisite packages and data
-
-
 ```{r libraries}
 library(ezids)
 library(ggplot2)
@@ -46,6 +43,12 @@ library(ggridges)
 library(scales)
 ```
 
+## Introduction
+Supply and demand is a classic and well-known economic model. However, real life is far more nuanced than the simple version of this model that many are familiar with. We wanted to use real housing price and supply samples to explore how well that relationship fits economic theory. Our research question is: how is the supply of housing related to average home prices across U.S. metropolitan areas in the year 2024?
+
+In 2024, the housing market had more sellers than buyers. Normally, the excess supply in a buyer’s market would place downward pressure on prices, but concurrent economic monetary inflation stalled that natural phenomenon.
+
+## Data
 This project uses the State and County Housing Market Indicators dataset from the American Enterprise Institute Housing Center, found [here](https://www.aei.org/the-state-of-the-housing-market/). The variables are:  
 
 Original Variable Name | New Variable Name | Definition  
@@ -62,21 +65,20 @@ Months..Supply | Months_Supply | Number of months it would take for the inventor
 New.Construction.Share.of.Sales | New_Constr_by_share_of_sales_percent | Percent of sales comprising new construction
 Mortgage.Default.Rate | Mortgage_Default_Rate_percent | AEI Mortgage Default Rate, a measure of how loans originating in a given month would perform under the same conditions as the 2007 financial crisis (<=7%: Low Risk; between 7.01% and 14%: Medium Risk; >14%: High Risk)
 
+### Load and Clean Data
 
 ```{r read_data}
 housing <- read.csv("..\\Data\\state_county_data_download_2025.csv")
-dplyr::slice_sample(housing, n = 5)
-
+#dplyr::slice_sample(housing, n = 5) %>% xkabledply()
 ```
 
 
-The data is limited to the year 2024 and cleaned of NA values, and the variables are renamed for clarity.
-
+The data is limited to the year 2024, and the variables are renamed for clarity. Additionally, data related to the armed forces are excluded, as that is outside the scope of the research question.
 
 ```{r clean_data}
 housing_2024 = housing %>% filter(housing$Year == 2024, 
                                   housing$State != 'AA National', 
-                                  housing$County != 'AA State') %>% na.omit %>% #excluding the armed forces
+                                  housing$County != 'AA State') %>% #excluding the armed forces
 
 #rename cols
 rename(
@@ -90,12 +92,11 @@ rename(
   FIPS_County_Code = FIPS, 
   Affordability = Tier
 )
-head(housing_2024)
+xkabledplyhead(housing_2024)
 ```
 
 
-The typing of the variables is also corrected. Some require the symbols "$" and "%" to be removed beforehand, so that is also done.
-
+The typing of the variables is corrected. Some require further processing by removal of the symbols "$", ",", and "%" before they may be cast. Once this is performed, NAs are omitted from *Median_Sale_Price_in_k*; other dependent variables (House Price Appreciation, Mortgage Default Rate) also contained NAs, but, as these were less central to our research question and because we wanted to use as much data as possible, we declined to remove these.
 
 ```{r correct_var_typing}
 # as factors
@@ -132,9 +133,13 @@ housing_2024 <- housing_2024 %>%
   tidyr::drop_na(Median_Sale_Price_in_k)
 
 # view data
-housing_2024 %>% slice_sample(n=5)
+housing_2024 %>% slice_sample(n=5) %>% xkabledply()
 ```
 
+After cleaning, there are `r housing_2024 %>% nrow()` observations remaining.
+
+However, the presence of the variable *Affordability* means there are three observations associated with each FIPS code: one for Entry-Level homes, one for Move-Up homes, and one that is a combination of the two ("all"). As, for the majority of our purposes, we only want one data point per FIPS code, the dataframe is split in two:
+one containing the tiered data (*housing_2024_tiers*), and the second containing only the combined data (*housing_2024_all*).
 
 ```{r}
 housing_2024_all = housing_2024 %>% filter(housing_2024$Affordability == "all") 
@@ -147,8 +152,6 @@ housing_2024_tiers <- housing_2024 %>%
                            levels = c("entrylevel","moveup"),
                            labels = c("Entry-Level","Move-Up"))
   )
-#BW- we need to explain why we did this (not in the comments, in the write-up and presentation). Steph?
-  #you bet!
 ```
 
 
@@ -184,7 +187,7 @@ xkablesummary(df = subset(housing_2024_tiers,
 ```
 
 
-### correlation heatmap of numeric variables
+### Correlation Heatmap of Numeric Variables
 ```{r}
 #correlation heatmap of numeric variables w/ ..._all df
 housing_numeric_all <- housing_2024_all %>%
@@ -217,7 +220,7 @@ corrplot(cor_matrix_all, method = "color",
 #did not scan for no relationships
 ```
 
-### boxplot of median sale price by state
+### Median Sale Price by State
 
 ```{r}
 #boxplotting med sale price by state w/ ..._all df
@@ -242,7 +245,32 @@ ggsave("med_sale_price_by_state_boxplot.png", plot = med_sale_price_by_state_box
        width = 10, height = 10, dpi = 300)
 ```
 
-There are too many to be particularly useful. You can see general trends, but I am going to run this with a smaller state sample.
+#### Significance Testing
+
+Though the graphs have proven quite conclusive, we proceed with ANOVA to confirm.
+
+$H_0: \mu_{AK} = \mu_{AL} = ... = \mu_{WY}$
+
+$H_1:$ At least one $\mu$ is different
+
+```{r}
+states_median_sale_price_anova = aov(Median_Sale_Price_in_k ~ State, data = housing_2024_all)
+xkabledply(states_median_sale_price_anova, title = "ANOVA result summary")
+```
+
+Median sale price varies highly significantly by state, with a p-value smaller than r can store. As such, we reject the null hypothesis, concluding that it is improbable that states have the same true median sale price.
+
+##### Post-hoc Tukey HSD
+
+It is best practices to follow a significant ANOVA with a post-hoc Tukey HSD; as there are 2450 possible pairings, rather than display the full output, we will instead list all of the pairwise combinations which have a P-value less than 0.05, of which there are 550:
+
+```{r median_sale_price_tukey_hsd}
+states_median_sale_price_tukey <- TukeyHSD(states_median_sale_price_anova)
+states_median_sale_price_tukey$State[, "p adj"] %>%
+  subset(states_median_sale_price_tukey$State[, "p adj"] < 0.05)
+```
+
+However, in the graph above, there are too many to be particularly useful. You can see general trends, but a smaller sample will improve legibility.
 
 ### boxplot of top and bottom 5 states by housing count
 The states broken out by housing count extremes are:  
@@ -308,33 +336,6 @@ med_sale_price_in_states_by_months_supply_boxplot
 ggsave("med_sale_price_in_states_by_months_supply_boxplot.png", 
        plot = med_sale_price_in_states_by_months_supply_boxplot, width = 10, height = 10, dpi = 300)
 ```
-
-
-#### Significance Testing
-
-Though the graphs have proven quite conclusive, we proceed with ANOVA to confirm.
-
-$H_0: \mu_{AK} = \mu_{AL} = ... = \mu_{WY}$
-
-$H_1:$ At least one $\mu$ is different
-
-```{r}
-states_median_sale_price_anova = aov(Median_Sale_Price_in_k ~ State, data = housing_2024_all)
-xkabledply(states_median_sale_price_anova, title = "ANOVA result summary")
-```
-
-Median sale price varies highly significantly by state, with a p-value smaller than r can store. As such, we reject the null hypothesis, concluding that it is improbable that states have the same true median sale price.
-
-##### Post-hoc Tukey HSD
-
-It is best practices to follow a significant ANOVA with a post-hoc Tukey HSD; as there are 2450 possible pairings, rather than display the full output, we will instead list all of the pairwise combinations which have a P-value less than 0.05, of which there are 550:
-
-```{r median_sale_price_tukey_hsd}
-states_median_sale_price_tukey <- TukeyHSD(states_median_sale_price_anova)
-states_median_sale_price_tukey$State[, "p adj"] %>%
-  subset(states_median_sale_price_tukey$State[, "p adj"] < 0.05)
-```
-
 
 
 ```{r}
