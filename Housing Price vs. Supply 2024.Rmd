@@ -170,6 +170,7 @@ housing_2024_tiers <- housing_2024 %>%
 #xkablesummary(housing_2024)
 ```
 
+#Summary Statistics
 
 Looking across all U.S. counties in our data set, the typical home price sat at around $200K, though the mean is pulled up by a handful of very expensive markets. Average months of supply was about 3, and well below the 5-6 months that indicate a balanced market. Demand is still outpacing what’s available. 
 
