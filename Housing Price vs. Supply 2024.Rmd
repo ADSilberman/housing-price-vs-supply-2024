@@ -212,6 +212,8 @@ xkablesummary(df = subset(housing_2024_tiers,
 ```
 
 
+#Price Distributions by Tier
+
 	When we compare the price distributions between the tiers, move-up homes clearly sat at the higher level, with a median price about double those of entry-level. With the move-up tier showing more extreme outliers and a much wider range, we can see greater price volatility and a concentration of higher-value counties, confirming that affordability tiers meaningfully segmenting the housing market.
 	
 	Entry-level homes cluster tightly at the lower end, showing limited price variation and reinforcing how constrained the affordability housing stock really is. Together these differences help answer our core question: when supply is tight at the lower end, prices rise fastest there. 
@@ -258,6 +260,132 @@ housing_afford_box
        # height = 4,
        # dpi = 500,
        # bg = "transparent")
+```
+
+
+#Geographic Price Patterns
+
+Looking at the nation as a whole, we see how home prices vary sharply across regions, revealing a clear geographic divide by affordability. The blues dominate the Midwest and the South, reflecting lower typical prices and more accessible markets, while reds cluster along major metropolitan areas and the coasts, where housing was far more expensive. 
+
+This spatial pattern highlights a regional trend: interior counties remain relatively affordable while coastal regions continue to experience elevated prices. These high-priced areas also tend to align with regions known for limited housing supply and high demand, suggesting that geographic supply constraints are a major factor driving price growth in these markets. 
+
+
+```{r}
+##basemap
+
+#reading in counties spatial file from tigris package
+counties_2024 <- counties(year = 2013, 
+                          cb = TRUE, 
+                          class = "sf",
+                          progress_bar = FALSE)
+
+#excluding territories and shifting AK/HI
+counties_2024 <- counties_2024 %>%
+  filter(as.numeric(STATEFP) < 60) %>%
+  shift_geometry()
+
+#removing duplicate columns
+counties_2024 <- counties_2024 %>%
+  select(-NAME)
+
+#creating basemap and checking
+counties_2024_basemap <- ggplot() +
+  geom_sf(data = counties_2024) +
+  theme_void()
+
+#counties_2024_basemap
+
+##prepping and merging housing_2024_all w/ counties_2024
+
+housing_2024_all <- housing_2024_all %>%
+  mutate(price_bin = cut(Median_Sale_Price_in_k,
+                         breaks = c(0, 150, 300, 500, 750, 1000, Inf),
+                         labels = c("<150k", "150-300k", "300-500k", "500-750k", "750k-1M", ">1M")))
+
+#creating merge df and prepping counties df
+housing_merge <- housing_2024_all
+
+counties_2024 <- counties_2024 %>%
+  mutate(GEOID = as.numeric(GEOID))
+
+#adding id variables to track observations
+counties_2024$id1 <- 1
+housing_merge$id2 <- 1
+
+#merging
+housing_counties_merge <- merge(x = counties_2024,
+                                y = housing_merge,
+                                by.x = "GEOID",
+                                by.y = "FIPS_County_Code",
+                                all = TRUE)
+
+#converting NAs to zeros and finding problem observations
+  #looks like it merged just fine
+    #i lied, coded wrong and fixed, now i realize theres a  
+    #lot of problem observations 
+
+housing_counties_merge <- housing_counties_merge %>%
+  mutate(id1 = ifelse(is.na(id1), 0, id1),
+         id2 = ifelse(is.na(id2), 0, id2))
+
+no_merge <- housing_counties_merge %>%
+  filter(id1 + id2 != 2)
+
+#unique(no_merge$GEOID)
+
+#plotting and checking
+# housing_counties_plot <- ggplot() +
+#   geom_sf(data = housing_counties_merge,
+#           mapping = aes(fill = Median_Sale_Price_in_k),
+#           linetype = 0) +
+#   #scale_fill_brewer(palette = "GnBi") +
+#   theme(legend.position = "none") +
+#   theme_void()
+
+#housing_counties_plot
+
+#for fun: trying st_simplify to see if it looks better
+housing_counties_merge_simple <- st_simplify(housing_counties_merge, dTolerance = 75)
+
+housing_counties_plot2 <- ggplot() +
+  geom_sf(data = housing_counties_merge_simple,
+          mapping = aes(fill = price_bin),
+          linetype = 0) +
+  scale_fill_brewer(palette = "RdYlBu",
+                    direction = -1,
+                    name = "Median Sale Price",
+                    na.value = "grey85") +
+  labs(title = "Geographic Variation in U.S. Home Prices, 2024",
+       subtitle = "County-level median sale price",
+       caption = "Source: AEI Enterprise Institute") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 16),
+        plot.subtitle = element_text(size = 12, 
+                                     margin = margin(b = 8)),
+        plot.caption = element_text(color = "gray40", 
+                                    margin = margin(t = 8)),
+        legend.title = element_text(face = "bold"),
+        legend.position = "right",
+        legend.key.height = unit(0.6, "cm"),
+        panel.grid = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        plot.margin = margin(8, 12, 8, 12),
+        panel.background = element_rect(fill = "transparent", 
+                                        color = NA),
+        plot.background  = element_rect(fill = "transparent", 
+                                        color = NA))
+#+ theme_void()
+
+housing_counties_plot2
+
+# ggsave(plot = housing_counties_plot2,
+#        filename = "housing_counties_plot2.png",
+#        width = 7,
+#        height = 4,
+#        dpi = 500,
+#        bg = "transparent")
 ```
 
 
@@ -610,130 +738,7 @@ ggplot(housing_constr_all, aes(x = constr_bins, y = Median_Sale_Price_in_k, fill
 ```
 
 
-### mapping US counties by median sale price
 
-```{r}
-##basemap
-
-#reading in counties spatial file from tigris package
-counties_2024 <- counties(year = 2013, 
-                          cb = TRUE, 
-                          class = "sf",
-                          progress_bar = FALSE)
-
-#excluding territories and shifting AK/HI
-counties_2024 <- counties_2024 %>%
-  filter(as.numeric(STATEFP) < 60) %>%
-  shift_geometry()
-
-#removing duplicate columns
-counties_2024 <- counties_2024 %>%
-  select(-NAME)
-
-#creating basemap and checking
-counties_2024_basemap <- ggplot() +
-  geom_sf(data = counties_2024) +
-  theme_void()
-
-#counties_2024_basemap
-
-##prepping and merging housing_2024_all w/ counties_2024
-
-housing_2024_all <- housing_2024_all %>%
-  mutate(price_bin = cut(Median_Sale_Price_in_k,
-                         breaks = c(0, 150, 300, 500, 750, 1000, Inf),
-                         labels = c("<150k", "150-300k", "300-500k", "500-750k", "750k-1M", ">1M")))
-
-#creating merge df and prepping counties df
-housing_merge <- housing_2024_all
-
-counties_2024 <- counties_2024 %>%
-  mutate(GEOID = as.numeric(GEOID))
-
-#adding id variables to track observations
-counties_2024$id1 <- 1
-housing_merge$id2 <- 1
-
-#merging
-housing_counties_merge <- merge(x = counties_2024,
-                                y = housing_merge,
-                                by.x = "GEOID",
-                                by.y = "FIPS_County_Code",
-                                all = TRUE)
-
-#converting NAs to zeros and finding problem observations
-  #looks like it merged just fine
-    #i lied, coded wrong and fixed, now i realize theres a  
-    #lot of problem observations 
-
-housing_counties_merge <- housing_counties_merge %>%
-  mutate(id1 = ifelse(is.na(id1), 0, id1),
-         id2 = ifelse(is.na(id2), 0, id2))
-
-no_merge <- housing_counties_merge %>%
-  filter(id1 + id2 != 2)
-
-#unique(no_merge$GEOID)
-
-#plotting and checking
-# housing_counties_plot <- ggplot() +
-#   geom_sf(data = housing_counties_merge,
-#           mapping = aes(fill = Median_Sale_Price_in_k),
-#           linetype = 0) +
-#   #scale_fill_brewer(palette = "GnBi") +
-#   theme(legend.position = "none") +
-#   theme_void()
-
-#housing_counties_plot
-
-#for fun: trying st_simplify to see if it looks better
-housing_counties_merge_simple <- st_simplify(housing_counties_merge, dTolerance = 75)
-
-housing_counties_plot2 <- ggplot() +
-  geom_sf(data = housing_counties_merge_simple,
-          mapping = aes(fill = price_bin),
-          linetype = 0) +
-  scale_fill_brewer(palette = "RdYlBu",
-                    direction = -1,
-                    name = "Median Sale Price",
-                    na.value = "grey85") +
-  labs(title = "Geographic Variation in U.S. Home Prices, 2024",
-       subtitle = "County-level median sale price",
-       caption = "Source: AEI Enterprise Institute") +
-  theme_minimal(base_size = 11) +
-  theme(plot.title = element_text(face = "bold", 
-                                  size = 16),
-        plot.subtitle = element_text(size = 12, 
-                                     margin = margin(b = 8)),
-        plot.caption = element_text(color = "gray40", 
-                                    margin = margin(t = 8)),
-        legend.title = element_text(face = "bold"),
-        legend.position = "right",
-        legend.key.height = unit(0.6, "cm"),
-        panel.grid = element_blank(),
-        axis.title = element_blank(),
-        axis.text = element_blank(),
-        plot.margin = margin(8, 12, 8, 12),
-        panel.background = element_rect(fill = "transparent", 
-                                        color = NA),
-        plot.background  = element_rect(fill = "transparent", 
-                                        color = NA))
-#+ theme_void()
-
-housing_counties_plot2
-
-ggsave(plot = housing_counties_plot2,
-       filename = "housing_counties_plot2.png",
-       width = 7,
-       height = 4,
-       dpi = 500,
-       bg = "transparent")
-
-####i could of course leave the color gradient and show the concentration or i could bin ranges of prices to different colors on the gradient scale. perhaps by affordability or something else that's useful? want to convene with team.
-#BW: I think bins and/or a more drastic color scale could help readability. Like- dark purple, medium pink, orangey-yellow would be immediately visibly different
-####i plan to add useful titles, labels, and commentary where necessary when i work on this next.
-#BW: when the regional differences are more clear, we need to think about the story this map tells and how it fits into our overall narrative. 
-```
 
 ```{r}
 #hist of Months' Supply
