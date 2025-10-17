@@ -159,14 +159,31 @@ housing_2024_tiers <- housing_2024 %>%
 
 
 ```{r}
-xkablesummary(housing_2024)
+#xkablesummary(housing_2024)
 ```
+
+
+Looking across all U.S. counties in our data set, the typical home price sat at around $200K, though the mean is pulled up by a handful of very expensive markets. Average months of supply was about 3, and well below the 5-6 months that indicate a balanced market. Demand is still outpacing what’s available. 
+
+Despite the tight market, prices rose around 6% year-over-year, and new construction only made up about 6-10% of total sales. Even from the top level data, we can already suspect the pattern: lower supply corresponds with stronger price growth.
 
 
 ```{r}
 #summary stats on new df's
 xkablesummary(housing_2024_all)
+```
 
+
+To understand whether that same relationship holds across different parts of the market, we split the data into separate affordability tiers: entry-level and move-up homes, and compared how price and supply interact within each group. 
+
+Entry-level homes were far cheaper, with a typical price around $155K, but the tightest market at about only 2 months of supply. That scarcity was pushing prices up about 6% year-over-year, while new construction made up only about 4% of sales. Builders weren’t adding enough stock to relieve the pressure.
+
+Move-up homes had a median price of more than $400K, doubling the entry-level tier. In contrast, they show a more balanced 5-6 months of supply, slower appreciation at roughly 5%, and far more new construction at about 13%.
+
+Together, these tiers reveal a consistent pattern: markets with tighter supply experience faster price growth, while greater inventory and new construction at the higher end help moderate prices.  
+
+
+```{r}
 #comparing tiers entrylevel and moveup
 #entrylevel
 xkablesummary(df = subset(housing_2024_tiers, 
@@ -182,9 +199,9 @@ xkablesummary(df = subset(housing_2024_tiers,
               title = "Summary Statistics: Move-Up Homes",
               digits = 2,
               pos = "left",
-              bso = "striped"
-)
+              bso = "striped")
 ```
+
 
 
 ### Correlation Heatmap of Numeric Variables
