@@ -165,12 +165,7 @@ housing_2024_tiers <- housing_2024 %>%
 
 ## Exploratory Data Analysis (EDA)
 
-
-```{r}
-#xkablesummary(housing_2024)
-```
-
-#Summary Statistics
+### Summary Statistics
 
 Looking across all U.S. counties in our data set, the typical home price sat at around $200K, though the mean is pulled up by a handful of very expensive markets. Average months of supply was about 3, and well below the 5-6 months that indicate a balanced market. Demand is still outpacing what’s available. 
 
@@ -212,11 +207,11 @@ xkablesummary(df = subset(housing_2024_tiers,
 ```
 
 
-#Price Distributions by Tier
+### Price Distributions by Tier
 
-	When we compare the price distributions between the tiers, move-up homes clearly sat at the higher level, with a median price about double those of entry-level. With the move-up tier showing more extreme outliers and a much wider range, we can see greater price volatility and a concentration of higher-value counties, confirming that affordability tiers meaningfully segmenting the housing market.
+When we compare the price distributions between the tiers, move-up homes clearly sat at the higher level, with a median price about double those of entry-level. With the move-up tier showing more extreme outliers and a much wider range, we can see greater price volatility and a concentration of higher-value counties, confirming that affordability tiers meaningfully segmenting the housing market.
 	
-	Entry-level homes cluster tightly at the lower end, showing limited price variation and reinforcing how constrained the affordability housing stock really is. Together these differences help answer our core question: when supply is tight at the lower end, prices rise fastest there. 
+Entry-level homes cluster tightly at the lower end, showing limited price variation and reinforcing how constrained the affordability housing stock really is. Together these differences help answer our core question: when supply is tight at the lower end, prices rise fastest there. 
 
 
 ```{r boxplot_price_by_affordability}
@@ -263,7 +258,7 @@ housing_afford_box
 ```
 
 
-#Geographic Price Patterns
+### Geographic Price Patterns
 
 Looking at the nation as a whole, we see how home prices vary sharply across regions, revealing a clear geographic divide by affordability. The blues dominate the Midwest and the South, reflecting lower typical prices and more accessible markets, while reds cluster along major metropolitan areas and the coasts, where housing was far more expensive. 
 
@@ -389,7 +384,7 @@ housing_counties_plot2
 ```
 
 
-### Correlation Heatmap of Numeric Variables
+## Correlation Heatmap of Numeric Variables
 
 
 ```{r}
