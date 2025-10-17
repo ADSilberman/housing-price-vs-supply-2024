@@ -423,7 +423,6 @@ housing_counties_plot2
 #        bg = "transparent")
 ```
 
-
 ### Median Sale Price by State
 
 ```{r}
@@ -449,11 +448,13 @@ ggsave("med_sale_price_by_state_boxplot.png", plot = med_sale_price_by_state_box
        width = 10, height = 10, dpi = 300)
 ```
 
-However, in the graph above, there are too many combinations to be particularly useful. You can see general trends, but a smaller sample improves legibility.
+This graph allowed us to see the median sale price distribution among states. However, the graph is too busy to be particularly useful. You can see general trends, but a smaller sample improves legibility.
 
 ### Top and Bottom Months' Supply Analysis 
-The states broken out by housing count extremes are:  
 
+We subsetted the dataset in order to have a smaller sample to visualize and analyze our data. By isolating the states with the highest and lowest Months' Supply, we were able to better visualize the difference in how Months' Supply correlates with other variables of interest.
+
+The states that fell into these groups are:  
 ```{r}
 #boxplotting with new df: ..._all
 #Find top/bottom 5 by median Months' Supply, not row count
@@ -483,7 +484,7 @@ bottom_states_all %>%
   relocate(State_Name, .after = State) %>%
   xkabledply
 ```
-By isolating the states with the highest and lowest Months' Supply, we were able to better visualize the difference in how Months' Supply correlates with other variables of interest.
+For example, in the following graph, the median sale price difference among the top and bottom months' supply state groups becomes more obvious.
 
 ```{r}
 #merge top and bottom states
@@ -514,10 +515,12 @@ med_sale_price_in_states_by_months_supply_boxplot
 ggsave("med_sale_price_in_states_by_months_supply_boxplot.png", 
        plot = med_sale_price_in_states_by_months_supply_boxplot, width = 10, height = 10, dpi = 300)
 ```
+### Scatterplot of Months' Supply and Median Price
 
-
+We also visualized this comparison with a scatterplot of all 51 states and territories. Looking at the scatterplot results, the positive association between median sale price and months' supply is plainly visible.
 ```{r}
-# compare color scale w/ ..._all df
+#this chunk is prep for the all states factored scatter but contains the all states unfactored scatter
+#compare color scale w/ ..._all df
 #fix color assigning for side by side compare scatterplots- too many blue showing up
 #cleaned plot version with dropped unused (non-10) state levels; re-group by state for clarity
 housing_compare_all_plot <- housing_compare_all %>%
@@ -548,32 +551,23 @@ names(bottom_states_colors_all) <- unique(housing_compare_all_plot$State[housing
 
 state_colors_all <- c(top_states_colors_all, bottom_states_colors_all)
 
-#all in gray with faceted compare in color with states labeled ####
-tierhighlightscatterplot <- ggplot() +
-  geom_point(data = housing_2024_all_plot, aes(x = Months_Supply, y = Median_Sale_Price_in_k),
-             color = "gray70", alpha = 0.3, size = 1.5) +
-  geom_point(data = housing_compare_all_plot,
-             aes(x = Months_Supply, y = Median_Sale_Price_in_k, color = State),
-             size = 1.5, alpha = 0.9) +
-  geom_text_repel(data = label_points_all,
-                  aes(x = Months_Supply, y = Median_Sale_Price_in_k, 
-                      label = State),
-                  size = 3.5, color= "black", stroke=0.01, segment.color = NA, segment.size = 0.3,
-                  segment.alpha = 1, min.segment.length = 0, show.legend = FALSE) +
-  facet_wrap(~ StateGroup) +
-  scale_color_manual(values = state_colors_all) +
+#now actual plot
+allstatescatterplot <- ggplot(housing_2024_all_plot, aes(x = Months_Supply, y = Median_Sale_Price_in_k)) +
+  geom_point(color="steelblue", alpha = 0.7) +
+  # geom_smooth(method = "lm", se = FALSE, color = "black") +
   labs(
-    title = "Months' Supply vs Median Price by State",
-    subtitle = "The positive association between Months' Supply and High Median Sale Price is Immediately Visible",
+    title = "Months' Supply of Housing vs Median Sale Price",
+    subtitle= "A Scatterplot Reveals a Positive Correlation Between Months' Supply\nof Housing and Median Sale Price",
     x = "Months of Supply",
     y = "Median Sale Price (in thousands)",
-    color = "State",
     caption = "SOURCE: American Enterprise Institute") +
   theme_minimal()
 
-ggsave("housing_supply_vs_price_tierhighlight.png", plot = tierhighlightscatterplot, width = 10, height = 6, dpi = 300)
+ggsave("housing_supply_vs_price_allstates.png", plot = allstatescatterplot, width = 10, height = 6, dpi = 300)
 
-tierhighlightscatterplot
+allstatescatterplot
+
+#next round, add line of best fit/ regression line
 ```
 
 
@@ -636,25 +630,34 @@ ggsave(plot = housing_price_hist,
 ```
 
 
-### Scatterplot of Months' Supply and Median Price
 
 ```{r scatter_supply_vs_median_price total all}
-allstatescatterplot <- ggplot(housing_2024_all_plot, aes(x = Months_Supply, y = Median_Sale_Price_in_k)) +
-  geom_point(color="steelblue", alpha = 0.7) +
-  # geom_smooth(method = "lm", se = FALSE, color = "black") +
+#all in gray with faceted compare in color with states labeled ####
+tierhighlightscatterplot <- ggplot() +
+  geom_point(data = housing_2024_all_plot, aes(x = Months_Supply, y = Median_Sale_Price_in_k),
+             color = "gray70", alpha = 0.3, size = 1.5) +
+  geom_point(data = housing_compare_all_plot,
+             aes(x = Months_Supply, y = Median_Sale_Price_in_k, color = State),
+             size = 1.5, alpha = 0.9) +
+  geom_text_repel(data = label_points_all,
+                  aes(x = Months_Supply, y = Median_Sale_Price_in_k, 
+                      label = State),
+                  size = 3.5, color= "black", stroke=0.01, segment.color = NA, segment.size = 0.3,
+                  segment.alpha = 1, min.segment.length = 0, show.legend = FALSE) +
+  facet_wrap(~ StateGroup) +
+  scale_color_manual(values = state_colors_all) +
   labs(
-    title = "Months' Supply of Housing vs Median Sale Price",
-    subtitle= "A Scatterplot Reveals a Positive Correlation Between Months' Supply\nof Housing and Median Sale Price",
+    title = "Months' Supply vs Median Price by State",
+    subtitle = "The positive association between Months' Supply and High Median Sale Price is Immediately Visible",
     x = "Months of Supply",
     y = "Median Sale Price (in thousands)",
+    color = "State",
     caption = "SOURCE: American Enterprise Institute") +
   theme_minimal()
 
-ggsave("housing_supply_vs_price_allstates.png", plot = allstatescatterplot, width = 10, height = 6, dpi = 300)
+ggsave("housing_supply_vs_price_tierhighlight.png", plot = tierhighlightscatterplot, width = 10, height = 6, dpi = 300)
 
-allstatescatterplot
-
-#next round, add line of best fit/ regression line
+tierhighlightscatterplot
 ```
 
 ```{r}
