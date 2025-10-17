@@ -449,31 +449,6 @@ ggsave("med_sale_price_by_state_boxplot.png", plot = med_sale_price_by_state_box
        width = 10, height = 10, dpi = 300)
 ```
 
-#### Significance Testing
-
-Though the graphs have proven quite conclusive, we proceed with ANOVA to confirm.
-
-$H_0: \mu_{AK} = \mu_{AL} = ... = \mu_{WY}$
-
-$H_1:$ At least one $\mu$ is different
-
-```{r}
-states_median_sale_price_anova = aov(Median_Sale_Price_in_k ~ State, data = housing_2024_all)
-xkabledply(states_median_sale_price_anova, title = "ANOVA result summary")
-```
-
-Median sale price varies highly significantly by state, with a p-value smaller than r can store. As such, we reject the null hypothesis, concluding that it is improbable that states have the same true median sale price.
-
-##### Post-hoc Tukey HSD
-
-It is best practice to follow a significant ANOVA with a post-hoc Tukey HSD; as there are 2450 possible pairings, rather than display the full output, we will instead list all of the pairwise combinations which have a P-value less than 0.05, of which there are 550:
-
-```{r median_sale_price_tukey_hsd}
-states_median_sale_price_tukey <- TukeyHSD(states_median_sale_price_anova)
-states_median_sale_price_tukey$State[, "p adj"] %>%
-  subset(states_median_sale_price_tukey$State[, "p adj"] < 0.05)
-```
-
 However, in the graph above, there are too many combinations to be particularly useful. You can see general trends, but a smaller sample improves legibility.
 
 ### Top and Bottom Months' Supply Analysis 
@@ -832,14 +807,41 @@ There is a clear trend in higher months' supply correlating with higher median s
 
 Another important note is that, for readability, the graph data was capped at 12 months. New Hampshire has several counties where the months supply value is higher than is visible in this graph, and this helps explain what otherwise appears to bea right-skewed median sale price.
 
-###Conclusion 
+### Significance Testing
+
+Though the graphs have proven quite conclusive, we proceed with ANOVA testing to confirm the existence of and nature of the relationship between our variables.
+
+$H_0: \mu_{AK} = \mu_{AL} = ... = \mu_{WY}$
+
+$H_1:$ At least one $\mu$ is different
+
+```{r}
+states_median_sale_price_anova = aov(Median_Sale_Price_in_k ~ State, data = housing_2024_all)
+xkabledply(states_median_sale_price_anova, title = "ANOVA result summary")
+```
+
+Median sale price varies highly significantly by state, with a p-value smaller than r can store. As such, we reject the null hypothesis, concluding that it is improbable that states have the same true median sale price.
+
+#### Post-hoc Tukey HSD
+
+It is best practice to follow a significant ANOVA with a post-hoc Tukey HSD; as there are 2450 possible pairings, rather than display the full output, we will instead list all of the pairwise combinations which have a P-value less than 0.05, of which there are 550:
+
+```{r median_sale_price_tukey_hsd}
+states_median_sale_price_tukey <- TukeyHSD(states_median_sale_price_anova)
+states_median_sale_price_tukey$State[, "p adj"] %>%
+  subset(states_median_sale_price_tukey$State[, "p adj"] < 0.05)
+```
+
+
+### Conclusion 
 In conducting this project, our team was reminded of our first day of class, going over the data science life cycle. We initially established a question we wanted to answer and identified data that we believed could enlighten us on this data. However, by conducting our EDA, we discovered that the metrics that AEI chose to include do not directly match the question we sought out to answer.
-####Key Takeaways
+
+#### Key Takeaways
 There is a clear connection between months supply of housing and median sale price. This could be due to high demand pushing sale prices higher or low supply pushing sale prices higher. We will need more data in order to identify which is the stronger driver, if either. 
 
 We also found interesting connections between the percent of houses in a county that are new constructions and the mortgage default rate in a county with our two key variables, months supply and median sale price. 
 
-####Next Steps
+#### Next Steps
 One next step for us might be to pull in additional data to help us add color to the picture we are painting and to also help us better address our original research question. We will need to do additional analysis to better identify the nature of the relationship between these primary and secondary variables. 
 
-###References
+### References
