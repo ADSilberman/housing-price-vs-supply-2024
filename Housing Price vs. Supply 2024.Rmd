@@ -76,7 +76,7 @@ Mortgage.Default.Rate | Mortgage_Default_Rate_percent | AEI Mortgage Default Rat
 ### Load and Clean Data
 
 ```{r read_data}
-housing <- read.csv("/Users/ilgazkuscu/Documents/GitHub/housing-price-vs-supply-2024/Data/state_county_data_download_2025.csv")
+housing <- read.csv("Data/state_county_data_download_2025.csv")
 #dplyr::slice_sample(housing, n = 5) %>% xkabledply()
 ```
 
@@ -211,8 +211,58 @@ xkablesummary(df = subset(housing_2024_tiers,
 ```
 
 
+	When we compare the price distributions between the tiers, move-up homes clearly sat at the higher level, with a median price about double those of entry-level. With the move-up tier showing more extreme outliers and a much wider range, we can see greater price volatility and a concentration of higher-value counties, confirming that affordability tiers meaningfully segmenting the housing market.
+	
+	Entry-level homes cluster tightly at the lower end, showing limited price variation and reinforcing how constrained the affordability housing stock really is. Together these differences help answer our core question: when supply is tight at the lower end, prices rise fastest there. 
+
+
+```{r boxplot_price_by_affordability}
+#box plotting by affordability tiers from tiers df
+housing_afford_box <- ggplot(housing_2024_tiers, 
+                             aes(x = Affordability, 
+                                 y = Median_Sale_Price_in_k, 
+                                 fill = Affordability)) +
+  geom_boxplot(width = 0.6, 
+               outlier.alpha = 0.25) +
+  scale_fill_brewer(palette = "RdYlBu", direction = -1, guide = "none") +
+  labs(
+    title = "Median Sale Price by Affordability Tier",
+     subtitle = "Move-Up homes command higher prices, while Entry-Level markets remain more affordable",
+    x = "Affordability Tier",
+    y = "Median Sale Price (in thousands)",
+    caption = "SOURCE: American Enterprise Institute") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        plot.background  = element_blank())
+
+housing_afford_box
+
+#ggsaving
+#ggsave(plot = housing_afford_box,
+       # filename = "housing_afford_box.png",
+       # width = 7,
+       # height = 4,
+       # dpi = 500,
+       # bg = "transparent")
+```
+
 
 ### Correlation Heatmap of Numeric Variables
+
+
 ```{r}
 #correlation heatmap of numeric variables w/ ..._all df
 housing_numeric_all <- housing_2024_all %>%
@@ -480,52 +530,6 @@ ggsave(plot = housing_price_hist,
        bg = "transparent")
 
 #needs a subtitle with commentary, just remembered all need a caption with the source named, and we can prob add other elements to this, because otherwise it seems to obvi to me
-```
-
-
-### boxplot of sale price by affordability tier
-
-```{r boxplot_price_by_affordability}
-#box plotting by affordability tiers from tiers df
-housing_afford_box <- ggplot(housing_2024_tiers, 
-                             aes(x = Affordability, 
-                                 y = Median_Sale_Price_in_k, 
-                                 fill = Affordability)) +
-  geom_boxplot(width = 0.6, 
-               outlier.alpha = 0.25) +
-  scale_fill_brewer(palette = "RdYlBu", direction = -1, guide = "none") +
-  labs(
-    title = "Median Sale Price by Affordability Tier",
-     subtitle = "Move-Up homes command higher prices, while Entry-Level markets remain more affordable",
-    x = "Affordability Tier",
-    y = "Median Sale Price (in thousands)",
-    caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal(base_size = 11) +
-  theme(plot.title = element_text(face = "bold", 
-                                  size = 14, 
-                                  margin = margin(b = 3)),
-        plot.subtitle = element_text(size = 10, 
-                                     color = "gray25",
-                                     margin = margin(b = 8)),
-        axis.title = element_text(size = 10, 
-                                  face = "bold"),
-        axis.text = element_text(size = 9),
-        plot.caption = element_text(size = 8, 
-                                    color = "gray40", 
-                                    hjust = 1),
-        panel.grid.minor = element_blank(),
-        panel.background = element_blank(),
-        plot.background  = element_blank())
-
-housing_afford_box
-
-#ggsaving
-ggsave(plot = housing_afford_box,
-       filename = "housing_afford_box.png",
-       width = 7,
-       height = 4,
-       dpi = 500,
-       bg = "transparent")
 ```
 
 
