@@ -830,3 +830,14 @@ ggsave("supply_ridge_12_saleprice_plot.png", plot = supplyridge_12medianprice_pl
 supplyridge_12medianprice_plot
 ```
 
+###Conclusion 
+In conducting this project, our team was reminded of our first day of class, going over the data science life cycle. We initially established a question we wanted to answer and identified data that we believed could enlighten us on this data. However, by conducting our EDA, we discovered that the metrics that AEI chose to include do not directly match the question we sought out to answer.
+####Key Takeaways
+There is a clear connection between months supply of housing and median sale price. This could be due to high demand pushing sale prices higher or low supply pushing sale prices higher. We will need more data in order to identify which is the stronger driver, if either. 
+
+We also found interesting connections between the percent of houses in a county that are new constructions and the mortgage default rate in a county with our two key variables, months supply and median sale price. 
+
+####Next Steps
+One next step for us might be to pull in additional data to help us add color to the picture we are painting and to also help us better address our original research question. We will need to do additional analysis to better identify the nature of the relationship between these primary and secondary variables. 
+
+###References
