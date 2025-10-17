@@ -679,61 +679,53 @@ allstatescatterplot
 #next round, add line of best fit/ regression line
 ```
 
-### both together in gray with compare in color with states labeled
-
 ```{r}
 #both together in gray with compare in color with states labeled w/ ..._all df
-ggplot() +
-  geom_point(data = housing_2024_all, 
-             aes(x = Months_Supply, y = Median_Sale_Price_in_k), 
-             color = "gray70", alpha = 0.3, size = 1) +
+#ggplot() +
+#  geom_point(data = housing_2024_all, 
+#             aes(x = Months_Supply, y = Median_Sale_Price_in_k), 
+#             color = "gray70", alpha = 0.3, size = 1) +
   # geom_path(data = housing_compare %>% filter(StateGroup == "States with the Most Houses"),
   #           aes(x = Months_Supply, y = Median_Sale_Price_in_k, group = State, color = State),
   #           alpha = 0.8, size = 1) +
-  geom_point(data = housing_compare_all %>% filter(StateGroup == "States with the Most Houses"),
-             aes(x = Months_Supply, y = Median_Sale_Price_in_k, color = State),
-             alpha = 0.5, size = 2) +
-  # geom_path(data = housing_compare %>% filter(StateGroup == "States with the Fewest Houses"),
+#  geom_point(data = housing_compare_all %>% filter(StateGroup == "States with the Most Houses"),
+#             aes(x = Months_Supply, y = Median_Sale_Price_in_k, color = State),
+#             alpha = 0.5, size = 2) +
+#  # geom_path(data = housing_compare %>% filter(StateGroup == "States with the Fewest Houses"),
   #           aes(x = Months_Supply, y = Median_Sale_Price_in_k, group = State, color = State),
   #           alpha = 0.8, size = 1) +
-  geom_point(data = housing_compare_all %>% filter(StateGroup == "States with the Fewest Houses"),
-             aes(x = Months_Supply, y = Median_Sale_Price_in_k, color = State),
-             alpha = 0.5, size = 2) +
-  scale_color_manual(values = state_colors_all) +
-  labs(
-    title = "Housing Supply vs Median Price: All Counties with Highlights",
-    subtitle = "Gray points: All counties | Blue shades: States with Most Houses | Red shades: States with Fewest Houses",
-    x = "Months of Supply",
-    y = "Median Sale Price (in thousands)",
-    color = "State",
-    caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal()
+ # geom_point(data = housing_compare_all %>% filter(StateGroup == "States with the Fewest Houses"),
+ #            aes(x = Months_Supply, y = Median_Sale_Price_in_k, color = State),
+#             alpha = 0.5, size = 2) +
+#  scale_color_manual(values = state_colors_all) +
+#  labs(
+ #   title = "Housing Supply vs Median Price: All Counties with Highlights",
+#    subtitle = "Gray points: All counties | Blue shades: States with Most Houses | Red shades: States with Fewest Houses",
+#    x = "Months of Supply",
+ #   y = "Median Sale Price (in thousands)",
+  #  color = "State",
+#    caption = "SOURCE: American Enterprise Institute") +
+#  theme_minimal()
 ```
 
-
-### new construction vs median sale price
-
 ```{r}
-housing_constr_all = housing_2024_all
-housing_constr_all = housing_constr_all %>% 
-  mutate(constr_bins = cut(New_Constr_by_share_of_sales_percent, breaks=10))
+#housing_constr_all = housing_2024_all
+#housing_constr_all = housing_constr_all %>% 
+#  mutate(constr_bins = cut(New_Constr_by_share_of_sales_percent, breaks=10))
 
-ggplot(housing_constr_all, aes(x = constr_bins, y = Median_Sale_Price_in_k, fill=constr_bins)) +
-  geom_boxplot() +
-  labs(
-    title = "Median Sale Price by Percent New Construction (2024)",
-    x = "New Construction by Share of Sales Percent",
-    y = "Median Sale Price (in thousands)",
-    caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal()
+#ggplot(housing_constr_all, aes(x = constr_bins, y = Median_Sale_Price_in_k, fill=constr_bins)) +
+#  geom_boxplot() +
+ # labs(
+#    title = "Median Sale Price by Percent New Construction (2024)",
+#    x = "New Construction by Share of Sales Percent",
+#    y = "Median Sale Price (in thousands)",
+#    caption = "SOURCE: American Enterprise Institute") +
+#  theme_minimal()
 
 # Perhaps new construction indicates high demand, and as such, the more new construction, the higher the median sale price?
 #I would like to know which states fall into these buckets. In which states are the top quarter and bottom quarter? BW
 #I'm going to break this into smaller buckets and investigate.BW
 ```
-
-
-
 
 ```{r}
 #hist of Months' Supply
@@ -762,7 +754,9 @@ supply12hist
 #confidence interval (on what tho, maybe median sale price and Months' Supply)
 #then add Zscore and CI onto scatterplot somehow?
 ```
+We also looked at the distribution of the top and bottom states for their months supply of housing. As you can see, there is over a six month difference in supply of housing between the states with the lowest and highest counts (Massachusetts and Hawaii). 
 
+We also see that a few of the states have significant outliers, like North Dakota, for example. North Dakota closely aligns with a few of the lower supply states, but higher outliers pull the median forward. For our next round of analysis, we may choose to pursue excluding outliers to see how that changes the findings. 
 
 ```{r supply option 2- 12}
 #housing supply dist w 12 states for context, all df
@@ -829,6 +823,11 @@ ggsave("supply_ridge_12_saleprice_plot.png", plot = supplyridge_12medianprice_pl
 
 supplyridge_12medianprice_plot
 ```
+In this graph, you can see the distribution of months supply on the bottom x axis across counties in these states with an overlay of the median sale price, represented by black dots, with the monetary values along the top x axis. 
+
+You can clearly see a trend in higher months supply correlating with higher median sale price, and we also see a few states where outliers skew the median sale price- this is most immediately visible with Massachusetts and New Hampshire. 
+
+I will also add that, for readability, the graph data was capped at 12 months, but New Hampshire has several counties where the months supply value is higher than is visible in this graph, and this helps explain the skewed median sale price.
 
 ###Conclusion 
 In conducting this project, our team was reminded of our first day of class, going over the data science life cycle. We initially established a question we wanted to answer and identified data that we believed could enlighten us on this data. However, by conducting our EDA, we discovered that the metrics that AEI chose to include do not directly match the question we sought out to answer.
