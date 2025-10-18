@@ -226,7 +226,7 @@ corrplot(cor_matrix_all, method = "color",
          addCoef.col = "black",
          number.cex=0.6,
          cl.cex = 0.5,
-         bg = "transparent")+
+         bg = "transparent")
  
 # saves plot
 # png(file = "housing_corr_plot.png", type="windows", bg = "transparent")
