@@ -226,8 +226,8 @@ corrplot(cor_matrix_all, method = "color",
          addCoef.col = "black",
          number.cex=0.6,
          cl.cex = 0.5,
-         bg = "transparent")
-
+         bg = "transparent")+
+ 
 # saves plot
 # png(file = "housing_corr_plot.png", type="windows", bg = "transparent")
 # 
@@ -437,7 +437,22 @@ med_sale_price_by_state_boxplot = ggplot(housing_2024_all,
     y = "Median Sale Price (in thousands)",
     caption = "SOURCE: American Enterprise Institute") +
   theme(axis.text.y = element_text(size = 5)) +
-  theme_minimal()
+  theme_minimal()+
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        plot.background = element_blank()) 
 #next round, would want to nix outliers
   
 med_sale_price_by_state_boxplot
@@ -536,7 +551,21 @@ ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_in_k, medi
     x = "State",
     y = "Median Sale Price (in thousands)",
     caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal()
+  theme_minimal()+theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        plot.background = element_blank()) 
 ```
 
 The following graph also highlights the relationship between these two variables.
@@ -558,7 +587,22 @@ med_sale_price_in_states_by_months_supply_boxplot <- ggplot(
     y = "Median Sale Price (in thousands)",
     caption = "SOURCE: American Enterprise Institute") +
   theme_minimal() +
-  scale_fill_manual(values = c("High Months' Supply" = "skyblue", "Low Months' Supply" = "red"))
+  scale_fill_manual(values = c("High Months' Supply" = "skyblue", "Low Months' Supply" = "red"))+
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        plot.background = element_blank()) 
 
 med_sale_price_in_states_by_months_supply_boxplot
 
@@ -582,7 +626,22 @@ allstatescatterplot <- ggplot(housing_2024_all_plot, aes(x = Months_Supply, y = 
     x = "Months of Supply",
     y = "Median Sale Price (in thousands)",
     caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal()
+  theme_minimal()+
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        plot.background = element_blank()) 
 
 ggsave("housing_supply_vs_price_allstates.png", plot = allstatescatterplot, width = 10, height = 6, dpi = 300)
 
@@ -656,7 +715,22 @@ tierhighlightscatterplot <- ggplot() +
     y = "Median Sale Price (in thousands)",
     color = "State",
     caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal()
+  theme_minimal()+
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        plot.background = element_blank()) 
 
 ggsave("housing_supply_vs_price_tierhighlight.png", plot = tierhighlightscatterplot, width = 10, height = 6, dpi = 300)
 
@@ -724,7 +798,22 @@ supply12hist <- ggplot(housing_compare_all, aes(x = reorder(State, Months_Supply
     x = "State",
     y = "Months' Supply",
     caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal()
+  theme_minimal()+
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        plot.background = element_blank()) 
 
 ggsave("housing_supply_12_hist.png", plot = supply12hist, width = 10, height = 6, dpi = 300)
 
@@ -801,7 +890,22 @@ supplyridge_12medianprice_plot <- ggplot(housing_ridge, aes(x = Months_Supply_Ca
   theme_minimal() +
   theme(
     legend.position = "bottom",
-    axis.title.x.top = element_text(margin = margin(b = 10)))
+    axis.title.x.top = element_text(margin = margin(b = 10)))+
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        plot.background = element_blank()) 
 
 ggsave("supply_ridge_12_saleprice_plot.png", plot = supplyridge_12medianprice_plot, width = 10, height = 6, dpi = 300)
 
