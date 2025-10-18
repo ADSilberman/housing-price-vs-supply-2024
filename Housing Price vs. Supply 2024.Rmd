@@ -505,7 +505,7 @@ bottom_states_all %>%
 
 Immediately, the subsetted data in the same graph format shows a much clearer vision of the positive association between months' supply and median sale price.
 
-```{r top bottom supply dist}
+```{r top bottom hist price}
 #is prep for the all states factored scatter but 
 #fix color assigning for side by side compare scatterplots- too many blue showing up
 #cleaned plot version with dropped unused (non-10) state levels; re-group by state for clarity
@@ -565,9 +565,47 @@ ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_in_k, medi
         plot.background = element_blank()) 
 ```
 
-The following graph also highlights the relationship between these two variables.
+Contrasting the median sale price boxplot distribution above, we see the months' supply boxplot distribution below: 
 
-```{r top bottom supply dist, factored}
+```{r hist supply}
+#hist of Months' Supply
+supply12hist <- ggplot(housing_compare_all, 
+       aes(x = reorder(State, Months_Supply, median),
+           y = Months_Supply,
+           fill = State)) +  
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = state_colors_all) +  
+  coord_flip() +
+  labs(title = "Distribution of Months' Supply (2024)",
+    x = "State",
+    y = "Months' Supply",
+    caption = "SOURCE: American Enterprise Institute") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold", size = 14, margin = margin(b = 3)),
+    plot.subtitle = element_text(size = 10, color = "gray25", margin = margin(b = 8)),
+    axis.title = element_text(size = 10, face = "bold"),
+    axis.text = element_text(size = 9),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 1),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    plot.background = element_blank())
+
+ggsave("housing_supply_12_hist.png", plot = supply12hist, width = 10, height = 6, dpi = 300)
+
+supply12hist
+
+#needs a subtitle with commentary, just remembered all need a caption with the source named, and we can prob add other elements to this, because otherwise it seems to obvi to me
+
+#some other supply dist graph? full 50 I think
+
+#z score
+#confidence interval (on what tho, maybe median sale price and Months' Supply)
+#then add Zscore and CI onto scatterplot somehow?
+```
+
+The following graph also highlights the relationship between both variables.
+
+```{r top bottom boxplot price supply dist, factored}
 #plot top bottom comparison ####
 med_sale_price_in_states_by_months_supply_boxplot <- ggplot(
   housing_compare_all, 
@@ -780,41 +818,6 @@ tierhighlightscatterplot
 #I'm going to break this into smaller buckets and investigate.BW
 ```
 
-```{r}
-#hist of Months' Supply
-supply12hist <- ggplot(housing_compare_all, 
-       aes(x = reorder(State, Months_Supply, median),
-           y = Months_Supply,
-           fill = State)) +  
-  geom_boxplot(alpha = 0.7) +
-  scale_fill_manual(values = state_colors_all) +  
-  coord_flip() +
-  labs(title = "Distribution of Months' Supply (2024)",
-    x = "State",
-    y = "Months' Supply",
-    caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal() +
-  theme(plot.title = element_text(face = "bold", size = 14, margin = margin(b = 3)),
-    plot.subtitle = element_text(size = 10, color = "gray25", margin = margin(b = 8)),
-    axis.title = element_text(size = 10, face = "bold"),
-    axis.text = element_text(size = 9),
-    plot.caption = element_text(size = 8, color = "gray40", hjust = 1),
-    panel.grid.minor = element_blank(),
-    panel.background = element_blank(),
-    plot.background = element_blank())
-
-ggsave("housing_supply_12_hist.png", plot = supply12hist, width = 10, height = 6, dpi = 300)
-
-supply12hist
-
-#needs a subtitle with commentary, just remembered all need a caption with the source named, and we can prob add other elements to this, because otherwise it seems to obvi to me
-
-#some other supply dist graph? full 50 I think
-
-#z score
-#confidence interval (on what tho, maybe median sale price and Months' Supply)
-#then add Zscore and CI onto scatterplot somehow?
-```
 We also looked at the distribution of the top and bottom states for their months supply of housing. As you can see, there is over a six month difference in supply of housing between the states with the lowest and highest counts (Massachusetts and Hawaii). 
 
 We also see that a few of the states have significant outliers, like North Dakota, for example. North Dakota closely aligns with a few of the lower supply states, but higher outliers pull the median forward. For our next round of analysis, we may choose to pursue excluding outliers to see how that changes the findings. 
