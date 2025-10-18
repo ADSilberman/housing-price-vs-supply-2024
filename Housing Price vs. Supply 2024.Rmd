@@ -463,6 +463,14 @@ states_by_median_months_supply <- housing_2024_all %>%
 top_states_all = states_by_median_months_supply %>% slice_max(order_by = Median_Months_Supply, n = 5)
 
 bottom_states_all <- states_by_median_months_supply %>% slice_min(order_by = Median_Months_Supply, n = 5)
+
+#merge top and bottom states
+housing_compare_all <- housing_2024_all %>%
+  filter(State %in% c(top_states_all$State, bottom_states_all$State)) %>%
+  mutate(StateGroup = case_when(
+    State %in% top_states_all$State ~ "High Months' Supply",
+    State %in% bottom_states_all$State ~ "Low Months' Supply")) %>%
+  mutate(StateGroup = factor(StateGroup, levels = c("Low Months' Supply", "High Months' Supply")))
 ```
 
 #### Top Months' Supply States
@@ -486,6 +494,37 @@ bottom_states_all %>%
 Immediately, the subsetted data in the same graph format shows a much clearer vision of the positive association between months' supply and median sale price.
 
 ```{r}
+#is prep for the all states factored scatter but 
+#fix color assigning for side by side compare scatterplots- too many blue showing up
+#cleaned plot version with dropped unused (non-10) state levels; re-group by state for clarity
+housing_compare_all_plot <- housing_compare_all %>%
+  group_by(State, StateGroup) %>%
+  summarize(
+    Median_Sale_Price_in_k = median(Median_Sale_Price_in_k, na.rm = TRUE),
+    Months_Supply = median(Months_Supply, na.rm = TRUE),
+    .groups = "drop") %>%
+  mutate(State = forcats::fct_drop(State))
+
+#also fixing subset of housing 2024 all so that gray background dots are 1/state
+housing_2024_all_plot <- housing_2024_all %>%
+  group_by(State) %>%
+  summarize(
+    Median_Sale_Price_in_k = median(Median_Sale_Price_in_k, na.rm = TRUE),
+    Months_Supply = median(Months_Supply, na.rm = TRUE),
+    .groups = "drop")
+
+#label points for 10 states 
+label_points_all <- housing_compare_all_plot
+
+#using cleaned version of plot data to assign colors
+top_states_colors_all <- scales::seq_gradient_pal("lightblue", "darkslateblue")(seq(0, 1, length.out = length(unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "High Months' Supply"]))))
+names(top_states_colors_all) <- unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "High Months' Supply"])
+
+bottom_states_colors_all <- scales::seq_gradient_pal("lightpink", "darkred")(seq(0, 1, length.out = length(unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "Low Months' Supply"]))))
+names(bottom_states_colors_all) <- unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "Low Months' Supply"])
+
+state_colors_all <- c(top_states_colors_all, bottom_states_colors_all)
+
 #boxplotting med sale price by state w/ ..._compare_all df
 #all
 ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_in_k, median), 
@@ -503,14 +542,6 @@ ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_in_k, medi
 The following graph also highlights the relationship between these two variables.
 
 ```{r}
-#merge top and bottom states
-housing_compare_all <- housing_2024_all %>%
-  filter(State %in% c(top_states_all$State, bottom_states_all$State)) %>%
-  mutate(StateGroup = case_when(
-    State %in% top_states_all$State ~ "High Months' Supply",
-    State %in% bottom_states_all$State ~ "Low Months' Supply")) %>%
-  mutate(StateGroup = factor(StateGroup, levels = c("Low Months' Supply", "High Months' Supply")))
-
 #plot top bottom comparison ####
 med_sale_price_in_states_by_months_supply_boxplot <- ggplot(
   housing_compare_all, 
@@ -538,37 +569,8 @@ ggsave("med_sale_price_in_states_by_months_supply_boxplot.png",
 
 We also visualized this comparison with a scatterplot of all 51 states and territories. Looking at the scatterplot results, the positive association between median sale price and months' supply is plainly visible.
 ```{r}
-#this chunk is prep for the all states factored scatter but contains the all states unfactored scatter
+#this chunk contains the all states unfactored scatter
 #compare color scale w/ ..._all df
-#fix color assigning for side by side compare scatterplots- too many blue showing up
-#cleaned plot version with dropped unused (non-10) state levels; re-group by state for clarity
-housing_compare_all_plot <- housing_compare_all %>%
-  group_by(State, StateGroup) %>%
-  summarize(
-    Median_Sale_Price_in_k = median(Median_Sale_Price_in_k, na.rm = TRUE),
-    Months_Supply = median(Months_Supply, na.rm = TRUE),
-    .groups = "drop") %>%
-  mutate(State = forcats::fct_drop(State))
-
-#also fixing subset of housing 2024 all so that gray background dots are 1/state
-housing_2024_all_plot <- housing_2024_all %>%
-  group_by(State) %>%
-  summarize(
-    Median_Sale_Price_in_k = median(Median_Sale_Price_in_k, na.rm = TRUE),
-    Months_Supply = median(Months_Supply, na.rm = TRUE),
-    .groups = "drop")
-
-#label points for 10 states 
-label_points_all <- housing_compare_all_plot
-
-#usig cleaned version of plot data to assign colors
-top_states_colors_all <- scales::seq_gradient_pal("lightblue", "darkslateblue")(seq(0, 1, length.out = length(unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "High Months' Supply"]))))
-names(top_states_colors_all) <- unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "High Months' Supply"])
-
-bottom_states_colors_all <- scales::seq_gradient_pal("lightpink", "darkred")(seq(0, 1, length.out = length(unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "Low Months' Supply"]))))
-names(bottom_states_colors_all) <- unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "Low Months' Supply"])
-
-state_colors_all <- c(top_states_colors_all, bottom_states_colors_all)
 
 #now actual plot
 allstatescatterplot <- ggplot(housing_2024_all_plot, aes(x = Months_Supply, y = Median_Sale_Price_in_k)) +
