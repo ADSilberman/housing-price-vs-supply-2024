@@ -16,8 +16,6 @@ bibliography: references.bib
 csl: https://www.zotero.org/styles/apa
 ---
 
-<<<<<<< Updated upstream
-
 ```{r clear environment}
 rm(list=ls())
 ```
@@ -49,7 +47,6 @@ library(tidytext)
 
 ## Introduction
 
-
 Supply and demand is a classic and well-known economic model. However, real life is far more nuanced than the simple version of this model that many are familiar with. We wanted to use real housing price and supply samples to explore how well that relationship fits economic theory. Our research question is: How is the supply of housing related to average home prices across U.S. metropolitan areas in the year 2024?
 
 In 2024, the housing market had more sellers than buyers. Normally, the excess supply in a buyer’s market would place downward pressure on prices, but concurrent economic monetary situation stalled that natural phenomenon. These unusual market conditions make it important to examine their wider economic and social impacts.
@@ -62,10 +59,8 @@ Throughout our analysis, we cross-checked our findings with existing research an
 
 Additionally, median home prices have more than doubled over the past decade, rising faster than both wages and inflation [@uschamber2024]. This growing affordability crisis hinders job creation, encourages corporate relocations, and causes states to lose billions of dollars in economic output [@pebbcap2024].
 
-
-
 ## Data
-This project uses the State and County Housing Market Indicators dataset from the American Enterprise Institute Housing Center, found [here](https://www.aei.org/the-state-of-the-housing-market/). The variables are:  
+This project uses the State and County Housing Market Indicators dataset from the American Enterprise Institute Housing Center [@aei2024]. The variables are:  
 
 Original Variable Name | New Variable Name | Definition  
   :-: |  :-: | :-- 
@@ -81,9 +76,28 @@ Months..Supply | Months_Supply | Number of months it would take for the inventor
 New.Construction.Share.of.Sales | New_Constr_by_share_of_sales_percent | Percent of sales comprising new construction
 Mortgage.Default.Rate | Mortgage_Default_Rate_percent | AEI Mortgage Default Rate, a measure of how loans originating in a given month would perform under the same conditions as the 2007 financial crisis (<=7%: Low Risk; between 7.01% and 14%: Medium Risk; >14%: High Risk)
 
+### Data Sources
+The AEI Housing Center itself primarily gathered data from public records from First American via Data Tree; specifically, it retrieved data from deed and tax assessor files about where homes were located, their prices, and when the deal took place.
+
+In addition, data for calculating AEI's Mortgage Default Rate were pulled from numerous sources:
+- Home Mortgage Disclosure Act (HMDA)
+- National Mortgage Default Rate
+- CoreLogic’s Loan Level Market Analytics (LLMA)
+- ICE’s McDash
+- Fannie Mae Single-Family Loan Performance
+- Freddie Mac Single Family Loan Level Data
+- Federal Housing Association Snapshot
+
+Approximately 60–65% of public records were able to be cross-referenced in this way, though the exact number depends on the locale. These were then weighted up to account for the incomplete data; according to AEI, this is representative of overall public records data
+
+Lastly, data for calculating Months' Supply was taken from Zillow and Realtor.com, and calculated as $\frac{\text{Listings Counts}}{\text{Existing Home Sales.}}$
+
+### Limitations
+The weakness of Months' Supply as a proxy for supply should here be noted. Months' Supply may be low for one of two reasons: supply and demand are both high, or supply and demand are both low. As such, it is not ideal for discovering how supply alone affects median sale price. The exact counts, adjusted for population, would be far more useful, 
+
 ### Load and Clean Data
 ```{r read_data}
-housing <- read.csv("Data/state_county_data_download_2025.csv")
+housing <- read.csv("..\\Data\\state_county_data_download_2025.csv")
 #dplyr::slice_sample(housing, n = 5) %>% xkabledply()
 ```
 
@@ -243,6 +257,16 @@ corrplot(cor_matrix_all, method = "color",
 #interesting to see positive and inverse relationships between variables 
 #did not scan for no relationships
 ```
+
+A few notes immediately stand out: some expected, others less so.
+
+House Price Appreciation year over year does not correlate linearly with House Price Appreciation since 2012; it seems like, at least for 2024, it is independent of what came before. Of the two, only one correlates with Median Sale Price: Appreciation since 2012, as expected—the higher the overall appreciation, the higher the price.
+
+New construction correlates with Months’ Supply: the more housing is being built, the longer it’ll take to sell all those houses.
+
+Mortgage Default Rate correlates negatively with Median Sale Price: the lower the sales price, the higher the risk of defaulting on your mortgage—those who can’t afford mortgages purchase less expensive houses.
+
+Surprisingly, Months’ Supply correlates positively with Median Sale Price, not negatively. There is a logical explanation, but only if causality is reversed from our expectations: the higher the price, the longer a home will take to sell. This does, unfortunately, emphasize the flaws in using this dataset to answer our question.
 
 ### Price Distributions by Tier
 
@@ -820,6 +844,11 @@ tierhighlightscatterplot
 #I'm going to break this into smaller buckets and investigate.BW
 ```
 
+In this final visualization, we overlayed the median sale price, represented by black dots, with the monetary values along the top x axis onto the county distributions of months supply on the bottom x axis across the states in our subsetted dataset. 
+
+There is a clear trend in higher months' supply correlating with higher median sale price. We also see a few states where outliers skew the median sale price- this is most obvious for Massachusetts and New Hampshire. 
+
+Another important note is that, for readability, the graph data was capped at 12 months. New Hampshire has several counties where the months supply value is higher than is visible in this graph, and this helps explain what otherwise appears to bea right-skewed median sale price.
 
 ```{r supply option 2- 12}
 #housing supply dist w 12 states for context, all df
@@ -901,13 +930,8 @@ ggsave("supply_ridge_12_saleprice_plot.png", plot = supplyridge_12medianprice_pl
 
 supplyridge_12medianprice_plot
 ```
-In this final visualization, we overlayed the median sale price, represented by black dots, with the monetary values along the top x axis onto the county distributions of months supply on the bottom x axis across the states in our subsetted dataset. 
 
-There is a clear trend in higher months' supply correlating with higher median sale price. We also see a few states where outliers skew the median sale price- this is most obvious for Massachusetts and New Hampshire. 
-
-Another important note is that, for readability, the graph data was capped at 12 months. New Hampshire has several counties where the months supply value is higher than is visible in this graph, and this helps explain what otherwise appears to bea right-skewed median sale price.
-
-### Significance Testing
+## Significance Testing
 
 Though the graphs have proven quite conclusive, we proceed with ANOVA testing to confirm the existence of and nature of the relationship between our variables.
 
@@ -922,7 +946,7 @@ xkabledply(states_median_sale_price_anova, title = "ANOVA result summary")
 
 Median sale price varies highly significantly by state, with a p-value smaller than r can store. As such, we reject the null hypothesis, concluding that it is improbable that states have the same true median sale price.
 
-#### Post-hoc Tukey HSD
+### Post-hoc Tukey HSD
 
 It is best practice to follow a significant ANOVA with a post-hoc Tukey HSD; as there are 2550 possible pairings, rather than display the full output, we will instead list all of the pairwise combinations which have a P-value less than 0.05, of which there are 550:
 
@@ -933,13 +957,17 @@ states_median_sale_price_tukey$State[, "p adj"] %>%
 ```
 
 
-### Conclusion 
+## Conclusion 
 In conducting this project, our team was reminded of our first day of class, going over the data science life cycle. We initially established a question we wanted to answer and identified data that we believed could enlighten us on this data. However, by conducting our EDA, we discovered that the metrics that AEI chose to include do not directly match the question we sought out to answer.
 
-#### Key Takeaways
+### Key Takeaways
 There is a clear connection between months supply of housing and median sale price. This could be due to high demand pushing sale prices higher or low supply pushing sale prices higher. We will need more data in order to identify which is the stronger driver, if either. 
 
 We also found interesting connections between the percent of houses in a county that are new constructions and the mortgage default rate in a county with our two key variables, months supply and median sale price. 
 
-#### Next Steps
+### Next Steps
 One next step for us might be to pull in additional data to help us add color to the picture we are painting and to also help us better address our original research question. We will need to do additional analysis to better identify the nature of the relationship between these primary and secondary variables. 
+
+We could also take straight from the source and attempt to pull public records data from First American via Data Tree and listings counts from Zillow and Realtor.com, perhaps adjusting for population. This would be a much better representation of supply than Months' Supply.
+
+## References
