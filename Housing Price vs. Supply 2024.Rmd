@@ -565,7 +565,7 @@ ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_in_k, medi
         plot.background = element_blank()) 
 ```
 
-Contrasting the median sale price boxplot distribution above, we see the months' supply boxplot distribution below: 
+We also looked at the distribution of the subset of states' months' supply of housing.
 
 ```{r hist supply}
 #hist of Months' Supply
@@ -603,7 +603,11 @@ supply12hist
 #then add Zscore and CI onto scatterplot somehow?
 ```
 
-The following graph also highlights the relationship between both variables.
+As you can see, there is over a six month difference in supply of housing between the states with the lowest and highest counts (Massachusetts and Hawaii). 
+
+We also see that a few of the states have significant outliers, like North Dakota, for example. North Dakota closely aligns with a few of the lower supply states, but higher outliers pull the median forward. For our next round of analysis, we may choose to pursue excluding outliers to see how that changes the findings. 
+
+The following graph also highlights the relationship between our price and supply variables.
 
 ```{r top bottom boxplot price supply dist, factored}
 #plot top bottom comparison ####
@@ -681,50 +685,48 @@ allstatescatterplot <- ggplot(housing_2024_all_plot, aes(x = Months_Supply, y = 
 ggsave("housing_supply_vs_price_allstates.png", plot = allstatescatterplot, width = 10, height = 6, dpi = 300)
 
 allstatescatterplot
-
-#next round, add line of best fit/ regression line
 ```
 
-```{r}
+```{r mystery}
 #hist plotting with df ..._all
-housing_price_hist <- ggplot(housing_2024_all, aes(x = Median_Sale_Price_in_k)) +
-  geom_histogram(binwidth = 25, fill = "skyblue", color = "black") +
-  scale_x_continuous(labels = scales::dollar_format(prefix = "$", suffix = "k")) +
-  labs(
-    title = "Distribution of Median Sale Prices",
-    subtitle = "Most U.S. counties cluster below $300k, with a long right-skewed tail in higher-priced markets",
-    x = "Median Sale Price (in thousands)",
-    y = "Number of Counties",
-    caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal() +
-  theme(plot.title = element_text(face = "bold", 
-                                  size = 14, 
-                                  margin = margin(b = 3)),
-        plot.subtitle = element_text(size = 10, 
-                                     color = "gray25",
-                                     margin = margin(b = 8)),
-        axis.title = element_text(size = 10, 
-                                  face = "bold"),
-        axis.text = element_text(size = 9),
-        plot.caption = element_text(size = 8, 
-                                    color = "gray40", 
-                                    hjust = 1),
-        panel.grid.minor = element_blank(),
-        panel.background = element_blank(), 
-        plot.background = element_blank()) 
+#housing_price_hist <- ggplot(housing_2024_all, aes(x = Median_Sale_Price_in_k)) +
+#  geom_histogram(binwidth = 25, fill = "skyblue", color = "black") +
+#  scale_x_continuous(labels = scales::dollar_format(prefix = "$", suffix = "k")) +
+#  labs(
+#    title = "Distribution of Median Sale Prices",
+#    subtitle = "Most U.S. counties cluster below $300k, with a long right-skewed tail #in higher-priced markets",
+#    x = "Median Sale Price (in thousands)",
+#    y = "Number of Counties",
+#    caption = "SOURCE: American Enterprise Institute") +
+#  theme_minimal() +
+#  theme(plot.title = element_text(face = "bold", 
+#                                  size = 14, 
+#                                  margin = margin(b = 3)),
+#        plot.subtitle = element_text(size = 10, 
+#                                     color = "gray25",
+#                                     margin = margin(b = 8)),
+#        axis.title = element_text(size = 10, 
+#                                  face = "bold"),
+#        axis.text = element_text(size = 9),
+#        plot.caption = element_text(size = 8, 
+#                                    color = "gray40", 
+#                                    hjust = 1),
+#        panel.grid.minor = element_blank(),
+#        panel.background = element_blank(), 
+#        plot.background = element_blank()) #
 
 #ggsaving
-ggsave(plot = housing_price_hist,
-       filename = "housing_price_hist.png",
-       width = 7,
-       height = 4,
-       dpi = 500,
-       bg = "transparent")
-
+#ggsave(plot = housing_price_hist,
+#       filename = "housing_price_hist.png",
+#       width = 7,
+#       height = 4,
+#       dpi = 500,
+#       bg = "transparent")
+#
 #needs a subtitle with commentary, just remembered all need a caption with the source named, and we can prob add other elements to this, because otherwise it seems to obvi to me
 ```
 
-
+We also wanted to separate out our subsetted data and overlay it onto the map above. In the following scatterplot, we see a striking trend revealed from the overlays of the subsetted scatter plots onto the 51 state and territory scatterplot. The association between months' supply and median sale price is glaringly obvious in this graph. 
 
 ```{r scatter_supply_vs_median_price total all}
 #all in gray with faceted compare in color with states labeled ####
@@ -818,9 +820,6 @@ tierhighlightscatterplot
 #I'm going to break this into smaller buckets and investigate.BW
 ```
 
-We also looked at the distribution of the top and bottom states for their months supply of housing. As you can see, there is over a six month difference in supply of housing between the states with the lowest and highest counts (Massachusetts and Hawaii). 
-
-We also see that a few of the states have significant outliers, like North Dakota, for example. North Dakota closely aligns with a few of the lower supply states, but higher outliers pull the median forward. For our next round of analysis, we may choose to pursue excluding outliers to see how that changes the findings. 
 
 ```{r supply option 2- 12}
 #housing supply dist w 12 states for context, all df
@@ -902,7 +901,7 @@ ggsave("supply_ridge_12_saleprice_plot.png", plot = supplyridge_12medianprice_pl
 
 supplyridge_12medianprice_plot
 ```
-In this graph, you can see the distribution of months supply on the bottom x axis across counties in these states with an overlay of the median sale price, represented by black dots, with the monetary values along the top x axis. 
+In this final visualization, we overlayed the median sale price, represented by black dots, with the monetary values along the top x axis onto the county distributions of months supply on the bottom x axis across the states in our subsetted dataset. 
 
 There is a clear trend in higher months' supply correlating with higher median sale price. We also see a few states where outliers skew the median sale price- this is most obvious for Massachusetts and New Hampshire. 
 
@@ -944,6 +943,3 @@ We also found interesting connections between the percent of houses in a county 
 
 #### Next Steps
 One next step for us might be to pull in additional data to help us add color to the picture we are painting and to also help us better address our original research question. We will need to do additional analysis to better identify the nature of the relationship between these primary and secondary variables. 
-
-### References
-
