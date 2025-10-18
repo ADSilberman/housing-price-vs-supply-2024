@@ -97,7 +97,7 @@ The weakness of Months' Supply as a proxy for supply should here be noted. Month
 
 ### Load and Clean Data
 ```{r read_data}
-housing <- read.csv("..\\Data\\state_county_data_download_2025.csv")
+housing = read.csv("..\\Data\\state_county_data_download_2025.csv")
 #dplyr::slice_sample(housing, n = 5) %>% xkabledply()
 ```
 
@@ -566,13 +566,15 @@ state_colors_all <- c(top_states_colors_all, bottom_states_colors_all)
 ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_in_k, median), 
                          y = Median_Sale_Price_in_k)) +
   geom_boxplot(fill = state_colors_all, alpha = 0.7) +
+  scale_fill_manual(values = state_colors_all) +  
   coord_flip() +
   labs(
-    title = "Distribution of Median Sale Prices by States with Extreme Months' Supply (2024)",
+    title = "Distribution of Median Sale Prices by States with\nExtreme Months' Supply (2024)",
     x = "State",
     y = "Median Sale Price (in thousands)",
     caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal()+theme(plot.title = element_text(face = "bold", 
+  theme_minimal()+
+  theme(plot.title = element_text(face = "bold", 
                                   size = 14, 
                                   margin = margin(b = 3)),
         plot.subtitle = element_text(size = 10, 
@@ -597,10 +599,10 @@ supply12hist <- ggplot(housing_compare_all,
        aes(x = reorder(State, Months_Supply, median),
            y = Months_Supply,
            fill = State)) +  
-  geom_boxplot(alpha = 0.7) +
+  geom_boxplot(fill = state_colors_all, alpha = 0.7) +
   scale_fill_manual(values = state_colors_all) +  
   coord_flip() +
-  labs(title = "Distribution of Months' Supply by States with Extreme Months' Supply (2024)",
+  labs(title = "Distribution of Months' Supply by States with\nExtreme Months' Supply (2024)",
     x = "State",
     y = "Months' Supply",
     caption = "SOURCE: American Enterprise Institute") +
