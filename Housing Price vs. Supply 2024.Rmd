@@ -41,6 +41,7 @@ library(tigris)
 library(sf)
 library(ggridges)
 library(scales)
+library(tidytext)
 ```
 
 ## Introduction
@@ -421,6 +422,7 @@ housing_counties_plot2
 
 ### Median Sale Price by State
 
+The first variable we analyzed was median sale price. The distribution of median sale price by state is be visualized as follows: 
 ```{r}
 #boxplotting med sale price by state w/ ..._all df
 #all
@@ -444,7 +446,7 @@ ggsave("med_sale_price_by_state_boxplot.png", plot = med_sale_price_by_state_box
        width = 10, height = 10, dpi = 300)
 ```
 
-This graph allowed us to see the median sale price distribution among states. However, the graph is too busy to be particularly useful. You can see general trends, but a smaller sample improves legibility.
+This graph allowed us to see the trend of median sale price distribution among states. However, the graph is too busy to be particularly useful. You can see general trends, but a smaller sample improves legibility.
 
 ### Top and Bottom Months' Supply Analysis 
 
@@ -480,7 +482,25 @@ bottom_states_all %>%
   relocate(State_Name, .after = State) %>%
   xkabledply
 ```
-For example, in the following graph, the median sale price difference among the top and bottom months' supply state groups becomes more obvious.
+
+Immediately, the subsetted data in the same graph format shows a much clearer vision of the positive association between months' supply and median sale price.
+
+```{r}
+#boxplotting med sale price by state w/ ..._compare_all df
+#all
+ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_in_k, median), 
+                         y = Median_Sale_Price_in_k)) +
+  geom_boxplot(fill = state_colors_all, alpha = 0.7) +
+  coord_flip() +
+  labs(
+    title = "Distribution of Median Sale Prices by State (2024)",
+    x = "State",
+    y = "Median Sale Price (in thousands)",
+    caption = "SOURCE: American Enterprise Institute") +
+  theme_minimal()
+```
+
+The following graph also highlights the relationship between these two variables.
 
 ```{r}
 #merge top and bottom states
@@ -492,11 +512,14 @@ housing_compare_all <- housing_2024_all %>%
   mutate(StateGroup = factor(StateGroup, levels = c("Low Months' Supply", "High Months' Supply")))
 
 #plot top bottom comparison ####
-med_sale_price_in_states_by_months_supply_boxplot = ggplot(housing_compare_all, aes(x = State, 
-                                                                                    y = Median_Sale_Price_in_k,
-                                                                                    fill = StateGroup)) +
+med_sale_price_in_states_by_months_supply_boxplot <- ggplot(
+  housing_compare_all, 
+  aes(x = reorder_within(State, Median_Sale_Price_in_k, StateGroup), 
+    y = Median_Sale_Price_in_k,
+    fill = StateGroup)) +
   geom_boxplot() +
   facet_wrap(~ StateGroup, scales = "free_x") +
+  scale_x_reordered()  +
   labs(
     title = "Median Sale Price in States by Months' Supply of Housing",
     subtitle = "The Median Sale Price in States with a Larger Months' Supply of Housing is Significantly Lower\nthan States with a Smaller Months' Supply of Housing",
@@ -565,24 +588,6 @@ allstatescatterplot
 
 #next round, add line of best fit/ regression line
 ```
-
-
-```{r}
-#boxplotting med sale price by state w/ ..._compare_all df
-#all
-ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_in_k, median), 
-                         y = Median_Sale_Price_in_k)) +
-  geom_boxplot(fill = state_colors_all, alpha = 0.7) +
-  coord_flip() +
-  labs(
-    title = "Distribution of Median Sale Prices by State (2024)",
-    x = "State",
-    y = "Median Sale Price (in thousands)",
-    caption = "SOURCE: American Enterprise Institute") +
-  theme_minimal()
-```
-
-
 
 ### Histogram of Median Sale Prices by State
 
