@@ -57,10 +57,6 @@ Throughout our analysis, we cross-checked our findings with existing research an
 
 Additionally, median home prices have more than doubled over the past decade, rising faster than both wages and inflation (https://www.uschamber.com/economy/the-state-of-housing-in-america). This growing affordability crisis hinders job creation, encourages corporate relocations, and causes states to lose billions of dollars in economic output (https://www.pebbcap.com/news/media-coverage/124/top-hq-relocation-trends/#:~:text=Last%20year%20however%20saw%20a,New%20York%20City%20%2827%29).
 
-
-
-
-
 ## Data
 This project uses the State and County Housing Market Indicators dataset from the American Enterprise Institute Housing Center, found [here](https://www.aei.org/the-state-of-the-housing-market/). The variables are:  
 
