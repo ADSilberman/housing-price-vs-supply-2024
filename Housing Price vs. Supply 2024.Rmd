@@ -16,11 +16,11 @@ bibliography: references.bib
 csl: https://www.zotero.org/styles/apa
 ---
 
+<<<<<<< Updated upstream
 
-```{r}
+```{r clear environment}
 rm(list=ls())
 ```
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
@@ -82,12 +82,10 @@ New.Construction.Share.of.Sales | New_Constr_by_share_of_sales_percent | Percent
 Mortgage.Default.Rate | Mortgage_Default_Rate_percent | AEI Mortgage Default Rate, a measure of how loans originating in a given month would perform under the same conditions as the 2007 financial crisis (<=7%: Low Risk; between 7.01% and 14%: Medium Risk; >14%: High Risk)
 
 ### Load and Clean Data
-
 ```{r read_data}
 housing <- read.csv("Data/state_county_data_download_2025.csv")
 #dplyr::slice_sample(housing, n = 5) %>% xkabledply()
 ```
-
 
 The data is limited to the year 2024, and the variables are renamed for clarity. Additionally, data related to the armed forces are excluded, as that is outside the scope of the research question.
 
@@ -110,8 +108,6 @@ rename(
 )
 xkabledplyhead(housing_2024)
 ```
-
-
 The typing of the variables is corrected. Some require further processing by removal of the symbols "$", ",", and "%" before they may be cast. Once this is performed, NAs are omitted from *Median_Sale_Price_in_k*; other dependent variables (House Price Appreciation, Mortgage Default Rate) also contained NAs, but, as these were less central to our research question and because we wanted to use as much data as possible, we declined to remove these.
 
 ```{r correct_var_typing}
@@ -129,11 +125,10 @@ housing_2024 = housing_2024 %>%
          House_Price_Appreciation_yr_over_yr_percent =
            gsub("[%,]","",House_Price_Appreciation_yr_over_yr_percent),
          New_Constr_by_share_of_sales_percent = gsub("[%,]","",New_Constr_by_share_of_sales_percent),
-         Mortgage_Default_Rate_percent = gsub("[%,]","",Mortgage_Default_Rate_percent)
-  )
+         Mortgage_Default_Rate_percent = gsub("[%,]","",Mortgage_Default_Rate_percent))
 ###I included the commas to be removed as well indicated in the brackets. SA
 
-# as num instead of chr
+#as num instead of chr
 housing_2024$Median_Sale_Price_in_k = as.numeric(housing_2024$Median_Sale_Price_in_k)
 housing_2024$House_Price_Appreciation_since_2012_percent =
   as.numeric(housing_2024$House_Price_Appreciation_since_2012_percent)
@@ -148,7 +143,7 @@ housing_2024$Mortgage_Default_Rate_percent = as.numeric(housing_2024$Mortgage_De
 housing_2024 <- housing_2024 %>%
   tidyr::drop_na(Median_Sale_Price_in_k)
 
-# view data
+#view data
 housing_2024 %>% slice_sample(n=5) %>% xkabledply()
 ```
 
@@ -170,7 +165,6 @@ housing_2024_tiers <- housing_2024 %>%
   )
 ```
 
-
 ## Exploratory Data Analysis (EDA)
 
 ### Summary Statistics
@@ -180,7 +174,7 @@ Looking across all U.S. counties in our data set, the typical home price sat at 
 Despite the tight market, prices rose around 6% year-over-year, and new construction only made up about 6-10% of total sales. Even from the top level data, we can already suspect the pattern: lower supply corresponds with stronger price growth.
 
 
-```{r}
+```{r summary table all}
 #summary stats on new df's
 xkablesummary(housing_2024_all)
 ```
@@ -195,7 +189,7 @@ Move-up homes had a median price of more than $400K, doubling the entry-level ti
 Together, these tiers reveal a consistent pattern: markets with tighter supply experience faster price growth, while greater inventory and new construction at the higher end help moderate prices.  
 
 
-```{r}
+```{r summary table tiers}
 #comparing tiers entrylevel and moveup
 #entrylevel
 xkablesummary(df = subset(housing_2024_tiers, 
@@ -218,7 +212,7 @@ xkablesummary(df = subset(housing_2024_tiers,
 
 Before we began analyzing specific variables, we constructed a heatmap to see the general magnitude and direction of correlational relationships among our variables. 
 
-```{r}
+```{r corr heatmap}
 #correlation heatmap of numeric variables w/ ..._all df
 housing_numeric_all <- housing_2024_all %>%
   select(where(is.numeric) & !all_of("Year")) %>%
@@ -255,7 +249,6 @@ corrplot(cor_matrix_all, method = "color",
 When we compare the price distributions between the tiers, move-up homes clearly sat at the higher level, with a median price about double those of entry-level. With the move-up tier showing more extreme outliers and a much wider range, we can see greater price volatility and a concentration of higher-value counties, confirming that affordability tiers meaningfully segmenting the housing market.
 	
 Entry-level homes cluster tightly at the lower end, showing limited price variation and reinforcing how constrained the affordability housing stock really is. Together these differences help answer our core question: when supply is tight at the lower end, prices rise fastest there. 
-
 
 ```{r boxplot_price_by_affordability}
 #box plotting by affordability tiers from tiers df
@@ -300,13 +293,11 @@ housing_afford_box
        # bg = "transparent")
 ```
 
-
 ### Geographic Price Patterns
 
 Looking at the nation as a whole, we see how home prices vary sharply across regions, revealing a clear geographic divide by affordability. The blues dominate the Midwest and the South, reflecting lower typical prices and more accessible markets, while reds cluster along major metropolitan areas and the coasts, where housing was far more expensive. 
 
 This spatial pattern highlights a regional trend: interior counties remain relatively affordable while coastal regions continue to experience elevated prices. These high-priced areas also tend to align with regions known for limited housing supply and high demand, suggesting that geographic supply constraints are a major factor driving price growth in these markets. 
-
 
 ```{r}
 ##basemap
@@ -514,7 +505,7 @@ bottom_states_all %>%
 
 Immediately, the subsetted data in the same graph format shows a much clearer vision of the positive association between months' supply and median sale price.
 
-```{r}
+```{r top bottom supply dist}
 #is prep for the all states factored scatter but 
 #fix color assigning for side by side compare scatterplots- too many blue showing up
 #cleaned plot version with dropped unused (non-10) state levels; re-group by state for clarity
@@ -576,7 +567,7 @@ ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_in_k, medi
 
 The following graph also highlights the relationship between these two variables.
 
-```{r}
+```{r top bottom supply dist, factored}
 #plot top bottom comparison ####
 med_sale_price_in_states_by_months_supply_boxplot <- ggplot(
   housing_compare_all, 
@@ -618,7 +609,7 @@ ggsave("med_sale_price_in_states_by_months_supply_boxplot.png",
 ### Scatterplot of Months' Supply and Median Price
 
 We also visualized this comparison with a scatterplot of all 51 states and territories. Looking at the scatterplot results, the positive association between median sale price and months' supply is plainly visible.
-```{r}
+```{r 51 state supply price scatter}
 #this chunk contains the all states unfactored scatter
 #compare color scale w/ ..._all df
 
@@ -655,8 +646,6 @@ allstatescatterplot
 
 #next round, add line of best fit/ regression line
 ```
-
-### Histogram of Median Sale Prices by State
 
 ```{r}
 #hist plotting with df ..._all
@@ -795,9 +784,13 @@ tierhighlightscatterplot
 #hist of Months' Supply
 
 #hist plotting Months' Supply with df ...top_states_all
-supply12hist <- ggplot(housing_compare_all, aes(x = reorder(State, Months_Supply, median),
-                        y = Months_Supply)) +
-  geom_boxplot(fill = state_colors_all, alpha = 0.7) +
+supply12hist <- ggplot(housing_compare_all, 
+       aes(x = reorder(State, Months_Supply, median),
+           y = Months_Supply,
+           fill = StateGroup)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = c("High Months' Supply" = "skyblue",
+                               "Low Months' Supply" = "red"))+
   coord_flip() +
   labs(
     title = "Distribution of Months' Supply (2024)",
@@ -931,7 +924,7 @@ $H_0: \mu_{AK} = \mu_{AL} = ... = \mu_{WY}$
 
 $H_1:$ At least one $\mu$ is different
 
-```{r}
+```{r anova}
 states_median_sale_price_anova = aov(Median_Sale_Price_in_k ~ State, data = housing_2024_all)
 xkabledply(states_median_sale_price_anova, title = "ANOVA result summary")
 ```
