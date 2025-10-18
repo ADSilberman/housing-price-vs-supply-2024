@@ -12,7 +12,10 @@ output:
   pdf_document:
     toc: yes
     toc_depth: '3'
+bibliography: references.bib
+csl: https://www.zotero.org/styles/apa
 ---
+
 
 ```{r}
 rm(list=ls())
@@ -45,19 +48,18 @@ library(scales)
 
 ## Introduction
 
-Supply and demand is a classic and well-known economic model. However, real life is far more nuanced than the simple version of this model that many are familiar with. We wanted to use real housing price and supply samples to explore how well that relationship fits economic theory. Our research question is: how is the supply of housing related to average home prices across U.S. metropolitan areas in the year 2024?
 
-In 2024, the housing market had more sellers than buyers. Normally, the excess supply in a buyer’s market would place downward pressure on prices, but concurrent economic monetary inflation stalled that natural phenomenon.
+Supply and demand is a classic and well-known economic model. However, real life is far more nuanced than the simple version of this model that many are familiar with. We wanted to use real housing price and supply samples to explore how well that relationship fits economic theory. Our research question is: How is the supply of housing related to average home prices across U.S. metropolitan areas in the year 2024?
 
-The relevance of our question extends beyond economics, since housing prices directly affect households, companies, and wealth inequality. Rising home prices lead to wage increases, which in turn raise the cost of goods and services—creating a vicious cycle that fuels inflation. As uncontrolled inflation deteriorates living standards, companies struggle to attract and retain workers due to reduced labor mobility. Consequently, some firms relocate to more affordable states to balance operational costs.
+In 2024, the housing market had more sellers than buyers. Normally, the excess supply in a buyer’s market would place downward pressure on prices, but concurrent economic monetary situation stalled that natural phenomenon. These unusual market conditions make it important to examine their wider economic and social impacts.
 
-At the same time, while rising housing costs create financial burdens for renters, homeowners benefit from accumulating wealth through year-over-year appreciation and rental income. In fact, the wealth gap between homeowners and renters has reached a historic high, as housing costs have grown faster than incomes (https://www.urban.org/urban-wire/wealth-gap-between-homeowners-and-renters-has-reached-historic-high).
+Accordingly, the relevance of our question extends beyond economics, since housing prices directly affect households, companies, and wealth inequality. Rising home prices lead to wage increases, which in turn raise the cost of goods and services—creating a vicious cycle that fuels inflation. As uncontrolled inflation deteriorates living standards, companies struggle to attract and retain workers due to reduced labor mobility. Consequently, some firms relocate to more affordable states to balance operational costs.
 
-Throughout our analysis, we cross-checked our findings with existing research and market reports to better understand these dynamics. In 2024, there were nearly 500000 more sellers than buyers (https://www.redfin.com/news/buyers-vs-sellers-july-2025/). Despite this apparent “buyer’s market,” prices did not decline as economic theory might predict. One possible explanation is that the elasticity of housing supply—the degree to which new construction responds to price changes—has been steadily declining since the Great Recession (https://cepr.org/voxeu/columns/declining-elasticity-us-housing-supply).
+At the same time, while rising housing costs create financial burdens for renters, homeowners benefit from accumulating wealth through year-over-year appreciation and rental income. In fact, the wealth gap between homeowners and renters has reached a historic high, as housing costs have grown faster than incomes [@urban2023].
 
-Additionally, median home prices have more than doubled over the past decade, rising faster than both wages and inflation (https://www.uschamber.com/economy/the-state-of-housing-in-america). This growing affordability crisis hinders job creation, encourages corporate relocations, and causes states to lose billions of dollars in economic output (https://www.pebbcap.com/news/media-coverage/124/top-hq-relocation-trends/#:~:text=Last%20year%20however%20saw%20a,New%20York%20City%20%2827%29).
+Throughout our analysis, we cross-checked our findings with existing research and market reports to better understand these dynamics. In 2024, there were nearly 500000 more sellers than buyers [@redfin2025]. Despite this apparent “buyer’s market,” prices did not decline as economic theory might predict. One possible explanation is that the elasticity of housing supply—the degree to which new construction responds to price changes—has been steadily declining since the Great Recession [@cepr2024].
 
-
+Additionally, median home prices have more than doubled over the past decade, rising faster than both wages and inflation [@uschamber2024]. This growing affordability crisis hinders job creation, encourages corporate relocations, and causes states to lose billions of dollars in economic output [@pebbcap2024].
 
 
 
@@ -844,4 +846,5 @@ We also found interesting connections between the percent of houses in a county 
 ####Next Steps
 One next step for us might be to pull in additional data to help us add color to the picture we are painting and to also help us better address our original research question. We will need to do additional analysis to better identify the nature of the relationship between these primary and secondary variables. 
 
-###References
+### References
+
