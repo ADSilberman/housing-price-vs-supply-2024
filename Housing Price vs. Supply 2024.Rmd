@@ -563,9 +563,9 @@ state_colors_all <- c(top_states_colors_all, bottom_states_colors_all)
 
 #boxplotting med sale price by state w/ ..._compare_all df
 #all
-ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_in_k, median), 
+ggplot(housing_compare_all, aes(x = reorder(State, Median_Sale_Price_in_k, median), 
                          y = Median_Sale_Price_in_k)) +
-  geom_boxplot(fill = state_colors_all, alpha = 0.7) +
+  geom_boxplot(alpha = 0.7) +
   scale_fill_manual(values = state_colors_all) +  
   coord_flip() +
   labs(
@@ -599,7 +599,7 @@ supply12hist <- ggplot(housing_compare_all,
        aes(x = reorder(State, Months_Supply, median),
            y = Months_Supply,
            fill = State)) +  
-  geom_boxplot(fill = state_colors_all, alpha = 0.7) +
+  geom_boxplot(alpha = 0.7) +
   scale_fill_manual(values = state_colors_all) +  
   coord_flip() +
   labs(title = "Distribution of Months' Supply by States with\nExtreme Months' Supply (2024)",
