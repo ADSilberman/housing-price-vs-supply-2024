@@ -386,7 +386,7 @@ housing_counties_plot2 <- ggplot() +
                     na.value = "grey85") +
   labs(title = "Geographic Variation in U.S. Home Prices, 2024",
        subtitle = "County-level median sale price",
-       caption = "Source: AEI Enterprise Institute") +
+       caption = "Source: American Enterprise Institute") +
   theme_minimal(base_size = 11) +
   theme(plot.title = element_text(face = "bold", 
                                   size = 16),
@@ -650,7 +650,7 @@ ggsave("med_sale_price_in_states_by_months_supply_boxplot.png",
 ```
 ### Scatterplot of Months' Supply and Median Price
 
-We also visualized this comparison with a scatterplot of all 51 states and territories. Looking at the scatterplot results, the positive association between median sale price and months' supply is plainly visible.
+We also visualized this comparison with a scatterplot of all 50 states and D.C. Looking at the scatterplot results, the positive association between median sale price and months' supply is plainly visible.
 ```{r 51 state supply price scatter}
 #this chunk contains the all states unfactored scatter
 #compare color scale w/ ..._all df
@@ -726,7 +726,7 @@ allstatescatterplot
 #needs a subtitle with commentary, just remembered all need a caption with the source named, and we can prob add other elements to this, because otherwise it seems to obvi to me
 ```
 
-We also wanted to separate out our subsetted data and overlay it onto the map above. In the following scatterplot, we see a striking trend revealed from the overlays of the subsetted scatter plots onto the 51 state and territory scatterplot. The association between months' supply and median sale price is glaringly obvious in this graph. 
+We also wanted to separate out our subsetted data and overlay it onto the map above. In the following scatterplot, we see a striking trend revealed from the overlays of the subsetted scatter plots onto the 50 states and D.C. scatterplot. The association between months' supply and median sale price is glaringly obvious in this graph. 
 
 ```{r scatter_supply_vs_median_price total all}
 #all in gray with faceted compare in color with states labeled ####
