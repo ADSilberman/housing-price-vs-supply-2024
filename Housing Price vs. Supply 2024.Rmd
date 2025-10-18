@@ -443,7 +443,7 @@ housing_counties_plot2
 
 ### Median Sale Price by State
 
-The first variable we analyzed was median sale price. The distribution of median sale price by state is be visualized as follows: 
+The first variable we analyzed was median sale price. The distribution of median sale price by state may be visualized as follows: 
 ```{r}
 #boxplotting med sale price by state w/ ..._all df
 #all
@@ -478,8 +478,8 @@ med_sale_price_by_state_boxplot = ggplot(housing_2024_all,
   
 med_sale_price_by_state_boxplot
   
-ggsave("med_sale_price_by_state_boxplot.png", plot = med_sale_price_by_state_boxplot, 
-       width = 10, height = 10, dpi = 300)
+# ggsave("med_sale_price_by_state_boxplot.png", plot = med_sale_price_by_state_boxplot, 
+#        width = 10, height = 10, dpi = 300)
 ```
 
 This graph allowed us to see the trend of median sale price distribution among states. However, the graph is too busy to be particularly useful. You can see general trends, but a smaller sample improves legibility.
@@ -568,7 +568,7 @@ ggplot(housing_compare_all, aes(x = reorder(State, -Median_Sale_Price_in_k, medi
   geom_boxplot(fill = state_colors_all, alpha = 0.7) +
   coord_flip() +
   labs(
-    title = "Distribution of Median Sale Prices by State (2024)",
+    title = "Distribution of Median Sale Prices by States with Extreme Months' Supply (2024)",
     x = "State",
     y = "Median Sale Price (in thousands)",
     caption = "SOURCE: American Enterprise Institute") +
@@ -600,7 +600,7 @@ supply12hist <- ggplot(housing_compare_all,
   geom_boxplot(alpha = 0.7) +
   scale_fill_manual(values = state_colors_all) +  
   coord_flip() +
-  labs(title = "Distribution of Months' Supply (2024)",
+  labs(title = "Distribution of Months' Supply by States with Extreme Months' Supply (2024)",
     x = "State",
     y = "Months' Supply",
     caption = "SOURCE: American Enterprise Institute") +
@@ -614,7 +614,7 @@ supply12hist <- ggplot(housing_compare_all,
     panel.background = element_blank(),
     plot.background = element_blank())
 
-ggsave("housing_supply_12_hist.png", plot = supply12hist, width = 10, height = 6, dpi = 300)
+# ggsave("housing_supply_12_hist.png", plot = supply12hist, width = 10, height = 6, dpi = 300)
 
 supply12hist
 
@@ -669,8 +669,8 @@ med_sale_price_in_states_by_months_supply_boxplot <- ggplot(
 
 med_sale_price_in_states_by_months_supply_boxplot
 
-ggsave("med_sale_price_in_states_by_months_supply_boxplot.png", 
-       plot = med_sale_price_in_states_by_months_supply_boxplot, width = 10, height = 10, dpi = 300)
+# ggsave("med_sale_price_in_states_by_months_supply_boxplot.png", 
+#        plot = med_sale_price_in_states_by_months_supply_boxplot, width = 10, height = 10, dpi = 300)
 ```
 ### Scatterplot of Months' Supply and Median Price
 
@@ -706,7 +706,7 @@ allstatescatterplot <- ggplot(housing_2024_all_plot, aes(x = Months_Supply, y = 
         panel.background = element_blank(), 
         plot.background = element_blank()) 
 
-ggsave("housing_supply_vs_price_allstates.png", plot = allstatescatterplot, width = 10, height = 6, dpi = 300)
+# ggsave("housing_supply_vs_price_allstates.png", plot = allstatescatterplot, width = 10, height = 6, dpi = 300)
 
 allstatescatterplot
 ```
@@ -791,7 +791,7 @@ tierhighlightscatterplot <- ggplot() +
         panel.background = element_blank(), 
         plot.background = element_blank()) 
 
-ggsave("housing_supply_vs_price_tierhighlight.png", plot = tierhighlightscatterplot, width = 10, height = 6, dpi = 300)
+# ggsave("housing_supply_vs_price_tierhighlight.png", plot = tierhighlightscatterplot, width = 10, height = 6, dpi = 300)
 
 tierhighlightscatterplot
 ```
@@ -926,7 +926,7 @@ supplyridge_12medianprice_plot <- ggplot(housing_ridge, aes(x = Months_Supply_Ca
         panel.background = element_blank(), 
         plot.background = element_blank()) 
 
-ggsave("supply_ridge_12_saleprice_plot.png", plot = supplyridge_12medianprice_plot, width = 10, height = 6, dpi = 300)
+# ggsave("supply_ridge_12_saleprice_plot.png", plot = supplyridge_12medianprice_plot, width = 10, height = 6, dpi = 300)
 
 supplyridge_12medianprice_plot
 ```
