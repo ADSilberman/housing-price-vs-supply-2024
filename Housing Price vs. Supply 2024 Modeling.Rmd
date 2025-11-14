@@ -969,3 +969,7 @@ One next step for us might be to pull in additional data to help us add color to
 We could also take straight from the source and attempt to pull public records data from First American via Data Tree and listings counts from Zillow and Realtor.com, perhaps adjusting for population. This would be a much better representation of supply than Months' Supply.
 
 ## References
+
+
+
+# project 2 ####
