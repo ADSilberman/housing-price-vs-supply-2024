@@ -29,11 +29,7 @@ options(scientific = T, digits = 3)
 
 ```{r libraries}
 library(ezids)
-library(ggplot2)
-library(dplyr)
-library(readr)
 library(tidyverse)
-library (tidyr)
 library(janitor)
 library(scales)
 library(ggrepel)
@@ -42,7 +38,6 @@ library(tigris)
 library(sf)
 library(ggridges)
 library(scales)
-library(tidytext)
 ```
 
 ## Introduction
