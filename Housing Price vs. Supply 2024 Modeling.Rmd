@@ -1,0 +1,976 @@
+---
+title: "Housing Price vs. Supply 2024"
+author: Stephanie Armstrong, Ilgaz Kuscu, Alexander D. Silberman, Baylee Wechsler
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    code_folding: hide
+    number_sections: false
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+bibliography: references.bib
+csl: https://www.zotero.org/styles/apa
+---
+
+```{r clear environment}
+rm(list=ls())
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      root.dir = "C:\\Users\\alexa\\Code\\GW DATS\\6101 Intro to Data Science\\Project 1\\GitHub",
+                      warning = F, message = F)
+options(scientific = T, digits = 3)
+```
+
+```{r libraries}
+library(ezids)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(tidyverse)
+library (tidyr)
+library(janitor)
+library(scales)
+library(ggrepel)
+library(corrplot)
+library(tigris)
+library(sf)
+library(ggridges)
+library(scales)
+library(tidytext)
+```
+
+## Introduction
+
+Supply and demand is a classic and well-known economic model. However, real life is far more nuanced than the simple version of this model that many are familiar with. We wanted to use real housing price and supply samples to explore how well that relationship fits economic theory. Our research question is: How is the supply of housing related to average home prices across U.S. metropolitan areas in the year 2024?
+
+In 2024, the housing market had more sellers than buyers. Normally, the excess supply in a buyer’s market would place downward pressure on prices, but concurrent economic monetary situation stalled that natural phenomenon. These unusual market conditions make it important to examine their wider economic and social impacts.
+
+Accordingly, the relevance of our question extends beyond economics, since housing prices directly affect households, companies, and wealth inequality. Rising home prices lead to wage increases, which in turn raise the cost of goods and services—creating a vicious cycle that fuels inflation. As uncontrolled inflation deteriorates living standards, companies struggle to attract and retain workers due to reduced labor mobility. Consequently, some firms relocate to more affordable states to balance operational costs.
+
+At the same time, while rising housing costs create financial burdens for renters, homeowners benefit from accumulating wealth through year-over-year appreciation and rental income. In fact, the wealth gap between homeowners and renters has reached a historic high, as housing costs have grown faster than incomes [@urban2023].
+
+Throughout our analysis, we cross-checked our findings with existing research and market reports to better understand these dynamics. In 2024, there were nearly 500000 more sellers than buyers [@redfin2025]. Despite this apparent “buyer’s market,” prices did not decline as economic theory might predict. One possible explanation is that the elasticity of housing supply—the degree to which new construction responds to price changes—has been steadily declining since the Great Recession [@cepr2024].
+
+Additionally, median home prices have more than doubled over the past decade, rising faster than both wages and inflation [@uschamber2024]. This growing affordability crisis hinders job creation, encourages corporate relocations, and causes states to lose billions of dollars in economic output [@pebbcap2024].
+
+## Data
+This project uses the State and County Housing Market Indicators dataset from the American Enterprise Institute Housing Center [@aei2024]. The variables are:  
+
+Original Variable Name | New Variable Name | Definition  
+  :-: |  :-: | :-- 
+State	| State |state
+County | County_Name |County
+FIPS | FIPS_County_Code | 5-digit Federal Information Processing Series codes (first 2 digits indicate state, last 3 indicate sub-county entity)
+Year | Year | Year when the data was collected
+Tier | Affordability | Categorizes home sales into entry-level (<=80th percentile of FHA sales prices), move-up (all others), and all
+Median.Sale.Price..in.Thousands. | Median_Sale_Price_in_k | Median sale price in thousands of USD per county
+House.Price.Appreciation.since.2012 | House_Price_Appreciation_since_2012_percent | Cumulative home price appreciation since 2012
+House.Price.Appreciation..Year.over.Year | House_Price_Appreciation_yr_over_yr_percent |Home price appreciation since the previous year
+Months..Supply | Months_Supply | Number of months it would take for the inventory of existing homes for sale to be exhausted at the current sales pace
+New.Construction.Share.of.Sales | New_Constr_by_share_of_sales_percent | Percent of sales comprising new construction
+Mortgage.Default.Rate | Mortgage_Default_Rate_percent | AEI Mortgage Default Rate, a measure of how loans originating in a given month would perform under the same conditions as the 2007 financial crisis (<=7%: Low Risk; between 7.01% and 14%: Medium Risk; >14%: High Risk)
+
+### Data Sources
+The AEI Housing Center itself primarily gathered data from public records from First American via Data Tree; specifically, it retrieved data from deed and tax assessor files about where homes were located, their prices, and when the deal took place.
+
+In addition, data for calculating AEI's Mortgage Default Rate were pulled from numerous sources:
+- Home Mortgage Disclosure Act (HMDA)
+- National Mortgage Default Rate
+- CoreLogic’s Loan Level Market Analytics (LLMA)
+- ICE’s McDash
+- Fannie Mae Single-Family Loan Performance
+- Freddie Mac Single Family Loan Level Data
+- Federal Housing Association Snapshot
+
+Approximately 60–65% of public records were able to be cross-referenced in this way, though the exact number depends on the locale. These were then weighted up to account for the incomplete data; according to AEI, this is representative of overall public records data
+
+Lastly, data for calculating Months' Supply was taken from Zillow and Realtor.com, and calculated as $\frac{\text{Listings Counts}}{\text{Existing Home Sales.}}$
+
+### Limitations
+The weakness of Months' Supply as a proxy for supply should here be noted. Months' Supply may be low for one of two reasons: supply and demand are both high, or supply and demand are both low. As such, it is not ideal for discovering how supply alone affects median sale price. The exact counts, adjusted for population, would be far more useful, 
+
+### Load and Clean Data
+```{r read_data}
+housing = read.csv("..\\Data\\state_county_data_download_2025.csv")
+#dplyr::slice_sample(housing, n = 5) %>% xkabledply()
+```
+
+The data is limited to the year 2024, and the variables are renamed for clarity. Additionally, data related to the armed forces are excluded, as that is outside the scope of the research question.
+
+```{r clean_data}
+housing_2024 = housing %>% filter(housing$Year == 2024, 
+                                  housing$State != 'AA National', 
+                                  housing$County != 'AA State') %>% #excluding the armed forces
+
+#rename cols
+rename(
+  Median_Sale_Price_in_k = Median.Sale.Price..in.Thousands.,
+  House_Price_Appreciation_yr_over_yr_percent = House.Price.Appreciation..Year.over.Year.,
+  House_Price_Appreciation_since_2012_percent = House.Price.Appreciation.since.2012,
+  Months_Supply = Months..Supply,
+  New_Constr_by_share_of_sales_percent = New.Construction.Share.of.Sales,
+  Mortgage_Default_Rate_percent = Mortgage.Default.Rate,
+  County_Name = County,
+  FIPS_County_Code = FIPS, 
+  Affordability = Tier
+)
+xkabledplyhead(housing_2024)
+```
+The typing of the variables is corrected. Some require further processing by removal of the symbols "$", ",", and "%" before they may be cast. Once this is performed, NAs are omitted from *Median_Sale_Price_in_k*; other dependent variables (House Price Appreciation, Mortgage Default Rate) also contained NAs, but, as these were less central to our research question and because we wanted to use as much data as possible, we declined to remove these.
+
+```{r correct_var_typing}
+# as factors
+housing_2024$State = as.factor(housing_2024$State)
+housing_2024$County_Name = as.factor(housing_2024$County_Name)
+housing_2024$FIPS_County_Code = as.factor(housing_2024$FIPS_County_Code)
+housing_2024$Affordability = as.factor(housing_2024$Affordability)
+
+# remove prefixes '$' and '%' from values
+housing_2024 = housing_2024 %>%
+  mutate(Median_Sale_Price_in_k = gsub("[\\$,]", "", Median_Sale_Price_in_k),
+         House_Price_Appreciation_since_2012_percent =
+           gsub("[%,]","",House_Price_Appreciation_since_2012_percent),
+         House_Price_Appreciation_yr_over_yr_percent =
+           gsub("[%,]","",House_Price_Appreciation_yr_over_yr_percent),
+         New_Constr_by_share_of_sales_percent = gsub("[%,]","",New_Constr_by_share_of_sales_percent),
+         Mortgage_Default_Rate_percent = gsub("[%,]","",Mortgage_Default_Rate_percent))
+###I included the commas to be removed as well indicated in the brackets. SA
+
+#as num instead of chr
+housing_2024$Median_Sale_Price_in_k = as.numeric(housing_2024$Median_Sale_Price_in_k)
+housing_2024$House_Price_Appreciation_since_2012_percent =
+  as.numeric(housing_2024$House_Price_Appreciation_since_2012_percent)
+housing_2024$House_Price_Appreciation_yr_over_yr_percent =
+  as.numeric(housing_2024$House_Price_Appreciation_yr_over_yr_percent)
+housing_2024$New_Constr_by_share_of_sales_percent = 
+  as.numeric(housing_2024$New_Constr_by_share_of_sales_percent)
+housing_2024$Mortgage_Default_Rate_percent = as.numeric(housing_2024$Mortgage_Default_Rate_percent)
+###I included the commas to be removed as well indicated in the brackets. SA
+
+#moving the na dropping to after the parsing
+housing_2024 <- housing_2024 %>%
+  tidyr::drop_na(Median_Sale_Price_in_k)
+
+#view data
+housing_2024 %>% slice_sample(n=5) %>% xkabledply()
+```
+
+After cleaning, there are `r housing_2024 %>% nrow()` observations remaining.
+
+However, the presence of the variable *Affordability* means there are three observations associated with each FIPS code: one for Entry-Level homes, one for Move-Up homes, and one that is a combination of the two ("all"). As, for the majority of our purposes, we only want one data point per FIPS code, the dataframe is split in two:
+one containing the tiered data (*housing_2024_tiers*), and the second containing only the combined data (*housing_2024_all*).
+
+```{r}
+housing_2024_all = housing_2024 %>% filter(housing_2024$Affordability == "all") 
+
+#creating df w/ affordability all totals and then another with entry level/moving up totals
+housing_2024_tiers <- housing_2024 %>%
+  dplyr::filter(Affordability %in% c("entrylevel","moveup")) %>%
+  dplyr::mutate(
+    Affordability = factor(Affordability,
+                           levels = c("entrylevel","moveup"),
+                           labels = c("Entry-Level","Move-Up"))
+  )
+```
+
+## Exploratory Data Analysis (EDA)
+
+### Summary Statistics
+
+Looking across all U.S. counties in our data set, the typical home price sat at around $200K, though the mean is pulled up by a handful of very expensive markets. Average months of supply was about 3, and well below the 5-6 months that indicate a balanced market. Demand is still outpacing what’s available. 
+
+Despite the tight market, prices rose around 6% year-over-year, and new construction only made up about 6-10% of total sales. Even from the top level data, we can already suspect the pattern: lower supply corresponds with stronger price growth.
+
+
+```{r summary table all}
+#summary stats on new df's
+xkablesummary(housing_2024_all)
+```
+
+
+To understand whether that same relationship holds across different parts of the market, we split the data into separate affordability tiers: entry-level and move-up homes, and compared how price and supply interact within each group. 
+
+Entry-level homes were far cheaper, with a typical price around $155K, but the tightest market at about only 2 months of supply. That scarcity was pushing prices up about 6% year-over-year, while new construction made up only about 4% of sales. Builders weren’t adding enough stock to relieve the pressure.
+
+Move-up homes had a median price of more than $400K, doubling the entry-level tier. In contrast, they show a more balanced 5-6 months of supply, slower appreciation at roughly 5%, and far more new construction at about 13%.
+
+Together, these tiers reveal a consistent pattern: markets with tighter supply experience faster price growth, while greater inventory and new construction at the higher end help moderate prices.  
+
+
+```{r summary table tiers}
+#comparing tiers entrylevel and moveup
+#entrylevel
+xkablesummary(df = subset(housing_2024_tiers, 
+                          Affordability == "Entry-Level"),
+              title = "Summary Statistics: Entry-Level Homes",
+              digits = 2,
+              pos = "left",
+              bso = "striped")
+
+#moveup
+xkablesummary(df = subset(housing_2024_tiers, 
+                          Affordability == "Move-Up"),
+              title = "Summary Statistics: Move-Up Homes",
+              digits = 2,
+              pos = "left",
+              bso = "striped")
+```
+
+### Correlation Heatmap of Numeric Variables
+
+Before we began analyzing specific variables, we constructed a heatmap to see the general magnitude and direction of correlational relationships among our variables. 
+
+```{r corr heatmap}
+#correlation heatmap of numeric variables w/ ..._all df
+housing_numeric_all <- housing_2024_all %>%
+  select(where(is.numeric) & !all_of("Year")) %>%
+  drop_na()
+
+cor_matrix_all <- cor(housing_numeric_all)
+
+corrplot(cor_matrix_all, method = "color", 
+         type = "lower", 
+         tl.cex = 0.7, 
+         addCoef.col = "black",
+         number.cex=0.6,
+         cl.cex = 0.5,
+         bg = "transparent")
+ 
+# saves plot
+# png(file = "housing_corr_plot.png", type="windows", bg = "transparent")
+# 
+# corrplot(cor_matrix_all, method = "color", 
+#          type = "lower", 
+#          # tl.cex = 0.7, 
+#          addCoef.col = "black",
+#          # number.cex=0.6,
+#          #cl.cex = 0.5,
+#          bg = "transparent")
+# 
+# dev.off()
+#interesting to see positive and inverse relationships between variables 
+#did not scan for no relationships
+```
+
+A few notes immediately stand out: some expected, others less so.
+
+House Price Appreciation year over year does not correlate linearly with House Price Appreciation since 2012; it seems like, at least for 2024, it is independent of what came before. Of the two, only one correlates with Median Sale Price: Appreciation since 2012, as expected—the higher the overall appreciation, the higher the price.
+
+New construction correlates with Months’ Supply: the more housing is being built, the longer it’ll take to sell all those houses.
+
+Mortgage Default Rate correlates negatively with Median Sale Price: the lower the sales price, the higher the risk of defaulting on your mortgage—those who can’t afford mortgages purchase less expensive houses.
+
+Surprisingly, Months’ Supply correlates positively with Median Sale Price, not negatively. There is a logical explanation, but only if causality is reversed from our expectations: the higher the price, the longer a home will take to sell. This does, unfortunately, emphasize the flaws in using this dataset to answer our question.
+
+### Price Distributions by Tier
+
+When we compare the price distributions between the tiers, move-up homes clearly sat at the higher level, with a median price about double those of entry-level. With the move-up tier showing more extreme outliers and a much wider range, we can see greater price volatility and a concentration of higher-value counties, confirming that affordability tiers meaningfully segmenting the housing market.
+	
+Entry-level homes cluster tightly at the lower end, showing limited price variation and reinforcing how constrained the affordability housing stock really is. Together these differences help answer our core question: when supply is tight at the lower end, prices rise fastest there. 
+
+```{r boxplot_price_by_affordability}
+#box plotting by affordability tiers from tiers df
+housing_afford_box <- ggplot(housing_2024_tiers, 
+                             aes(x = Affordability, 
+                                 y = Median_Sale_Price_in_k, 
+                                 fill = Affordability)) +
+  geom_boxplot(width = 0.6, 
+               outlier.alpha = 0.25) +
+  scale_fill_brewer(palette = "RdYlBu", direction = -1, guide = "none") +
+  labs(
+    title = "Median Sale Price by Affordability Tier",
+     subtitle = "Move-Up homes command higher prices, while Entry-Level markets remain more affordable",
+    x = "Affordability Tier",
+    y = "Median Sale Price (in thousands)",
+    caption = "SOURCE: American Enterprise Institute") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        plot.background  = element_blank())
+
+housing_afford_box
+
+#ggsaving
+#ggsave(plot = housing_afford_box,
+       # filename = "housing_afford_box.png",
+       # width = 7,
+       # height = 4,
+       # dpi = 500,
+       # bg = "transparent")
+```
+
+### Geographic Price Patterns
+
+Looking at the nation as a whole, we see how home prices vary sharply across regions, revealing a clear geographic divide by affordability. The blues dominate the Midwest and the South, reflecting lower typical prices and more accessible markets, while reds cluster along major metropolitan areas and the coasts, where housing was far more expensive. 
+
+This spatial pattern highlights a regional trend: interior counties remain relatively affordable while coastal regions continue to experience elevated prices. These high-priced areas also tend to align with regions known for limited housing supply and high demand, suggesting that geographic supply constraints are a major factor driving price growth in these markets. 
+
+```{r}
+##basemap
+
+#reading in counties spatial file from tigris package
+counties_2024 <- counties(year = 2013, 
+                          cb = TRUE, 
+                          class = "sf",
+                          progress_bar = FALSE)
+
+#excluding territories and shifting AK/HI
+counties_2024 <- counties_2024 %>%
+  filter(as.numeric(STATEFP) < 60) %>%
+  shift_geometry()
+
+#removing duplicate columns
+counties_2024 <- counties_2024 %>%
+  select(-NAME)
+
+#creating basemap and checking
+counties_2024_basemap <- ggplot() +
+  geom_sf(data = counties_2024) +
+  theme_void()
+
+#counties_2024_basemap
+
+##prepping and merging housing_2024_all w/ counties_2024
+
+housing_2024_all <- housing_2024_all %>%
+  mutate(price_bin = cut(Median_Sale_Price_in_k,
+                         breaks = c(0, 150, 300, 500, 750, 1000, Inf),
+                         labels = c("<150k", "150-300k", "300-500k", "500-750k", "750k-1M", ">1M")))
+
+#creating merge df and prepping counties df
+housing_merge <- housing_2024_all
+
+counties_2024 <- counties_2024 %>%
+  mutate(GEOID = as.numeric(GEOID))
+
+#adding id variables to track observations
+counties_2024$id1 <- 1
+housing_merge$id2 <- 1
+
+#merging
+housing_counties_merge <- merge(x = counties_2024,
+                                y = housing_merge,
+                                by.x = "GEOID",
+                                by.y = "FIPS_County_Code",
+                                all = TRUE)
+
+#converting NAs to zeros and finding problem observations
+  #looks like it merged just fine
+    #i lied, coded wrong and fixed, now i realize theres a  
+    #lot of problem observations 
+
+housing_counties_merge <- housing_counties_merge %>%
+  mutate(id1 = ifelse(is.na(id1), 0, id1),
+         id2 = ifelse(is.na(id2), 0, id2))
+
+no_merge <- housing_counties_merge %>%
+  filter(id1 + id2 != 2)
+
+#unique(no_merge$GEOID)
+
+#plotting and checking
+# housing_counties_plot <- ggplot() +
+#   geom_sf(data = housing_counties_merge,
+#           mapping = aes(fill = Median_Sale_Price_in_k),
+#           linetype = 0) +
+#   #scale_fill_brewer(palette = "GnBi") +
+#   theme(legend.position = "none") +
+#   theme_void()
+
+#housing_counties_plot
+
+#for fun: trying st_simplify to see if it looks better
+housing_counties_merge_simple <- st_simplify(housing_counties_merge, dTolerance = 75)
+
+housing_counties_plot2 <- ggplot() +
+  geom_sf(data = housing_counties_merge_simple,
+          mapping = aes(fill = price_bin),
+          linetype = 0) +
+  scale_fill_brewer(palette = "RdYlBu",
+                    direction = -1,
+                    name = "Median Sale Price",
+                    na.value = "grey85") +
+  labs(title = "Geographic Variation in U.S. Home Prices, 2024",
+       subtitle = "County-level median sale price",
+       caption = "Source: American Enterprise Institute") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 16),
+        plot.subtitle = element_text(size = 12, 
+                                     margin = margin(b = 8)),
+        plot.caption = element_text(color = "gray40", 
+                                    margin = margin(t = 8)),
+        legend.title = element_text(face = "bold"),
+        legend.position = "right",
+        legend.key.height = unit(0.6, "cm"),
+        panel.grid = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        plot.margin = margin(8, 12, 8, 12),
+        panel.background = element_rect(fill = "transparent", 
+                                        color = NA),
+        plot.background  = element_rect(fill = "transparent", 
+                                        color = NA))
+#+ theme_void()
+
+housing_counties_plot2
+
+# ggsave(plot = housing_counties_plot2,
+#        filename = "housing_counties_plot2.png",
+#        width = 7,
+#        height = 4,
+#        dpi = 500,
+#        bg = "transparent")
+```
+
+### Median Sale Price by State
+
+The first variable we analyzed was median sale price. The distribution of median sale price by state may be visualized as follows: 
+```{r}
+#boxplotting med sale price by state w/ ..._all df
+#all
+med_sale_price_by_state_boxplot = ggplot(housing_2024_all, 
+                                         aes(x = reorder(State, -Median_Sale_Price_in_k, median), 
+                                             y = Median_Sale_Price_in_k)) +
+  geom_boxplot(fill = "steelblue", alpha = 0.7) +
+  coord_flip() +
+  labs(
+    title = "Distribution of Median Sale Prices by State (2024)",
+    x = "State",
+    y = "Median Sale Price (in thousands)",
+    caption = "SOURCE: American Enterprise Institute") +
+  theme(axis.text.y = element_text(size = 5)) +
+  theme_minimal()+
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        plot.background = element_blank()) 
+#next round, would want to nix outliers
+  
+med_sale_price_by_state_boxplot
+  
+# ggsave("med_sale_price_by_state_boxplot.png", plot = med_sale_price_by_state_boxplot, 
+#        width = 10, height = 10, dpi = 300)
+```
+
+This graph allowed us to see the trend of median sale price distribution among states. However, the graph is too busy to be particularly useful. You can see general trends, but a smaller sample improves legibility.
+
+### Top and Bottom Months' Supply Analysis 
+
+We subsetted the dataset in order to have a smaller sample to visualize and analyze our data. By isolating the states with the highest and lowest Months' Supply, we were able to better visualize the difference in how Months' Supply correlates with other variables of interest.
+
+The states that fell into these groups are:  
+```{r}
+#boxplotting with new df: ..._all
+#Find top/bottom 5 by median Months' Supply, not row count
+states_by_median_months_supply <- housing_2024_all %>%
+  group_by(State) %>%
+  summarize(Median_Months_Supply = median(Months_Supply))
+
+top_states_all = states_by_median_months_supply %>% slice_max(order_by = Median_Months_Supply, n = 5)
+
+bottom_states_all <- states_by_median_months_supply %>% slice_min(order_by = Median_Months_Supply, n = 5)
+
+#merge top and bottom states
+housing_compare_all <- housing_2024_all %>%
+  filter(State %in% c(top_states_all$State, bottom_states_all$State)) %>%
+  mutate(StateGroup = case_when(
+    State %in% top_states_all$State ~ "High Months' Supply",
+    State %in% bottom_states_all$State ~ "Low Months' Supply")) %>%
+  mutate(StateGroup = factor(StateGroup, levels = c("Low Months' Supply", "High Months' Supply")))
+```
+
+#### Top Months' Supply States
+```{r top-months-supply-states}
+top_states_all %>% 
+  add_column(State_Name = c("Hawaii","District of Columbia", "Florida", "Colorado", "Oregon")) %>%
+  relocate(State_Name, .after = State) %>%
+  xkabledply
+```
+
+#### Bottom Months' Supply States	
+```{r bottom-months-supply-states}
+bottom_states_all %>% 
+  add_column(State_Name = c("Massachusetts","Wisconsin", "Kentucky", 
+                            "New Hampshire", "Illinois","Indiana","Mississippi",
+                            "North Dakota","Ohio")) %>%
+  relocate(State_Name, .after = State) %>%
+  xkabledply
+```
+
+Immediately, the subsetted data in the same graph format shows a much clearer vision of the positive association between months' supply and median sale price.
+
+```{r top bottom hist price}
+#is prep for the all states factored scatter but 
+#fix color assigning for side by side compare scatterplots- too many blue showing up
+#cleaned plot version with dropped unused (non-10) state levels; re-group by state for clarity
+housing_compare_all_plot <- housing_compare_all %>%
+  group_by(State, StateGroup) %>%
+  summarize(
+    Median_Sale_Price_in_k = median(Median_Sale_Price_in_k, na.rm = TRUE),
+    Months_Supply = median(Months_Supply, na.rm = TRUE),
+    .groups = "drop") %>%
+  mutate(State = forcats::fct_drop(State))
+
+#also fixing subset of housing 2024 all so that gray background dots are 1/state
+housing_2024_all_plot <- housing_2024_all %>%
+  group_by(State) %>%
+  summarize(
+    Median_Sale_Price_in_k = median(Median_Sale_Price_in_k, na.rm = TRUE),
+    Months_Supply = median(Months_Supply, na.rm = TRUE),
+    .groups = "drop")
+
+#label points for 10 states 
+label_points_all <- housing_compare_all_plot
+
+#using cleaned version of plot data to assign colors
+top_states_colors_all <- scales::seq_gradient_pal("lightblue", "darkslateblue")(seq(0, 1, length.out = length(unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "High Months' Supply"]))))
+names(top_states_colors_all) <- unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "High Months' Supply"])
+
+bottom_states_colors_all <- scales::seq_gradient_pal("lightpink", "darkred")(seq(0, 1, length.out = length(unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "Low Months' Supply"]))))
+names(bottom_states_colors_all) <- unique(housing_compare_all_plot$State[housing_compare_all_plot$StateGroup == "Low Months' Supply"])
+
+state_colors_all <- c(top_states_colors_all, bottom_states_colors_all)
+
+#boxplotting med sale price by state w/ ..._compare_all df
+#all
+ggplot(housing_compare_all, aes(x = reorder(State, Median_Sale_Price_in_k, median), 
+                         y = Median_Sale_Price_in_k,
+                         fill = State)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = state_colors_all) +  
+  coord_flip() +
+  labs(
+    title = "Distribution of Median Sale Prices by States with\nExtreme Months' Supply (2024)",
+    x = "State",
+    y = "Median Sale Price (in thousands)",
+    caption = "SOURCE: American Enterprise Institute") +
+  theme_minimal()+
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        plot.background = element_blank()) 
+```
+
+We also looked at the distribution of the subset of states' months' supply of housing.
+
+```{r hist supply}
+#hist of Months' Supply
+supply12hist <- ggplot(housing_compare_all, 
+       aes(x = reorder(State, Months_Supply, median),
+           y = Months_Supply,
+           fill = State)) +  
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = state_colors_all) +  
+  coord_flip() +
+  labs(title = "Distribution of Months' Supply by States with\nExtreme Months' Supply (2024)",
+    x = "State",
+    y = "Months' Supply",
+    caption = "SOURCE: American Enterprise Institute") +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold", size = 14, margin = margin(b = 3)),
+    plot.subtitle = element_text(size = 10, color = "gray25", margin = margin(b = 8)),
+    axis.title = element_text(size = 10, face = "bold"),
+    axis.text = element_text(size = 9),
+    plot.caption = element_text(size = 8, color = "gray40", hjust = 1),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    plot.background = element_blank())
+
+# ggsave("housing_supply_12_hist.png", plot = supply12hist, width = 10, height = 6, dpi = 300)
+
+supply12hist
+
+#needs a subtitle with commentary, just remembered all need a caption with the source named, and we can prob add other elements to this, because otherwise it seems to obvi to me
+
+#some other supply dist graph? full 50 I think
+
+#z score
+#confidence interval (on what tho, maybe median sale price and Months' Supply)
+#then add Zscore and CI onto scatterplot somehow?
+```
+
+As you can see, there is over a six month difference in supply of housing between the states with the lowest and highest counts (Massachusetts and Hawaii). 
+
+We also see that a few of the states have significant outliers, like North Dakota, for example. North Dakota closely aligns with a few of the lower supply states, but higher outliers pull the median forward. For our next round of analysis, we may choose to pursue excluding outliers to see how that changes the findings. 
+
+The following graph also highlights the relationship between our price and supply variables.
+
+```{r top bottom boxplot price supply dist, factored}
+#plot top bottom comparison ####
+med_sale_price_in_states_by_months_supply_boxplot <- ggplot(
+  housing_compare_all, 
+  aes(x = reorder_within(State, Median_Sale_Price_in_k, StateGroup), 
+    y = Median_Sale_Price_in_k,
+    fill = StateGroup)) +
+  geom_boxplot() +
+  facet_wrap(~ StateGroup, scales = "free_x") +
+  scale_x_reordered()  +
+  labs(
+    title = "Median Sale Price in States by Months' Supply of Housing",
+    subtitle = "The Median Sale Price in States with a Larger Months' Supply of Housing is Significantly Lower\nthan States with a Smaller Months' Supply of Housing",
+    x = "State",
+    y = "Median Sale Price (in thousands)",
+    caption = "SOURCE: American Enterprise Institute") +
+  theme_minimal() +
+  scale_fill_manual(values = c("High Months' Supply" = "skyblue", "Low Months' Supply" = "red"))+
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        plot.background = element_blank()) 
+
+med_sale_price_in_states_by_months_supply_boxplot
+
+# ggsave("med_sale_price_in_states_by_months_supply_boxplot.png", 
+#        plot = med_sale_price_in_states_by_months_supply_boxplot, width = 10, height = 10, dpi = 300)
+```
+### Scatterplot of Months' Supply and Median Price
+
+We also visualized this comparison with a scatterplot of all 50 states and D.C. Looking at the scatterplot results, the positive association between median sale price and months' supply is plainly visible.
+```{r 51 state supply price scatter}
+#this chunk contains the all states unfactored scatter
+#compare color scale w/ ..._all df
+
+#now actual plot
+allstatescatterplot <- ggplot(housing_2024_all_plot, aes(x = Months_Supply, y = Median_Sale_Price_in_k)) +
+  geom_point(color="steelblue", alpha = 0.7) +
+  # geom_smooth(method = "lm", se = FALSE, color = "black") +
+  labs(
+    title = "Months' Supply of Housing vs Median Sale Price",
+    subtitle= "A Scatterplot Reveals a Positive Correlation Between Months' Supply\nof Housing and Median Sale Price",
+    x = "Months of Supply",
+    y = "Median Sale Price (in thousands)",
+    caption = "SOURCE: American Enterprise Institute") +
+  theme_minimal()+
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        plot.background = element_blank()) 
+
+# ggsave("housing_supply_vs_price_allstates.png", plot = allstatescatterplot, width = 10, height = 6, dpi = 300)
+
+allstatescatterplot
+```
+
+```{r mystery}
+#hist plotting with df ..._all
+#housing_price_hist <- ggplot(housing_2024_all, aes(x = Median_Sale_Price_in_k)) +
+#  geom_histogram(binwidth = 25, fill = "skyblue", color = "black") +
+#  scale_x_continuous(labels = scales::dollar_format(prefix = "$", suffix = "k")) +
+#  labs(
+#    title = "Distribution of Median Sale Prices",
+#    subtitle = "Most U.S. counties cluster below $300k, with a long right-skewed tail #in higher-priced markets",
+#    x = "Median Sale Price (in thousands)",
+#    y = "Number of Counties",
+#    caption = "SOURCE: American Enterprise Institute") +
+#  theme_minimal() +
+#  theme(plot.title = element_text(face = "bold", 
+#                                  size = 14, 
+#                                  margin = margin(b = 3)),
+#        plot.subtitle = element_text(size = 10, 
+#                                     color = "gray25",
+#                                     margin = margin(b = 8)),
+#        axis.title = element_text(size = 10, 
+#                                  face = "bold"),
+#        axis.text = element_text(size = 9),
+#        plot.caption = element_text(size = 8, 
+#                                    color = "gray40", 
+#                                    hjust = 1),
+#        panel.grid.minor = element_blank(),
+#        panel.background = element_blank(), 
+#        plot.background = element_blank()) #
+
+#ggsaving
+#ggsave(plot = housing_price_hist,
+#       filename = "housing_price_hist.png",
+#       width = 7,
+#       height = 4,
+#       dpi = 500,
+#       bg = "transparent")
+#
+#needs a subtitle with commentary, just remembered all need a caption with the source named, and we can prob add other elements to this, because otherwise it seems to obvi to me
+```
+
+We also wanted to separate out our subsetted data and overlay it onto the map above. In the following scatterplot, we see a striking trend revealed from the overlays of the subsetted scatter plots onto the 50 states and D.C. scatterplot. The association between months' supply and median sale price is glaringly obvious in this graph. 
+
+```{r scatter_supply_vs_median_price total all}
+#all in gray with faceted compare in color with states labeled ####
+tierhighlightscatterplot <- ggplot() +
+  geom_point(data = housing_2024_all_plot, aes(x = Months_Supply, y = Median_Sale_Price_in_k),
+             color = "gray70", alpha = 0.3, size = 1.5) +
+  geom_point(data = housing_compare_all_plot,
+             aes(x = Months_Supply, y = Median_Sale_Price_in_k, color = State),
+             size = 1.5, alpha = 0.9) +
+  geom_text_repel(data = label_points_all,
+                  aes(x = Months_Supply, y = Median_Sale_Price_in_k, 
+                      label = State),
+                  size = 3.5, color= "black", stroke=0.01, segment.color = NA, segment.size = 0.3,
+                  segment.alpha = 1, min.segment.length = 0, show.legend = FALSE) +
+  facet_wrap(~ StateGroup) +
+  scale_color_manual(values = state_colors_all) +
+  labs(
+    title = "Months' Supply vs Median Price by State",
+    subtitle = "The positive association between Months' Supply and High Median Sale Price is Immediately Visible",
+    x = "Months of Supply",
+    y = "Median Sale Price (in thousands)",
+    color = "State",
+    caption = "SOURCE: American Enterprise Institute") +
+  theme_minimal()+
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        plot.background = element_blank()) 
+
+# ggsave("housing_supply_vs_price_tierhighlight.png", plot = tierhighlightscatterplot, width = 10, height = 6, dpi = 300)
+
+tierhighlightscatterplot
+```
+
+```{r}
+#both together in gray with compare in color with states labeled w/ ..._all df
+#ggplot() +
+#  geom_point(data = housing_2024_all, 
+#             aes(x = Months_Supply, y = Median_Sale_Price_in_k), 
+#             color = "gray70", alpha = 0.3, size = 1) +
+  # geom_path(data = housing_compare %>% filter(StateGroup == "States with the Most Houses"),
+  #           aes(x = Months_Supply, y = Median_Sale_Price_in_k, group = State, color = State),
+  #           alpha = 0.8, size = 1) +
+#  geom_point(data = housing_compare_all %>% filter(StateGroup == "States with the Most Houses"),
+#             aes(x = Months_Supply, y = Median_Sale_Price_in_k, color = State),
+#             alpha = 0.5, size = 2) +
+#  # geom_path(data = housing_compare %>% filter(StateGroup == "States with the Fewest Houses"),
+  #           aes(x = Months_Supply, y = Median_Sale_Price_in_k, group = State, color = State),
+  #           alpha = 0.8, size = 1) +
+ # geom_point(data = housing_compare_all %>% filter(StateGroup == "States with the Fewest Houses"),
+ #            aes(x = Months_Supply, y = Median_Sale_Price_in_k, color = State),
+#             alpha = 0.5, size = 2) +
+#  scale_color_manual(values = state_colors_all) +
+#  labs(
+ #   title = "Housing Supply vs Median Price: All Counties with Highlights",
+#    subtitle = "Gray points: All counties | Blue shades: States with Most Houses | Red shades: States with Fewest Houses",
+#    x = "Months of Supply",
+ #   y = "Median Sale Price (in thousands)",
+  #  color = "State",
+#    caption = "SOURCE: American Enterprise Institute") +
+#  theme_minimal()
+```
+
+```{r}
+#housing_constr_all = housing_2024_all
+#housing_constr_all = housing_constr_all %>% 
+#  mutate(constr_bins = cut(New_Constr_by_share_of_sales_percent, breaks=10))
+
+#ggplot(housing_constr_all, aes(x = constr_bins, y = Median_Sale_Price_in_k, fill=constr_bins)) +
+#  geom_boxplot() +
+ # labs(
+#    title = "Median Sale Price by Percent New Construction (2024)",
+#    x = "New Construction by Share of Sales Percent",
+#    y = "Median Sale Price (in thousands)",
+#    caption = "SOURCE: American Enterprise Institute") +
+#  theme_minimal()
+
+# Perhaps new construction indicates high demand, and as such, the more new construction, the higher the median sale price?
+#I would like to know which states fall into these buckets. In which states are the top quarter and bottom quarter? BW
+#I'm going to break this into smaller buckets and investigate.BW
+```
+
+In this final visualization, we overlayed the median sale price, represented by black dots, with the monetary values along the top x axis onto the county distributions of months supply on the bottom x axis across the states in our subsetted dataset. 
+
+There is a clear trend in higher months' supply correlating with higher median sale price. We also see a few states where outliers skew the median sale price- this is most obvious for Massachusetts and New Hampshire. 
+
+Another important note is that, for readability, the graph data was capped at 12 months. New Hampshire has several counties where the months supply value is higher than is visible in this graph, and this helps explain what otherwise appears to bea right-skewed median sale price.
+
+```{r supply option 2- 12}
+#housing supply dist w 12 states for context, all df
+
+#prep
+max_months <- 12
+housing_ridge <- housing_compare_all %>%
+  mutate(Months_Supply_Capped = pmin(Months_Supply, max_months))
+
+#medians per state
+state_medians <- housing_ridge %>%
+  group_by(State) %>%
+  summarize(
+    Median_Sale_Price = median(Median_Sale_Price_in_k, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+#normalize sale price to match the x-axis range (e.g. 0–12 months)
+sale_price_min <- min(state_medians$Median_Sale_Price, na.rm = TRUE)
+sale_price_max <- max(state_medians$Median_Sale_Price, na.rm = TRUE)
+
+#normalize price into 0-12 scale
+scale_price_to_months <- function(price_k) {
+  scales::rescale(price_k, to = c(0, max_months), from = c(sale_price_min, sale_price_max))
+}
+
+#apply scaled value
+state_medians <- state_medians %>%
+  mutate(Scaled_Sale_Price = scale_price_to_months(Median_Sale_Price))
+
+#reorder
+state_order <- state_medians %>%
+  arrange(Median_Sale_Price) %>%
+  pull(State)
+housing_ridge <- housing_ridge %>%
+  mutate(State = factor(State, levels = state_order))
+
+#save plot as object
+supplyridge_12medianprice_plot <- ggplot(housing_ridge, aes(x = Months_Supply_Capped, y = State, fill = StateGroup), fill = StateGroup) +
+  geom_density_ridges(scale = 1.5, alpha = 0.8, color = "white") +
+  geom_point(data = state_medians, 
+             aes(x = Scaled_Sale_Price, y = State), 
+             inherit.aes = FALSE,
+             shape = 21, fill = "black", color = "white", size = 2) +
+  scale_fill_manual(values = c("Low Months' Supply" = "indianred", "High Months' Supply" = "steelblue")) +
+  scale_x_continuous(
+    name = "Months of Supply (capped at 12)",
+    sec.axis = sec_axis(
+      trans = ~ scales::rescale(., to = c(sale_price_min, sale_price_max), from = c(0, max_months)),
+      name = "Median Sale Price (in thousands)",
+      labels = dollar_format(prefix = "$", suffix = "k"))) +
+  labs(
+    title = "Distribution of Months' Supply by State with Median Sale Price Overlay",
+    subtitle = "Each ridge shows the supply distribution for a state; black dots show scaled median sale prices",
+    y = "State",
+    fill = "State Group",
+    caption = "SOURCE: American Enterprise Institute") +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    axis.title.x.top = element_text(margin = margin(b = 10)))+
+  theme(plot.title = element_text(face = "bold", 
+                                  size = 14, 
+                                  margin = margin(b = 3)),
+        plot.subtitle = element_text(size = 10, 
+                                     color = "gray25",
+                                     margin = margin(b = 8)),
+        axis.title = element_text(size = 10, 
+                                  face = "bold"),
+        axis.text = element_text(size = 9),
+        plot.caption = element_text(size = 8, 
+                                    color = "gray40", 
+                                    hjust = 1),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(), 
+        plot.background = element_blank()) 
+
+# ggsave("supply_ridge_12_saleprice_plot.png", plot = supplyridge_12medianprice_plot, width = 10, height = 6, dpi = 300)
+
+supplyridge_12medianprice_plot
+```
+
+## Significance Testing
+
+Though the graphs have proven quite conclusive, we proceed with ANOVA testing to confirm the existence of and nature of the relationship between our variables.
+
+$H_0: \mu_{AK} = \mu_{AL} = ... = \mu_{WY}$
+
+$H_1:$ At least one $\mu$ is different
+
+```{r anova}
+states_median_sale_price_anova = aov(Median_Sale_Price_in_k ~ State, data = housing_2024_all)
+xkabledply(states_median_sale_price_anova, title = "ANOVA result summary")
+```
+
+Median sale price varies highly significantly by state, with a p-value smaller than r can store. As such, we reject the null hypothesis, concluding that it is improbable that states have the same true median sale price.
+
+### Post-hoc Tukey HSD
+
+It is best practice to follow a significant ANOVA with a post-hoc Tukey HSD; as there are 2550 possible pairings, rather than display the full output, we will instead list all of the pairwise combinations which have a P-value less than 0.05, of which there are 550:
+
+```{r median_sale_price_tukey_hsd}
+states_median_sale_price_tukey <- TukeyHSD(states_median_sale_price_anova)
+states_median_sale_price_tukey$State[, "p adj"] %>%
+  subset(states_median_sale_price_tukey$State[, "p adj"] < 0.05)
+```
+
+
+## Conclusion 
+In conducting this project, our team was reminded of our first day of class, going over the data science life cycle. We initially established a question we wanted to answer and identified data that we believed could enlighten us on this data. However, by conducting our EDA, we discovered that the metrics that AEI chose to include do not directly match the question we sought out to answer.
+
+### Key Takeaways
+There is a clear connection between months supply of housing and median sale price. This could be due to high demand pushing sale prices higher or low supply pushing sale prices higher. We will need more data in order to identify which is the stronger driver, if either. 
+
+We also found interesting connections between the percent of houses in a county that are new constructions and the mortgage default rate in a county with our two key variables, months supply and median sale price. 
+
+### Next Steps
+One next step for us might be to pull in additional data to help us add color to the picture we are painting and to also help us better address our original research question. We will need to do additional analysis to better identify the nature of the relationship between these primary and secondary variables. 
+
+We could also take straight from the source and attempt to pull public records data from First American via Data Tree and listings counts from Zillow and Realtor.com, perhaps adjusting for population. This would be a much better representation of supply than Months' Supply.
+
+## References
