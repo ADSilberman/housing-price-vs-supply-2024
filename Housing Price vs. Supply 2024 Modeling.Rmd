@@ -38,6 +38,7 @@ library(tigris)
 library(sf)
 library(ggridges)
 library(scales)
+library(tidycensus)
 ```
 
 ## Introduction
@@ -973,3 +974,30 @@ We could also take straight from the source and attempt to pull public records d
 
 
 # project 2 ####
+
+## Data
+
+### Data Sources
+
+#### American Community Survey
+
+```{r load_acs}
+census_api_key("29e7dfea2f8b253a0a10ccd9626f78e49f4f0a4f")
+
+census_vars = load_variables(year = 2024, dataset = "acs1/profile", cache = TRUE)
+
+acs1_2024 = get_acs(geography = "metropolitan statistical area/micropolitan statistical area",
+                    variables = census_vars$name,
+                    year = 2024,
+                    survey = "acs1",
+                    output = "wide")
+head(acs1_2024)
+```
+
+This includes both estimates as well as margins of error. I have included code to drop the margins of error, but I am unsure if this is a good idea.
+
+```{r}
+acs1_2024_ests = select(acs1_2024, -grepv("*M$", names(acs1_2024)))
+head(acs1_2024_ests)
+```
+
