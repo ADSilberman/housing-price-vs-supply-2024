@@ -977,13 +977,9 @@ We could also take straight from the source and attempt to pull public records d
 
 ## Data
 
-### Data Sources
-
-#### Realtor.com
-
 ```{r}
 #loading in inventory data
-inventory_raw <- read_csv("..\\Data\\RDC_Inventory_Core_Metrics_Metro_History.csv")
+inventory_raw <- readr::read_csv("RDC_Inventory_Core_Metrics_Metro_History.csv")
 
 #cleaning names
 clean_names(inventory_raw)
@@ -996,27 +992,29 @@ inventory_2024 <- inventory_raw %>%
   filter(month_date_yyyymm >= 202401 & month_date_yyyymm <= 202412)
 
 #loading in hotness data
-hotness_raw <- read.csv("..\\Data\\RDC_Inventory_Hotness_Metrics_Metro_History.csv")
+#hotness_raw <- read.csv("..\\Data\\RDC_Inventory_Hotness_Metrics_Metro_History.csv")
 
 #cleaning names
-clean_names(hotness_raw)
+#clean_names(hotness_raw)
 
 #hunting down year
-glimpse(hotness_raw)
+#glimpse(hotness_raw)
 
 #filtering for 2024
-hotness_2024 <- hotness_raw %>%
-  filter(month_date_yyyymm >= 202401 & month_date_yyyymm <= 202412)
+#hotness_2024 <- hotness_raw %>%
+#  filter(month_date_yyyymm >= 202401 & month_date_yyyymm <= 202412)
 
 #joining
-realtor_2024 <- inventory_2024 %>%
-  inner_join(hotness_2024,
-             by = c("month_date_yyyymm", "cbsa_code"),
-             suffix = c("_inv", "_hot"))
+#realtor_2024 <- inventory_2024 %>%
+#  inner_join(hotness_2024,
+#             by = c("month_date_yyyymm", "cbsa_code"),
+#             suffix = c("_inv", "_hot"))
 
 #checking
-names(realtor_2024)
+#names(realtor_2024)
 ```
+
+### Data Sources
 
 #### American Community Survey
 
@@ -1024,22 +1022,140 @@ names(realtor_2024)
 census_api_key("29e7dfea2f8b253a0a10ccd9626f78e49f4f0a4f")
 
 census_vars = load_variables(year = 2024, dataset = "acs1/profile", cache = TRUE)
-census_vars_limited = grepv("*P$", census_vars$name)
 
 acs1_2024 = get_acs(geography = "metropolitan statistical area/micropolitan statistical area",
-                    variables = census_vars_limited,
+                    variables = census_vars$name,
                     year = 2024,
                     survey = "acs1",
                     output = "wide")
 head(acs1_2024)
 ```
 
-The list of variables includes what should be the total population as a percent—"DP05_0001P"—but, as that would always be 100%, the wise people at the US Census Bureau made such equal to "DP05_0001E", the total population estimate, necessitating no further adjustment.
-
-This includes both percents as well as margins of error. I have included code to drop the margins of error, but I am unsure if this is a good idea.
+This includes both estimates as well as margins of error. I have included code to drop the margins of error, but I am unsure if this is a good idea.
 
 ```{r}
-acs1_2024_pcts = select(acs1_2024, -grepv("M$", names(acs1_2024)))
-head(acs1_2024_pcts)
+acs1_2024_ests = select(acs1_2024, -grepv("*M$", names(acs1_2024)))
+head(acs1_2024_ests)
 ```
+
+```{r future ACS variable dictionary}
+#ACS variable codes 
+#use to make a dictionary for the report
+
+#demographics
+#DP02_0001E – Total population
+#DP02_0018PE – % Male
+#DP02_0019PE – % Female
+#DP02_0033PE – % White alone
+#DP02_0034PE – % Black or African American alone
+#DP02_0035PE – % Asian alone
+#DP02_0043PE – % Hispanic or Latino
+#DP02_0051PE – % Under 18
+#DP02_0052PE – % 65 and over
+#DP02_0071PE – % Married-couple households
+#DP02_0073PE – % Female householder, no husband
+#DP02_0074PE – % Male householder, no wife
+
+#economics
+#DP03_0018PE – % Unemployed
+#DP03_0026PE – % Below poverty level
+#DP03_0050PE – % Bachelor’s degree or higher
+#DP03_0064PE – % Household income $75,000+
+
+#housing
+
+#DP04_0001E – Total housing units
+#DP04_0003PE – % Owner-occupied
+#DP04_0004PE – % Renter-occupied
+#DP04_0027PE – % Units built 2000 or later
+#DP04_0039PE – % Vacant units
+
+```
+
+
+
+```{r filter acs data down}
+#which variables to keep
+vars_needed <- c(
+  #demographics
+  "DP02_0001E","DP02_0018PE","DP02_0019PE","DP02_0033PE",
+  "DP02_0034PE","DP02_0035PE","DP02_0043PE","DP02_0051PE",
+  "DP02_0052PE","DP02_0071PE","DP02_0073PE","DP02_0074PE",
+  #economics
+  "DP03_0018PE","DP03_0026PE","DP03_0050PE","DP03_0064PE",
+  #housing
+  "DP04_0001E","DP04_0003PE","DP04_0004PE","DP04_0027PE","DP04_0039PE")
+
+#filter down the dataset
+acs1_2024_filtered <- acs1_2024_ests[, c("GEOID", "NAME", vars_needed)]
+
+#rename ACS variable codes to real things
+acs1_2024_filtered <- acs1_2024_filtered %>%
+  rename(
+    total_population = DP02_0001E,
+    pct_male = DP02_0018PE,
+    pct_female = DP02_0019PE,
+    pct_white = DP02_0033PE,
+    pct_black = DP02_0034PE,
+    pct_asian = DP02_0035PE,
+    pct_hispanic = DP02_0043PE,
+    pct_under_18 = DP02_0051PE,
+    pct_65_over = DP02_0052PE,
+    pct_married_couple = DP02_0071PE,
+    pct_female_householder = DP02_0073PE,
+    pct_male_householder = DP02_0074PE,
+    pct_unemployed = DP03_0018PE,
+    pct_below_poverty = DP03_0026PE,
+    pct_bachelors_or_higher = DP03_0050PE,
+    pct_income_75k_plus = DP03_0064PE,
+    total_housing_units = DP04_0001E,
+    pct_owner_occupied = DP04_0003PE,
+    pct_renter_occupied = DP04_0004PE,
+    pct_units_built_2000_plus = DP04_0027PE,
+    pct_vacant_units = DP04_0039PE)
+
+#check it out
+head(acs1_2024_filtered)
+#will need to adjust var types
+```
+
+
+```{r merge datasets}
+#cbsa code var to chr so merge works
+inventory_2024 <- inventory_2024 %>%
+  mutate(cbsa_code = as.character(cbsa_code))
+
+#merge ACS and inventory datasets
+full_dataset <- acs1_2024_filtered %>%
+  left_join(inventory_2024, by = c("GEOID" = "cbsa_code"))
+
+
+#group by metro & key stats
+metro_summary <- full_dataset %>%
+  group_by(NAME) %>%  # ACS metro name
+  summarise(
+    total_population = sum(total_population, na.rm = TRUE),  
+    pct_male = mean(pct_male, na.rm = TRUE),                  
+    pct_female = mean(pct_female, na.rm = TRUE),             
+    pct_white = mean(pct_white, na.rm = TRUE),              
+    pct_black = mean(pct_black, na.rm = TRUE),              
+    pct_asian = mean(pct_asian, na.rm = TRUE),              
+    total_housing_units = sum(total_housing_units, na.rm = TRUE),
+    pct_owner_occupied = mean(pct_owner_occupied, na.rm = TRUE),
+    total_inventory = sum(total_inventory_metric, na.rm = TRUE))%>%
+  ungroup()
+
+#check it out
+head(metro_summary)
+```
+
+
+
+
+
+
+
+
+
+
 
