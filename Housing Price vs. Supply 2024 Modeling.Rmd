@@ -1039,7 +1039,7 @@ The list of variables includes what should be the total population as a percentâ
 This includes both percents as well as margins of error. I have included code to drop the margins of error, but I am unsure if this is a good idea.
 
 ```{r}
-acs1_2024_pcts = select(acs1_2024, -grepv("*M$", names(acs1_2024)))
+acs1_2024_pcts = select(acs1_2024, -grepv("M$", names(acs1_2024)))
 head(acs1_2024_pcts)
 ```
 
