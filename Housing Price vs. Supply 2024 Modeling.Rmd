@@ -1034,7 +1034,7 @@ acs1_2024 = get_acs(geography = "metropolitan statistical area/micropolitan stat
 head(acs1_2024)
 ```
 
-The list of variables includes what should be the total population as a percent—"DP05_0001P"—but, as that would always be 100%, the wise people at BLS made such equal to "DP05_0001E", the total population estimate, necessitating no further adjustment.
+The list of variables includes what should be the total population as a percent—"DP05_0001P"—but, as that would always be 100%, the wise people at the US Census Bureau made such equal to "DP05_0001E", the total population estimate, necessitating no further adjustment.
 
 This includes both percents as well as margins of error. I have included code to drop the margins of error, but I am unsure if this is a good idea.
 
