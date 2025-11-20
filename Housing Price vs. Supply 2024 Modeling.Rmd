@@ -39,6 +39,7 @@ library(sf)
 library(ggridges)
 library(scales)
 library(tidycensus)
+library(here)
 ```
 
 ## Introduction
@@ -979,7 +980,7 @@ We could also take straight from the source and attempt to pull public records d
 
 ```{r}
 #loading in inventory data
-inventory_raw <- readr::read_csv("RDC_Inventory_Core_Metrics_Metro_History.csv")
+inventory_raw <- read_csv(here("../RDC_Inventory_Core_Metrics_Metro_History.csv"))
 
 #cleaning names
 clean_names(inventory_raw)
@@ -1142,7 +1143,7 @@ metro_summary <- full_dataset %>%
     pct_asian = mean(pct_asian, na.rm = TRUE),              
     total_housing_units = sum(total_housing_units, na.rm = TRUE),
     pct_owner_occupied = mean(pct_owner_occupied, na.rm = TRUE),
-    total_inventory = sum(total_inventory_metric, na.rm = TRUE))%>%
+    total_inventory = sum(total_listing_count, na.rm = TRUE))%>%
   ungroup()
 
 #check it out
