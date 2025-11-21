@@ -1425,6 +1425,17 @@ ggplot(combined_metros, aes(x = cbsa_title, y = median_listing_price, fill = lis
 ```{r}
 #modeling/ statistical analysis 
 #basic regression 
+names(dataset_grouped)
+#reg d- "avg_log_median_listing_price" i- "total_active_listing_count" 
+reg_model_1 <- lm(avg_log_median_listing_price ~ total_active_listing_count,
+            data = dataset_grouped)
+
+summary(reg_model_1)
+
+#reg d- "avg_log_median_listing_price" i- "total_active_listing_count" "area_type" "avg_pct_income_75k_plus" "avg_pct_units_built_2000_plus" "avg_pct_bachelors_or_higher" 
+ 
+ 
+
 #random forest 
 ```
 
