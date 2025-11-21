@@ -1117,8 +1117,13 @@ acs1_2024_filtered <- acs1_2024_filtered %>%
 
 #check it out
 head(acs1_2024_filtered)
-#will need to adjust var types
-#baylee- I think the codes don't match, those look like estimates despite being labeled pct ####
+#I want to make a area type var here before merging 
+#create area_type var
+acs1_2024_filtered <- acs1_2024_filtered %>%
+  mutate(area_type = ifelse(grepl("Micro Area",NAME), "Micro", "Metro"))
+
+unique(acs1_2024_filtered$area_type)
+
 ```
 
 
@@ -1131,13 +1136,13 @@ inventory_2024 <- inventory_2024 %>%
 full_dataset <- acs1_2024_filtered %>%
   left_join(inventory_2024, by = c("GEOID" = "cbsa_code"))
 
-
 #which vars to factor
 factor_vars <- c("GEOID",
   "NAME",
   "cbsa_title",
   "HouseholdRank",
-  "quality_flag")
+  "quality_flag",
+  "area_type")
 
 #drop redundant columns
 redundant_vars <- full_dataset %>%
@@ -1219,7 +1224,7 @@ names(full_dataset_clean)
 str(full_dataset_clean)
 
 dataset_grouped <- full_dataset_clean %>%
-  group_by(cbsa_title)%>%
+  group_by(cbsa_title, area_type)%>%
   summarise(
     total_population = sum(total_population, na.rm = TRUE),
     avg_pct_white = mean(pct_white, na.rm = TRUE),
@@ -1256,14 +1261,166 @@ print(dataset_grouped)
 ```
 
 
-```{r}
+```{r vars w highest correlations}
 #eda
+summary(dataset_grouped)
+names(dataset_grouped)
 
-#summary stats 
-#corr plot 
-#basic scatterplots 
-#basic boxplots 
+#numeric vars for corr plot 
+numeric_vars <- dataset_grouped %>%
+  select(where(is.numeric))
+
+#define price/supply variables
+target_vars <- c("avg_median_listing_price",
+                 "avg_log_median_listing_price",
+                 "total_active_listing_count",
+                 "avg_median_days_on_market",
+                 "total_new_listing_count",
+                 "total_price_increased_count",
+                 "avg_price_increased_share",
+                 "total_price_reduced_count",
+                 "avg_price_reduced_share",
+                 "total_pending_listing_count",
+                 "avg_median_listing_price_per_square_foot",
+                 "avg_median_square_feet",
+                 "avg_average_listing_price",
+                 "total_listing_count",
+                 "avg_pending_ratio")
+
+cor_matrix <- cor(numeric_vars, use = "pairwise.complete.obs")
+
+#correlation matrix to tidy format
+cor_tidy <- as.data.frame(as.table(cor_matrix)) %>%
+  rename(var1 = Var1, var2 = Var2, correlation = Freq) %>%
+  #only correlations where one of the variables is a target
+  filter(var1 %in% target_vars | var2 %in% target_vars) %>%
+  filter(var1 != var2) %>%                  #remove self-correlation
+  mutate(abs_corr = abs(correlation)) %>%   #absolute correlation
+  arrange(desc(abs_corr))                   #sort descending
+
+#top correlations with price/supply variables
+head(cor_tidy, 20)
+
+#this is not helpful output. I've tried a few different corr plots and none of them are great because there are too many variables and they often correlate with variables that are just slight variations. I think we skip this in the actual presentation/ report, but keeping so y'all can see that it was attempted
 ```
+
+
+```{r scatter- median price vs total listings}
+#median price vs total listings
+ggplot(dataset_grouped, aes(x = total_listing_count, y = avg_median_listing_price)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "lm", color = "blue") +
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Median Listing Price vs Total Listings",
+       x = "Total Listing Count",
+       y = "Average Median Listing Price")
+```
+
+
+
+
+```{r scatter- log median price vs active listings}
+#log median price vs active listings
+ggplot(dataset_grouped, aes(x = total_active_listing_count, y = avg_log_median_listing_price)) +
+  geom_point(alpha = 0.6, color = "red") +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Log Median Listing Price vs Active Listings",
+       x = "Total Active Listing Count",
+       y = "Average Log Median Listing Price")
+```
+
+
+
+```{r box- metro area type}
+#total listings by area type
+ggplot(dataset_grouped, aes(x = area_type, y = total_listing_count)) +
+  geom_boxplot(fill = "orange") +
+  labs(title = "Total Listing Count by Area Type",
+       x = "Area Type", y = "Total Listing Count")
+```
+
+```{r box- top 5 metrp}
+#compare different metros (top 5 by total listings)
+top_metros <- full_dataset %>%
+  filter(area_type == "Metro") %>%
+  group_by(cbsa_title) %>%
+  summarise(total_listings = sum(total_listing_count, na.rm = TRUE)) %>%
+  arrange(desc(total_listings)) %>%
+  slice_head(n = 5) %>%
+  pull(cbsa_title)
+
+ggplot(full_dataset %>% filter(cbsa_title %in% top_metros),
+       aes(x = cbsa_title, y = median_listing_price)) +
+  geom_boxplot(fill = "lightblue") +
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Median Listing Price in Top 5 Metro Areas",
+       x = "Metro Area", y = "Median Listing Price") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+```{r box- bottom 5 metro}
+#compare different metros (bottom 5 by total listings)
+bottom_metros <- full_dataset %>%
+  filter(area_type == "Metro") %>%
+  group_by(cbsa_title) %>%
+  summarise(total_listings = sum(total_listing_count, na.rm = TRUE)) %>%
+  arrange(total_listings) %>%
+  slice_head(n = 5) %>%
+  pull(cbsa_title)
+
+ggplot(full_dataset %>% filter(cbsa_title %in% bottom_metros),
+       aes(x = cbsa_title, y = median_listing_price)) +
+  geom_boxplot(fill = "salmon") +
+  scale_y_continuous(labels = scales::comma) +
+  labs(title = "Median Listing Price in Bottom 5 Metro Areas",
+       x = "Metro Area", y = "Median Listing Price") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r box- top and bottom 5 metro}
+#top 5 metros by total listings
+top_metros <- full_dataset %>%
+  filter(area_type == "Metro") %>%
+  group_by(cbsa_title) %>%
+  summarise(total_listings = sum(total_listing_count, na.rm = TRUE)) %>%
+  arrange(desc(total_listings)) %>%
+  slice_head(n = 5) %>%
+  pull(cbsa_title)
+
+#bottom 5 metros by total listings
+bottom_metros <- full_dataset %>%
+  filter(area_type == "Metro") %>%
+  group_by(cbsa_title) %>%
+  summarise(total_listings = sum(total_listing_count, na.rm = TRUE)) %>%
+  arrange(total_listings) %>%
+  slice_head(n = 5) %>%
+  pull(cbsa_title)
+
+#combine top and bottom metros into one dataset
+combined_metros <- full_dataset %>%
+  filter(cbsa_title %in% c(top_metros, bottom_metros)) %>%
+  mutate(listing_group = case_when(
+    cbsa_title %in% top_metros ~ "Top 5",
+    cbsa_title %in% bottom_metros ~ "Bottom 5"))
+
+#plot
+ggplot(combined_metros, aes(x = cbsa_title, y = median_listing_price, fill = listing_group)) +
+  geom_boxplot() +
+  scale_y_continuous(labels = scales::comma) +
+  scale_fill_manual(values = c("Top 5" = "lightblue", "Bottom 5" = "salmon")) +
+  labs(
+    title = "Median Listing Price: Top and Bottom 5 Metro Areas",
+    x = "Metro Area",
+    y = "Median Listing Price",
+    fill = "Listing Group"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
 
 ```{r}
 #modeling/ statistical analysis 
