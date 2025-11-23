@@ -1042,11 +1042,13 @@ head(acs1_2024_pcts)
 ```
 
 ```{r future ACS variable dictionary}
+# These codes are all incorrect
+
 #ACS variable codes 
 #use to make a dictionary for the report
 
 #demographics
-#DP02_0001E – Total population
+#DP02_0001PE – Total population
 #DP02_0018PE – % Male
 #DP02_0019PE – % Female
 #DP02_0033PE – % White alone
@@ -1067,7 +1069,7 @@ head(acs1_2024_pcts)
 
 #housing
 
-#DP04_0001E – Total housing units
+#DP04_0001PE – Total housing units
 #DP04_0003PE – % Owner-occupied
 #DP04_0004PE – % Renter-occupied
 #DP04_0027PE – % Units built 2000 or later
@@ -1081,21 +1083,21 @@ head(acs1_2024_pcts)
 #which variables to keep
 vars_needed <- c(
   #demographics
-  "DP02_0001E","DP02_0018PE","DP02_0019PE","DP02_0033PE",
+  "DP02_0001PE","DP02_0018PE","DP02_0019PE","DP02_0033PE",
   "DP02_0034PE","DP02_0035PE","DP02_0043PE","DP02_0051PE",
   "DP02_0052PE","DP02_0071PE","DP02_0073PE","DP02_0074PE",
   #economics
   "DP03_0018PE","DP03_0026PE","DP03_0050PE","DP03_0064PE",
   #housing
-  "DP04_0001E","DP04_0003PE","DP04_0004PE","DP04_0027PE","DP04_0039PE")
+  "DP04_0001PE","DP04_0003PE","DP04_0004PE","DP04_0027PE","DP04_0039PE")
 
 #filter down the dataset
-acs1_2024_filtered <- acs1_2024_ests[, c("GEOID", "NAME", vars_needed)]
+acs1_2024_filtered <- acs1_2024_pcts[, c("GEOID", "NAME", vars_needed)]
 
 #rename ACS variable codes to real things
 acs1_2024_filtered <- acs1_2024_filtered %>%
   rename(
-    total_population = DP02_0001E,
+    total_population = DP02_0001PE,
     pct_male = DP02_0018PE,
     pct_female = DP02_0019PE,
     pct_white = DP02_0033PE,
@@ -1111,7 +1113,7 @@ acs1_2024_filtered <- acs1_2024_filtered %>%
     pct_below_poverty = DP03_0026PE,
     pct_bachelors_or_higher = DP03_0050PE,
     pct_income_75k_plus = DP03_0064PE,
-    total_housing_units = DP04_0001E,
+    total_housing_units = DP04_0001PE,
     pct_owner_occupied = DP04_0003PE,
     pct_renter_occupied = DP04_0004PE,
     pct_units_built_2000_plus = DP04_0027PE,
