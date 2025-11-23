@@ -980,7 +980,7 @@ We could also take straight from the source and attempt to pull public records d
 
 ```{r}
 #loading in inventory data
-inventory_raw <- read_csv(here("../RDC_Inventory_Core_Metrics_Metro_History.csv"))
+inventory_raw <- read_csv(here("../data/RDC_Inventory_Core_Metrics_Metro_History.csv"))
 
 #cleaning names
 clean_names(inventory_raw)
@@ -1023,20 +1023,22 @@ inventory_2024 <- inventory_raw %>%
 census_api_key("29e7dfea2f8b253a0a10ccd9626f78e49f4f0a4f")
 
 census_vars = load_variables(year = 2024, dataset = "acs1/profile", cache = TRUE)
-
+census_vars_limited = grepv("^(?!DP02PR).*P$", census_vars$name, perl=TRUE)
 acs1_2024 = get_acs(geography = "metropolitan statistical area/micropolitan statistical area",
-                    variables = census_vars$name,
+                    variables = census_vars_limited,
                     year = 2024,
                     survey = "acs1",
                     output = "wide")
 head(acs1_2024)
 ```
 
-This includes both estimates as well as margins of error. I have included code to drop the margins of error, but I am unsure if this is a good idea.
+The list of variables includes what should be the total population as a percent—"DP05_0001P"—but, as that would always be 100%, the wise people at the US Census Bureau made such equal to "DP05_0001E", the total population estimate, necessitating no further adjustment.
+
+This includes both percents as well as margins of error. I have included code to drop the margins of error, but I am unsure if this is a good idea.
 
 ```{r}
-acs1_2024_ests = select(acs1_2024, -grepv("*M$", names(acs1_2024)))
-head(acs1_2024_ests)
+acs1_2024_pcts = select(acs1_2024, -grepv("M$", names(acs1_2024)))
+head(acs1_2024_pcts)
 ```
 
 ```{r future ACS variable dictionary}
