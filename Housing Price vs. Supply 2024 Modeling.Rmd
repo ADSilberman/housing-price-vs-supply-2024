@@ -1064,46 +1064,46 @@ head(acs1_2024_pcts)
 
 ```{r filter acs data down}
 #which variables to keep
-vars_needed <- c(
-  #demographics
-  "DP02_0001PE","DP02_0018PE","DP02_0019PE","DP02_0033PE",
-  "DP02_0034PE","DP02_0035PE","DP02_0043PE","DP02_0051PE",
-  "DP02_0052PE","DP02_0071PE","DP02_0073PE","DP02_0074PE",
-  #economics
-  "DP03_0018PE","DP03_0026PE","DP03_0050PE","DP03_0064PE",
-  #housing
-  "DP04_0001PE","DP04_0003PE","DP04_0004PE","DP04_0027PE","DP04_0039PE")
-
+# vars_needed <- c(
+#   #demographics
+#   "DP02_0001PE","DP02_0018PE","DP02_0019PE","DP02_0033PE",
+#   "DP02_0034PE","DP02_0035PE","DP02_0043PE","DP02_0051PE",
+#   "DP02_0052PE","DP02_0071PE","DP02_0073PE","DP02_0074PE",
+#   #economics
+#   "DP03_0018PE","DP03_0026PE","DP03_0050PE","DP03_0064PE",
+#   #housing
+#   "DP04_0001PE","DP04_0003PE","DP04_0004PE","DP04_0027PE","DP04_0039PE")
+# 
 #filter down the dataset
-acs1_2024_filtered <- acs1_2024_pcts[, c("GEOID", "NAME", vars_needed)]
+acs1_2024_filtered <- acs1_2024_pcts[, c("GEOID", "NAME")]
 
 #rename ACS variable codes to real things
-acs1_2024_filtered <- acs1_2024_filtered %>%
-  rename(
-    total_population = DP02_0001PE,
-    pct_male = DP02_0018PE,
-    pct_female = DP02_0019PE,
-    pct_white = DP02_0033PE,
-    pct_black = DP02_0034PE,
-    pct_asian = DP02_0035PE,
-    pct_hispanic = DP02_0043PE,
-    pct_under_18 = DP02_0051PE,
-    pct_65_over = DP02_0052PE,
-    pct_married_couple = DP02_0071PE,
-    pct_female_householder = DP02_0073PE,
-    pct_male_householder = DP02_0074PE,
-    pct_unemployed = DP03_0018PE,
-    pct_below_poverty = DP03_0026PE,
-    pct_bachelors_or_higher = DP03_0050PE,
-    pct_income_75k_plus = DP03_0064PE,
-    total_housing_units = DP04_0001PE,
-    pct_owner_occupied = DP04_0003PE,
-    pct_renter_occupied = DP04_0004PE,
-    pct_units_built_2000_plus = DP04_0027PE,
-    pct_vacant_units = DP04_0039PE)
-
-#check it out
-head(acs1_2024_filtered)
+# acs1_2024_filtered <- acs1_2024_filtered %>%
+#   rename(
+#     total_population = DP02_0001PE,
+#     pct_male = DP02_0018PE,
+#     pct_female = DP02_0019PE,
+#     pct_white = DP02_0033PE,
+#     pct_black = DP02_0034PE,
+#     pct_asian = DP02_0035PE,
+#     pct_hispanic = DP02_0043PE,
+#     pct_under_18 = DP02_0051PE,
+#     pct_65_over = DP02_0052PE,
+#     pct_married_couple = DP02_0071PE,
+#     pct_female_householder = DP02_0073PE,
+#     pct_male_householder = DP02_0074PE,
+#     pct_unemployed = DP03_0018PE,
+#     pct_below_poverty = DP03_0026PE,
+#     pct_bachelors_or_higher = DP03_0050PE,
+#     pct_income_75k_plus = DP03_0064PE,
+#     total_housing_units = DP04_0001PE,
+#     pct_owner_occupied = DP04_0003PE,
+#     pct_renter_occupied = DP04_0004PE,
+#     pct_units_built_2000_plus = DP04_0027PE,
+#     pct_vacant_units = DP04_0039PE)
+# 
+# #check it out
+# head(acs1_2024_filtered)
 #I want to make a area type var here before merging 
 #create area_type var
 acs1_2024_filtered <- acs1_2024_filtered %>%
