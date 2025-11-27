@@ -1017,6 +1017,19 @@ This includes both percents as well as margins of error. I have included code to
 ```{r}
 acs1_2024_pcts = select(acs1_2024, -grepv("M$", names(acs1_2024)))
 head(acs1_2024_pcts)
+
+acs1_2024_pcts <- select(acs1_2024, -grepv("M$", names(acs1_2024)))
+
+# remove all rows containing ANY NA
+acs1_2024_pcts <- acs1_2024_pcts %>% 
+  tidyr::drop_na()
+
+head(acs1_2024_pcts)
+
+
+
+
+
 ```
 
 ```{r future ACS variable dictionary}
@@ -1133,7 +1146,7 @@ factor_vars <- c("GEOID",
 
 #drop redundant columns
 redundant_vars <- full_dataset %>%
-  select(ends_with("_mm"), ends_with("_yy"), pct_female, pct_renter_occupied) %>%
+  select(ends_with("_mm"), ends_with("_yy")) %>%
   names()
 
 #clean dataset
