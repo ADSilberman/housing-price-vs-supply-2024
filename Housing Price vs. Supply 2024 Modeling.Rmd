@@ -1018,13 +1018,14 @@ This includes both percents as well as margins of error. I have included code to
 acs1_2024_pcts = select(acs1_2024, -grepv("M$", names(acs1_2024)))
 head(acs1_2024_pcts)
 
-acs1_2024_pcts <- select(acs1_2024, -grepv("M$", names(acs1_2024)))
-
-# remove all rows containing ANY NA
-acs1_2024_pcts <- acs1_2024_pcts %>% 
-  tidyr::drop_na()
-
-head(acs1_2024_pcts)
+acs_clean <- acs1_2024_pcts %>% drop_na()
+num_df <- acs_clean %>% 
+  select(where(is.numeric))
+num_df$dummy_target <- rnorm(nrow(num_df))
+#model <- lm(dummy_target ~ ., data = num_df)
+#check_collinearity(model)
+#dnm
+head(acs_clean)
 
 
 
