@@ -1027,9 +1027,26 @@ num_df$dummy_target <- rnorm(nrow(num_df))
 #dnm
 head(acs_clean)
 
+num_df <- acs1_2024_pcts %>% select(where(is.numeric))
+
+corr_mat <- cor(num_df, use = "pairwise.complete.obs")
+threshold <- 0.80
+
+high_corr <- which(abs(corr_mat) > threshold,
+                   arr.ind = TRUE)
+
+# convert to readable table
+high_corr_pairs <- data.frame(
+  var1 = rownames(corr_mat)[high_corr[,1]],
+  var2 = colnames(corr_mat)[high_corr[,2]],
+  corr = corr_mat[high_corr]
+)
+
+# remove duplicates (since matrix is symmetric)
+high_corr_pairs <- high_corr_pairs[high_corr_pairs$var1 < high_corr_pairs$var2, ]
 
 
-
+high_corr_pairs # 2794 out of 147,696 pairs (around 2%) have an absolute corr >= .80
 
 ```
 
