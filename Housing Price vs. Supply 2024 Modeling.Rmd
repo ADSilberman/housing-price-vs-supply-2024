@@ -1024,7 +1024,7 @@ num_df <- acs_clean %>%
 num_df$dummy_target <- rnorm(nrow(num_df))
 #model <- lm(dummy_target ~ ., data = num_df)
 #check_collinearity(model)
-#dnm
+
 head(acs_clean)
 
 num_df <- acs1_2024_pcts %>% select(where(is.numeric))
