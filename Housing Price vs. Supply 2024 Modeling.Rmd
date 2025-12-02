@@ -40,6 +40,9 @@ library(ggridges)
 library(scales)
 library(tidycensus)
 library(here)
+library(car)
+library(dplyr)
+library(tibble)
 ```
 
 ## Introduction
@@ -1026,7 +1029,8 @@ head(acs1_2024_pcts)
 ```
 
 
-```{r ilgaz' correlation check}
+```{r ilgaz' correlation check & steph's attempt at multiColl detection}
+#ilgaz' correlation stuff
 # acs_clean <- acs1_2024_pcts %>% drop_na()
 # num_df <- acs_clean %>% 
 #   select(where(is.numeric))
@@ -1055,6 +1059,76 @@ head(acs1_2024_pcts)
 # 
 # 
 # high_corr_pairs # 2794 out of 147,696 pairs (around 2%) have an absolute corr >= .80
+# 
+# #steph's sidequest
+# sq_acs <- acs1_2024_pcts
+# 
+# #numeric-only subset
+# sq_acs_num <- sq_acs %>%
+#   select(where(is.numeric))
+# 
+# #ID'ing fake percents and set to na
+# sq_acs_num <- sq_acs_num %>%
+#   mutate(across(everything(),
+#                 ~ ifelse(. > 100, NA, .)))
+# 
+# #dropping all na columns
+# sq_acs_num <- sq_acs_num %>%
+#   select(where(~ !all(is.na(.))))
+# 
+# #converting NA values to median
+# sq_acs_num <- sq_acs_num %>%
+#   mutate(across(everything(),
+#                 ~ ifelse(is.na(.),
+#                          median(., na.rm = TRUE),
+#                          .)))
+# 
+# #dropping constant or near-constant cols
+# sq_acs_num <- sq_acs_num %>%
+#   select(where(function(col) {
+#     s <- sd(col, na.rm = TRUE)
+#     if (is.na(s)) s <- 0
+#     s > 10
+#   }))
+# 
+# #dummy target
+# set.seed(123)
+# sq_acs_num$fake <- rnorm(nrow(sq_acs_num))
+# 
+# #fitting dummy linear model
+# sq_acs_mod <- lm(fake ~ ., data = sq_acs_num)
+# 
+# #computing vif
+# compute_vif <- function(df){
+#   vars <- colnames(df)
+#   out <- tibble(variable = vars, vif = NA_real_)
+#   
+#   for(i in seq_along(vars)){
+#     y <- df[[i]]
+#     X <- df[, -i, drop = FALSE]
+#     
+# #fit model for this variable alone
+#   mod <- tryCatch(lm(y ~ ., data = as.data.frame(X)),
+#                     error = function(e) NULL)
+#     
+#     if(!is.null(mod)){
+#       out$vif[i] <- tryCatch(
+#         max(car::vif(mod)),
+#         error = function(e) NA_real_
+#       )
+#     }
+#   }
+#   
+#   out
+# }
+# 
+# vif_results <- compute_vif(sq_acs_num)
+# 
+# #sort highest VIF at top
+# vif_results_sorted <- vif_results %>% arrange(desc(vif))
+# 
+# vif_results_sorted
+
 ```
 
 
