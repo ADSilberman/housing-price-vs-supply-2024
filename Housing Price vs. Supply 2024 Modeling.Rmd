@@ -978,21 +978,6 @@ We could also take straight from the source and attempt to pull public records d
 
 ## Data
 
-```{r}
-#loading in inventory data
-inventory_raw <- read_csv(here("../data/RDC_Inventory_Core_Metrics_Metro_History.csv"))
-
-#cleaning names
-clean_names(inventory_raw)
-
-#hunting down year
-glimpse(inventory_raw)
-
-#filtering for 2024
-inventory_2024 <- inventory_raw %>%
-  filter(month_date_yyyymm >= 202401 & month_date_yyyymm <= 202412)
-```
-
 ### Data Sources
 
 #### American Community Survey
@@ -1014,19 +999,42 @@ The list of variables includes what should be the total population as a percent�
 
 This includes both percents as well as margins of error. I have included code to drop the margins of error, but I am unsure if this is a good idea.
 
-```{r}
+#### Realtor.com
+
+```{r load_realtor}
+#loading in inventory data
+inventory_raw <- read_csv(here("../data/RDC_Inventory_Core_Metrics_Metro_History.csv"))
+
+#cleaning names
+clean_names(inventory_raw)
+
+#hunting down year
+glimpse(inventory_raw)
+
+#filtering for 2024
+inventory_2024 <- inventory_raw %>%
+  filter(month_date_yyyymm >= 202401 & month_date_yyyymm <= 202412)
+```
+
+
+The Realtor.com inventory dataset provides monthly metro-level housing indicators like listing counts, median prices, and days on market. Unlike the ACS, it doesn’t include paired estimates or margins of error. Each variable is already given as a direct point estimate. Some fields (the _mm and _yy columns) represent month-over-month or year-over-year percent changes, which introduce redundancy, so we later drop those before modeling. Aside from that, the data only need to be filtered to the 2024 months and are ready for use.
+
+
+```{r dropping margins of error}
 acs1_2024_pcts = select(acs1_2024, -grepv("M$", names(acs1_2024)))
 head(acs1_2024_pcts)
+```
 
-acs_clean <- acs1_2024_pcts %>% drop_na()
-num_df <- acs_clean %>% 
-  select(where(is.numeric))
-num_df$dummy_target <- rnorm(nrow(num_df))
+
+```{r ilgaz' correlation check}
+# acs_clean <- acs1_2024_pcts %>% drop_na()
+# num_df <- acs_clean %>% 
+#   select(where(is.numeric))
+# num_df$dummy_target <- rnorm(nrow(num_df))
 #model <- lm(dummy_target ~ ., data = num_df)
 #check_collinearity(model)
 
-head(acs_clean)
-
+# head(acs_clean)
 # num_df <- acs1_2024_pcts %>% select(where(is.numeric))
 # 
 # corr_mat <- cor(num_df, use = "pairwise.complete.obs")
@@ -1047,8 +1055,8 @@ head(acs_clean)
 # 
 # 
 # high_corr_pairs # 2794 out of 147,696 pairs (around 2%) have an absolute corr >= .80
-
 ```
+
 
 ```{r future ACS variable dictionary}
 #ACS variable codes 
@@ -1084,7 +1092,6 @@ head(acs_clean)
 #DP04_0019PE – % Units built 2000 or later
 #DP04_0003PE – % Vacant units
 ```
-
 
 
 ```{r filter acs data down}
