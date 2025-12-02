@@ -1027,114 +1027,101 @@ num_df$dummy_target <- rnorm(nrow(num_df))
 
 head(acs_clean)
 
-num_df <- acs1_2024_pcts %>% select(where(is.numeric))
-
-corr_mat <- cor(num_df, use = "pairwise.complete.obs")
-threshold <- 0.80
-
-high_corr <- which(abs(corr_mat) > threshold,
-                   arr.ind = TRUE)
-
-# convert to readable table
-high_corr_pairs <- data.frame(
-  var1 = rownames(corr_mat)[high_corr[,1]],
-  var2 = colnames(corr_mat)[high_corr[,2]],
-  corr = corr_mat[high_corr]
-)
-
-# remove duplicates (since matrix is symmetric)
-high_corr_pairs <- high_corr_pairs[high_corr_pairs$var1 < high_corr_pairs$var2, ]
-
-
-high_corr_pairs # 2794 out of 147,696 pairs (around 2%) have an absolute corr >= .80
+# num_df <- acs1_2024_pcts %>% select(where(is.numeric))
+# 
+# corr_mat <- cor(num_df, use = "pairwise.complete.obs")
+# threshold <- 0.80
+# 
+# high_corr <- which(abs(corr_mat) > threshold,
+#                    arr.ind = TRUE)
+# 
+# # convert to readable table
+# high_corr_pairs <- data.frame(
+#   var1 = rownames(corr_mat)[high_corr[,1]],
+#   var2 = colnames(corr_mat)[high_corr[,2]],
+#   corr = corr_mat[high_corr]
+# )
+# 
+# # remove duplicates (since matrix is symmetric)
+# high_corr_pairs <- high_corr_pairs[high_corr_pairs$var1 < high_corr_pairs$var2, ]
+# 
+# 
+# high_corr_pairs # 2794 out of 147,696 pairs (around 2%) have an absolute corr >= .80
 
 ```
 
 ```{r future ACS variable dictionary}
-# These codes are all incorrect
-
 #ACS variable codes 
 #use to make a dictionary for the report
 
 #demographics
 
-#steph: was going to match the following three descriptions to the right codes but it seems like were dropping these anyways. will return.
 #DP02_0001PE – Total households
-#DP02_0002PE – % Male
-#DP02_0003PE – % Female
-
-#steph: matched these descriptions to the right codes
-#DP02_0037PE – % White alone
-#DP02_0045PE – % Black or African American alone
-#DP02_0061PE – % Asian alone
-#DP02_0089PE – % Hispanic or Latino
-#DP02_0019PE – % Under 18
-#DP02_0029PE – % 65 and over
+#DP05_0002PE – % Male
+#DP05_0003PE – % Female
+#DP05_0037PE – % White alone
+#DP05_0045PE – % Black or African American alone
+#DP05_0061PE – % Asian alone
+#DP05_0089PE – % Hispanic or Latino
+#DP05_0019PE – % Under 18
+#DP05_0029PE – % 65 and over
 #DP02_0002PE – % Married-couple households
-#DP02_0010PE – % Female householder, no husband
-#DP02_0006PE – % Male householder, no wife
+#DP02_0010PE – % Female householder, no spouse
+#DP02_0006PE – % Male householder, no spouse
 
-#steph: left off here. will be matching the rest of these codes so that we have a solid dictionary to work with, and then move onto changing them in the following code block. 
 #economics
-#DP03_0018PE – % Unemployed
-#DP03_0026PE – % Below poverty level
-#DP03_0050PE – % Bachelor’s degree or higher
-#DP03_0064PE – % Household income $75,000+
+
+#DP03_0005PE – % Unemployed
+#DP03_0119PE – % Below poverty level
+#DP02_0068PE – % Bachelor’s degree or higher
+#DP03_0058PE – % Household income $75,000+
 
 #housing
 
 #DP04_0001PE – Total housing units
-#DP04_0003PE – % Owner-occupied
-#DP04_0004PE – % Renter-occupied
-#DP04_0027PE – % Units built 2000 or later
-#DP04_0039PE – % Vacant units
-
+#DP04_0046PE – % Owner-occupied
+#DP04_0047PE – % Renter-occupied
+#DP04_0019PE – % Units built 2000 or later
+#DP04_0003PE – % Vacant units
 ```
 
 
 
 ```{r filter acs data down}
 #which variables to keep
-# vars_needed <- c(
-#   #demographics
-#   "DP02_0001PE","DP02_0018PE","DP02_0019PE","DP02_0033PE",
-#   "DP02_0034PE","DP02_0035PE","DP02_0043PE","DP02_0051PE",
-#   "DP02_0052PE","DP02_0071PE","DP02_0073PE","DP02_0074PE",
-#   #economics
-#   "DP03_0018PE","DP03_0026PE","DP03_0050PE","DP03_0064PE",
-#   #housing
-#   "DP04_0001PE","DP04_0003PE","DP04_0004PE","DP04_0027PE","DP04_0039PE")
-# 
+vars_needed <- c("DP02_0001PE", "DP05_0002PE", "DP05_0003PE", "DP05_0037PE", "DP05_0045PE", "DP05_0061PE", "DP05_0089PE", "DP05_0019PE", "DP05_0029PE", "DP02_0002PE", "DP02_0010PE", "DP02_0006PE", "DP03_0005PE", "DP03_0119PE", "DP02_0068PE", "DP03_0058PE", "DP04_0001PE", "DP04_0046PE", "DP04_0047PE", "DP04_0019PE", "DP04_0003PE")
+
 #filter down the dataset
-acs1_2024_filtered <- acs1_2024_pcts[, c("GEOID", "NAME")]
+acs1_2024_filtered <- acs1_2024_pcts[, c("GEOID", "NAME", vars_needed)]
 
 #rename ACS variable codes to real things
-# acs1_2024_filtered <- acs1_2024_filtered %>%
-#   rename(
-#     total_population = DP02_0001PE,
-#     pct_male = DP02_0018PE,
-#     pct_female = DP02_0019PE,
-#     pct_white = DP02_0033PE,
-#     pct_black = DP02_0034PE,
-#     pct_asian = DP02_0035PE,
-#     pct_hispanic = DP02_0043PE,
-#     pct_under_18 = DP02_0051PE,
-#     pct_65_over = DP02_0052PE,
-#     pct_married_couple = DP02_0071PE,
-#     pct_female_householder = DP02_0073PE,
-#     pct_male_householder = DP02_0074PE,
-#     pct_unemployed = DP03_0018PE,
-#     pct_below_poverty = DP03_0026PE,
-#     pct_bachelors_or_higher = DP03_0050PE,
-#     pct_income_75k_plus = DP03_0064PE,
-#     total_housing_units = DP04_0001PE,
-#     pct_owner_occupied = DP04_0003PE,
-#     pct_renter_occupied = DP04_0004PE,
-#     pct_units_built_2000_plus = DP04_0027PE,
-#     pct_vacant_units = DP04_0039PE)
-# 
+acs1_2024_filtered <- acs1_2024_filtered %>%
+  rename(
+    total_households = DP02_0001PE,
+    pct_male = DP05_0002PE,
+    pct_female = DP05_0003PE,
+    pct_white = DP05_0037PE,
+    pct_black = DP05_0045PE,
+    pct_asian = DP05_0061PE,
+    pct_hispanic = DP05_0089PE,
+    pct_under_18 = DP05_0019PE,
+    pct_65_over = DP05_0029PE,
+    pct_married_couple = DP02_0002PE,
+    pct_female_householder = DP02_0010PE,
+    pct_male_householder = DP02_0006PE,
+    pct_unemployed = DP03_0005PE,
+    pct_below_poverty = DP03_0119PE,
+    pct_bachelors_or_higher = DP02_0068PE,
+    pct_income_75k_plus = DP03_0058PE,
+    total_housing_units = DP04_0001PE,
+    pct_owner_occupied = DP04_0046PE,
+    pct_renter_occupied = DP04_0047PE,
+    pct_units_built_2000_plus = DP04_0019PE,
+    pct_vacant_units = DP04_0003PE)
+
 # #check it out
-# head(acs1_2024_filtered)
+head(acs1_2024_filtered)
+
 #I want to make a area type var here before merging 
 #create area_type var
 acs1_2024_filtered <- acs1_2024_filtered %>%
