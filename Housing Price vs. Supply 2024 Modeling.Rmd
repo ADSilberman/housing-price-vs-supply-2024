@@ -1318,7 +1318,7 @@ str(full_dataset_clean)
 dataset_grouped <- full_dataset_clean %>%
   group_by(cbsa_title, area_type)%>%
   summarise(
-    total_population = sum(total_population, na.rm = TRUE),
+    total_households = sum(total_households, na.rm = TRUE),
     avg_pct_white = mean(pct_white, na.rm = TRUE),
     avg_pct_black = mean(pct_black, na.rm = TRUE),
     avg_pct_asian = mean(pct_asian, na.rm = TRUE),
