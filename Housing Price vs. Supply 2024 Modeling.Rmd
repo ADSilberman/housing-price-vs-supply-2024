@@ -1262,46 +1262,48 @@ print(na_summary_one)
 ```{r NAs}
 #address NAs (drop hispanic, when organized by FIPS code, nearest neighbor for ages, replace remaining NAs with 0)
 #drop hispanic
-full_dataset_clean <- full_dataset_clean %>%
-  select(-pct_hispanic)
-
-#when organized by FIPS code, nearest neighbor for ages
-age_vars <- c("pct_under_18", "pct_65_over")
-
-full_dataset_clean <- full_dataset_clean %>%
-  arrange(GEOID, month_date_yyyymm) %>%
-  group_by(GEOID) %>%
-  mutate(across(all_of(age_vars), 
-                ~ if(sum(!is.na(.)) >= 2) {
-                    approx(x = seq_along(.), 
-                           y = ., 
-                           xout = seq_along(.), 
-                           method = "linear", 
-                           rule = 2)$y
-                  } else {
-                    .  # leave as-is (NA)
-                  })) %>%
-  ungroup()
-
-na_counts_two <- full_dataset_clean %>%
-  summarise(across(everything(), ~ sum(is.na(.)))) %>%
-  pivot_longer(everything(), names_to = "variable", values_to = "na_count") %>%
-  arrange(desc(na_count))
-
-na_counts_two
+#commenting out for now since some of this was done earlier and would like to convene before moving/removing
+# full_dataset_clean <- full_dataset_clean %>%
+#   select(-pct_hispanic)
+# 
+# #when organized by FIPS code, nearest neighbor for ages
+# age_vars <- c("pct_under_18", "pct_65_over")
+# 
+# full_dataset_clean <- full_dataset_clean %>%
+#   arrange(GEOID, month_date_yyyymm) %>%
+#   group_by(GEOID) %>%
+#   mutate(across(all_of(age_vars), 
+#                 ~ if(sum(!is.na(.)) >= 2) {
+#                     approx(x = seq_along(.), 
+#                            y = ., 
+#                            xout = seq_along(.), 
+#                            method = "linear", 
+#                            rule = 2)$y
+#                   } else {
+#                     .  # leave as-is (NA)
+#                   })) %>%
+#   ungroup()
+# 
+# na_counts_two <- full_dataset_clean %>%
+#   summarise(across(everything(), ~ sum(is.na(.)))) %>%
+#   pivot_longer(everything(), names_to = "variable", values_to = "na_count") %>%
+#   arrange(desc(na_count))
+# 
+# na_counts_two
 ```
 
 
 ```{r NAs 2}
 #the age percentages don't make sense, so I'm deleting them. If we want to factor age in later, we can go back and fix this, but I am not in the mood atm. 
-full_dataset_clean <- full_dataset_clean %>%
-  select(-pct_under_18, -pct_65_over)
-
-#also removing redundant columns
-full_dataset_clean <- full_dataset_clean %>%
-  select(
-    -pct_male,               
-    -pct_male_householder)
+#commenting out for now since this was done earlier 
+# full_dataset_clean <- full_dataset_clean %>%
+#   select(-pct_under_18, -pct_65_over)
+# 
+# #also removing redundant columns
+# full_dataset_clean <- full_dataset_clean %>%
+#   select(
+#     -pct_male,               
+#     -pct_male_householder)
 
 #remove remaining NAs
 full_dataset_clean <- full_dataset_clean %>%
