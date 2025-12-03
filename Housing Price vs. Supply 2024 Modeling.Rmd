@@ -1139,14 +1139,14 @@ head(acs1_2024_pcts)
 #demographics
 
 #DP02_0001PE – Total households
-#DP05_0002PE – % Male
+#DP05_0002PE – % Male (removed due to collinearity with female)
 #DP05_0003PE – % Female
 #DP05_0037PE – % White alone
 #DP05_0045PE – % Black or African American alone
 #DP05_0061PE – % Asian alone
-#DP05_0089PE – % Hispanic or Latino
+#DP05_0089PE – % Hispanic or Latino (removed due to estimate total)
 #DP05_0019PE – % Under 18
-#DP05_0029PE – % 65 and over
+#DP05_0029PE – % 65 and over (removed due to estimate total)
 #DP02_0002PE – % Married-couple households
 #DP02_0010PE – % Female householder, no spouse
 #DP02_0006PE – % Male householder, no spouse
@@ -1162,7 +1162,7 @@ head(acs1_2024_pcts)
 
 #DP04_0001PE – Total housing units
 #DP04_0046PE – % Owner-occupied
-#DP04_0047PE – % Renter-occupied
+#DP04_0047PE – % Renter-occupied (removed due to collinearity with 'owner-occupied')
 #DP04_0019PE – % Units built 2000 or later
 #DP04_0003PE – % Vacant units
 ```
@@ -1203,13 +1203,19 @@ acs1_2024_filtered <- acs1_2024_filtered %>%
 # #check it out
 head(acs1_2024_filtered)
 
+# remove a few collinear / unusable vars
+acs1_2024_filtered <- acs1_2024_filtered %>%
+  select(-pct_male,
+         -pct_hispanic,
+         -pct_65_over,
+         -pct_renter_occupied)
+
 #I want to make a area type var here before merging 
 #create area_type var
 acs1_2024_filtered <- acs1_2024_filtered %>%
   mutate(area_type = ifelse(grepl("Micro Area",NAME), "Micro", "Metro"))
 
 unique(acs1_2024_filtered$area_type)
-
 ```
 
 
