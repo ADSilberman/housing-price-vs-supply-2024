@@ -41,6 +41,9 @@ library(scales)
 library(tidycensus)
 library(here)
 library(car)
+library(randomForest)
+library(rpart)
+library(rpart.plot)
 ```
 
 ## Introduction
@@ -1621,12 +1624,6 @@ ggplot(inventory_2024_filtered, aes(x = HouseholdRank)) +
     y = "Count") +
   theme_minimal()
 ```
-```{r household rank density}
-install.packages("randomForest")
-
-library(randomForest)
-
-
 
 
 ```{r EDA price vs supply}
@@ -1897,18 +1894,7 @@ summary(reg_model_1)
 #random forest 
 ```
 
-
-#data manipulation 
-EDA- summary statistics(baylee)
-Modeling- linear regressions (alex)
--- probably lots of options here 
-Modeling- regression tree (steph)
-Modeling- regression forest (baylee) (ilgaz)
-Modeling- lasso regression 
-
 ```{r RT_simple}
-library(rpart)
-library(rpart.plot)
 options(scipen = 999)   # turn off scientific notation
 
 # keep only interpretable economic drivers
@@ -1944,8 +1930,6 @@ summary(inventory_2024$)
 ```
 
 ```{r}
-library(randomForest)
-
 # remove rows with missing predictor/target values
 inventory_model_simple <- inventory_model_simple %>% na.omit()
 
@@ -1984,5 +1968,16 @@ varImpPlot(rf_model,
 
 
 ```
+
+
+
+#data manipulation 
+EDA- summary statistics(baylee)
+Modeling- linear regressions (alex)
+-- probably lots of options here 
+Modeling- regression tree (steph)
+Modeling- regression forest (baylee) (ilgaz)
+Modeling- lasso regression 
+
 
 
