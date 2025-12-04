@@ -1496,7 +1496,7 @@ ggplot(inventory_2024_filtered, aes(x = median_listing_price_per_square_foot)) +
     title = "Distribution of Median Listing Price per Square Foot",
     x = "Median Price per Square Foot",
     y = "Count") +
-  theme_void()
+  theme_minimal()
 ```
 
 
@@ -1507,7 +1507,7 @@ ggplot(inventory_2024_filtered, aes(x = log_median_price_sqft)) +
     title = "Distribution of Log Median Listing Price per Square Foot",
     x = "Log Median Price per Square Foot",
     y = "Count") +
-  theme_void()
+  theme_minimal()
 ```
 
 EDA- graphing different target vars against eachother (i.e. price vs supply, price vs demand, price vs pending_ratio, price vs median_days_on_market) (baylee)
@@ -1519,7 +1519,7 @@ ggplot(inventory_2024_filtered, aes(x = total_listing_count, y = median_listing_
     title = "Price vs Total Supply",
     x = "Total Listing Count",
     y = "Median Price per Square Foot") +
-  theme_void()
+  theme_minimal()
 ```
 
 ```{r EDA log price vs supply}
@@ -1529,7 +1529,7 @@ ggplot(inventory_2024_filtered, aes(x = total_listing_count, y = log_median_pric
     title = "Price vs Total Supply",
     x = "Total Listing Count",
     y = "Median Price per Square Foot") +
-  theme_void()
+  theme_minimal()
 ```
 
 ```{r EDA price vs demand}
@@ -1539,7 +1539,7 @@ ggplot(inventory_2024_filtered, aes(x = pending_ratio, y = median_listing_price_
     title = "Price vs Market Tightness (Demand)",
     x = "Pending Ratio (Pending / Active Listings)",
     y = "Median Price per Square Foot") +
-  theme_void()
+  theme_minimal()
 ```
 
 
@@ -1550,7 +1550,7 @@ ggplot(inventory_2024_filtered, aes(x = pending_ratio, y = log_median_price_sqft
     title = "Price vs Market Tightness (Demand)",
     x = "Pending Ratio (Pending / Active Listings)",
     y = "Median Price per Square Foot") +
-  theme_void()
+  theme_minimal()
 ```
 
 
@@ -1561,7 +1561,7 @@ ggplot(inventory_2024_filtered, aes(x = pending_ratio, y = median_listing_price_
     title = "Price vs Pending Ratio",
     x = "Pending Ratio",
     y = "Median Price per Square Foot") +
-  theme_void()
+  theme_minimal()
 ```
 
 
@@ -1572,7 +1572,7 @@ ggplot(inventory_2024_filtered, aes(x = pending_ratio, y = log_median_price_sqft
     title = "Price vs Pending Ratio",
     x = "Pending Ratio",
     y = "Median Price per Square Foot") +
-  theme_void()
+  theme_minimal()
 ```
 
 
@@ -1584,7 +1584,7 @@ ggplot(inventory_2024_filtered, aes(x = median_days_on_market, y = median_listin
     title = "Price vs Market Speed",
     x = "Median Days on Market",
     y = "Median Price per Square Foot") +
-  theme_void()
+  theme_minimal()
 ```
 
 
@@ -1595,7 +1595,7 @@ ggplot(inventory_2024_filtered, aes(x = median_days_on_market, y = log_median_pr
     title = "Price vs Market Speed",
     x = "Median Days on Market",
     y = "Median Price per Square Foot") +
-  theme_void()
+  theme_minimal()
 ```
 
 
