@@ -41,8 +41,6 @@ library(scales)
 library(tidycensus)
 library(here)
 library(car)
-library(dplyr)
-library(tibble)
 ```
 
 ## Introduction
@@ -985,22 +983,227 @@ We could also take straight from the source and attempt to pull public records d
 
 #### American Community Survey
 
+```{r future ACS variable dictionary}
+#ACS variable codes 
+#use to make a dictionary for the report
+
+#demographics
+
+#DP05_0001E - Total Population
+
+#DP05_0003PE – % Female
+#DP05_0037PE – % White alone
+#DP05_0045PE – % Black or African American alone
+#DP05_0053PE - % American Indian and Alaska Native alone
+#DP05_0061PE – % Asian alone
+#DP05_0069PE - % Native Hawaiian and Other Pacific Islander alone
+#DP05_0075PE - % Two or More Races
+
+#DP05_0090PE – % Hispanic or Latino
+
+#DP05_0018E - Median age (years)
+#DP05_0019PE - % Under 18 years
+
+#households
+
+#DP02_0001E – Total households
+#DP02_0002PE – % Married-couple households
+#DP02_0006PE – % Male householder, no spouse
+#DP02_0010PE – % Female householder, no spouse
+
+#economics
+
+#DP03_0005PE – % Unemployed
+#DP03_0119PE – % Below poverty level
+
+#DP03_0052PE - % Household income <$10,000 (ELIMINATE FOR MULTICOLLINEARITY)
+#DP03_0053PE - % Household income $10,000 to $14,999
+#DP03_0054PE - % Household income $15,000 to $24,999
+#DP03_0055PE - % Household income $25,000 to $34,999
+#DP03_0056PE - % Household income $35,000 to $49,999
+#DP03_0057PE - % Household income $50,000 to $74,999
+#DP03_0058PE – % Household income $75,000 to $99,999
+#DP03_0059PE – % Household income $100,000 to $149,999
+#DP03_0060PE – % Household income $150,000 to $199,999
+#DP03_0061PE – % Household income $200,000 or more
+
+#DP03_0062E - Median household income (dollars)
+
+#DP02_0067PE - % High school graduate or higher
+#DP02_0068PE – % Bachelor’s degree or higher
+
+
+#housing
+
+#DP04_0001E – Total housing units
+#DP04_0003PE – % Vacant units
+
+#DP04_0046PE – % of occupied that are Owner-occupied
+
+#DP04_0017PE - % Units built 2020 or later
+#DP04_0018PE - % Units built 2010 to 2019
+#DP04_0019PE – % Units built 2000 to 2009
+#DP04_0020PE – % Units built 1990 to 1999
+#DP04_0021PE – % Units built 1980 to 1989
+#DP04_0022PE – % Units built 1970 to 1979
+#DP04_0023PE – % Units built 1960 to 1969
+#DP04_0024PE – % Units built 1950 to 1959
+#DP04_0025PE – % Units built 1940 to 1949
+#DP04_0026PE – % Units built 1939 or earlier (ELIMINATE FOR MULTICOLLINEARITY)
+
+#DP04_0039PE - % 0 Bedrooms (ELIMINATE FOR MULTICOLLINEARITY)
+#DP04_0040PE - % 1 Bedrooms
+#DP04_0041PE - % 2 Bedrooms
+#DP04_0042PE - % 3 Bedrooms
+#DP04_0043PE - % 4 Bedrooms
+#DP04_0044PE - % 5 Bedrooms or more
+```
+
 ```{r load_acs}
 census_api_key("29e7dfea2f8b253a0a10ccd9626f78e49f4f0a4f")
 
-census_vars = load_variables(year = 2024, dataset = "acs1/profile", cache = TRUE)
-census_vars_limited = grepv("^(?!DP02PR).*P$", census_vars$name, perl=TRUE)
-acs1_2024 = get_acs(geography = "metropolitan statistical area/micropolitan statistical area",
-                    variables = census_vars_limited,
-                    year = 2024,
-                    survey = "acs1",
-                    output = "wide")
+# census_vars = load_variables(year = 2024, dataset = "acs1/profile", cache = TRUE)
+# census_vars_limited = grepv("^(?!DP02PR).*P$", census_vars$name, perl=TRUE)
+# acs1_2024 = get_acs(geography = "metropolitan statistical area/micropolitan statistical area",
+#                     variables = census_vars_limited,
+#                     year = 2024,
+#                     survey = "acs1",
+#                     output = "wide")
+# head(acs1_2024)
+```
+
+```{r new_load_acs}
+vars_needed <- c("NAME",
+                 "GEOID",
+                 "DP05_0001E", 
+                 "DP05_0003PE", 
+                 "DP05_0037PE", 
+                 "DP05_0045PE", 
+                 "DP05_0053PE", 
+                 "DP05_0061PE", 
+                 "DP05_0069PE", 
+                 "DP05_0075PE", 
+                 "DP05_0090PE", 
+                 "DP05_0018E", 
+                 "DP05_0019PE", 
+                 "DP02_0001E", 
+                 "DP02_0002PE", 
+                 "DP02_0006PE", 
+                 "DP02_0010PE", 
+                 "DP03_0005PE", 
+                 "DP03_0119PE", 
+                 # "DP03_0052PE", 
+                 "DP03_0053PE", 
+                 "DP03_0054PE", 
+                 "DP03_0055PE", 
+                 "DP03_0056PE", 
+                 "DP03_0057PE", 
+                 "DP03_0058PE", 
+                 "DP03_0059PE",
+                 "DP03_0060PE", 
+                 "DP03_0061PE", 
+                 "DP03_0062E",
+                 "DP02_0067PE", 
+                 "DP02_0068PE",
+                 "DP04_0001E", 
+                 "DP04_0003PE", 
+                 "DP04_0046PE",
+                 "DP04_0017PE", 
+                 "DP04_0018PE",
+                 "DP04_0019PE", 
+                 "DP04_0020PE",
+                 "DP04_0021PE", 
+                 "DP04_0022PE", 
+                 "DP04_0023PE", 
+                 "DP04_0024PE",
+                 "DP04_0025PE", 
+                 # "DP04_0026PE",
+                 # "DP04_0039PE", 
+                 "DP04_0040PE", 
+                 "DP04_0041PE",
+                 "DP04_0042PE", 
+                 "DP04_0043PE", 
+                 "DP04_0044PE")
+
+acs1_2024_orig = get_acs(geography = "metropolitan statistical area/micropolitan statistical area",
+                         variables = vars_needed,
+                         year = 2024,
+                         survey = "acs1",
+                         output = "wide")
+
+head(acs1_2024_orig)
+```
+<!-- The list of variables includes what should be the total population as a percent—"DP05_0001P"—but, as that would always be 100%, the wise people at the US Census Bureau made such equal to "DP05_0001E", the total population estimate, necessitating no further adjustment. -->
+
+This includes both percents as well as margins of error. I have included code to drop the margins of error.
+
+```{r rename_acs_vars}
+#rename ACS variable codes to real things
+acs1_2024 <- acs1_2024_orig %>% select(vars_needed) %>%
+  rename(total_population = DP05_0001E,
+    pct_female = DP05_0003PE,
+    pct_white = DP05_0037PE,
+    pct_black = DP05_0045PE,
+    pct_aian = DP05_0053PE,
+    pct_asian = DP05_0061PE,
+    pct_nhpi = DP05_0069PE,
+    pct_two_or_more = DP05_0075PE,
+    pct_hispanic = DP05_0090PE,
+    median_age = DP05_0018E,
+    pct_under_18 = DP05_0019PE,
+    total_households = DP02_0001E,
+    pct_married_couple = DP02_0002PE,
+    pct_male_householder = DP02_0006PE,
+    pct_female_householder = DP02_0010PE,
+    pct_unemployed = DP03_0005PE,
+    pct_below_poverty = DP03_0119PE,
+    # pct_income_lt10k = DP03_0052PE,
+    pct_income_10_14999 = DP03_0053PE,
+    pct_income_15_24999 = DP03_0054PE,
+    pct_income_25_34999 = DP03_0055PE,
+    pct_income_35_49999 = DP03_0056PE,
+    pct_income_50_74999 = DP03_0057PE,
+    pct_income_75_99999 = DP03_0058PE,
+    pct_income_100_149k = DP03_0059PE,
+    pct_income_150_199k = DP03_0060PE,
+    pct_income_200k_plus = DP03_0061PE,
+    median_household_income = DP03_0062E,
+    pct_high_school_plus = DP02_0067PE,
+    pct_bachelors_plus = DP02_0068PE,
+    total_housing_units = DP04_0001E,
+    pct_vacant_units = DP04_0003PE,
+    pct_owner_occupied = DP04_0046PE,
+    pct_built_2020_plus = DP04_0017PE,
+    pct_built_2010_2019 = DP04_0018PE,
+    pct_built_2000_2009 = DP04_0019PE,
+    pct_built_1990_1999 = DP04_0020PE,
+    pct_built_1980_1989 = DP04_0021PE,
+    pct_built_1970_1979 = DP04_0022PE,
+    pct_built_1960_1969 = DP04_0023PE,
+    pct_built_1950_1959 = DP04_0024PE,
+    pct_built_1940_1949 = DP04_0025PE,
+    # pct_built_1939_earlier = DP04_0026PE,
+    # pct_0_bed = DP04_0039PE,
+    pct_1_bed = DP04_0040PE,
+    pct_2_bed = DP04_0041PE,
+    pct_3_bed = DP04_0042PE,
+    pct_4_bed = DP04_0043PE,
+    pct_5plus_bed = DP04_0044PE)
+
+# #check it out
 head(acs1_2024)
 ```
 
-The list of variables includes what should be the total population as a percent—"DP05_0001P"—but, as that would always be 100%, the wise people at the US Census Bureau made such equal to "DP05_0001E", the total population estimate, necessitating no further adjustment.
+```{r area type var}
+#I want to make a area type var here before merging 
+#create area_type var
+acs1_2024 <- acs1_2024 %>%
+  mutate(area_type = ifelse(grepl("Micro Area",NAME), "Micro", "Metro"))
 
-This includes both percents as well as margins of error. I have included code to drop the margins of error, but I am unsure if this is a good idea.
+unique(acs1_2024$area_type)
+```
+
+
 
 #### Realtor.com
 
@@ -1148,206 +1351,82 @@ head(acs1_2024_pcts)
 ```
 
 
-```{r future ACS variable dictionary}
-#ACS variable codes 
-#use to make a dictionary for the report
-
-#demographics
-
-#DP05_0001E - Total Population
-
-#DP05_0003PE – % Female
-#DP05_0037PE – % White alone
-#DP05_0045PE – % Black or African American alone
-#DP05_0053PE - % American Indian and Alaska Native alone
-#DP05_0061PE – % Asian alone
-#DP05_0069PE - % Native Hawaiian and Other Pacific Islander alone
-#DP05_0075PE - % Two or More Races
-
-#DP05_0090PE – % Hispanic or Latino
-
-#DP05_0018E - Median age (years)
-#DP05_0019PE - % Under 18 years
-
-#households
-
-#DP02_0001E – Total households
-#DP02_0002PE – % Married-couple households
-#DP02_0006PE – % Male householder, no spouse
-#DP02_0010PE – % Female householder, no spouse
-
-#economics
-
-#DP03_0005PE – % Unemployed
-#DP03_0119PE – % Below poverty level
-
-#DP03_0052PE - % Household income <$10,000
-#DP03_0053PE - % Household income $10,000 to $14,999
-#DP03_0054PE - % Household income $15,000 to $24,999
-#DP03_0055PE - % Household income $25,000 to $34,999
-#DP03_0056PE - % Household income $35,000 to $49,999
-#DP03_0057PE - % Household income $50,000 to $74,999
-#DP03_0058PE – % Household income $75,000 to $99,999
-#DP03_0059PE – % Household income $100,000 to $149,999
-#DP03_0060PE – % Household income $150,000 to $199,999
-#DP03_0061PE – % Household income $200,000 or more
-
-#DP03_0062E - Median household income (dollars)
-
-#DP02_0067PE - % High school graduate or higher
-#DP02_0068PE – % Bachelor’s degree or higher
-
-
-#housing
-
-#DP04_0001E – Total housing units
-#DP04_0003PE – % Vacant units
-
-#DP04_0046PE – % of occupied that are Owner-occupied
-
-#DP04_0017PE - % Units built 2020 or later
-#DP04_0018PE - % Units built 2010 to 2019
-#DP04_0019PE – % Units built 2000 to 2009
-#DP04_0020PE – % Units built 1990 to 1999
-#DP04_0021PE – % Units built 1980 to 1989
-#DP04_0022PE – % Units built 1970 to 1979
-#DP04_0023PE – % Units built 1960 to 1969
-#DP04_0024PE – % Units built 1950 to 1959
-#DP04_0025PE – % Units built 1940 to 1949
-#DP04_0026PE – % Units built 1939 or earlier
-
-#DP04_0039PE - % 0 Bedrooms
-#DP04_0040PE - % 1 Bedrooms
-#DP04_0041PE - % 2 Bedrooms
-#DP04_0042PE - % 3 Bedrooms
-#DP04_0043PE - % 4 Bedrooms
-#DP04_0044PE - % 5 Bedrooms or more
-```
-
 
 ```{r filter acs data down}
 #which variables to keep
-vars_needed <- c("DP05_0001E", 
-                 "DP05_0003PE", 
-                 "DP05_0037PE", 
-                 "DP05_0045PE", 
-                 "DP05_0053PE", 
-                 "DP05_0061PE", 
-                 "DP05_0069PE", 
-                 "DP05_0075PE", 
-                 "DP05_0090PE", 
-                 "DP05_0018E", 
-                 "DP05_0019PE", 
-                 "DP02_0001E", 
-                 "DP02_0002PE", 
-                 "DP02_0006PE", 
-                 "DP02_0010PE", 
-                 "DP03_0005PE", 
-                 "DP03_0119PE", 
-                 "DP03_0052PE", 
-                 "DP03_0053PE", 
-                 "DP03_0054PE", 
-                 "DP03_0055PE", 
-                 "DP03_0056PE", 
-                 "DP03_0057PE", 
-                 "DP03_0058PE", 
-                 "DP03_0059PE",
-                 "DP03_0060PE", 
-                 "DP03_0061PE", 
-                 "DP03_0062E",
-                 "DP02_0067PE", 
-                 "DP02_0068PE",
-                 "DP04_0001E", 
-                 "DP04_0003PE", 
-                 "DP04_0046PE",
-                 "DP04_0017PE", 
-                 "DP04_0018PE",
-                 "DP04_0019PE", 
-                 "DP04_0020PE",
-                 "DP04_0021PE", 
-                 "DP04_0022PE", 
-                 "DP04_0023PE", 
-                 "DP04_0024PE",
-                 "DP04_0025PE", 
-                 "DP04_0026PE",
-                 "DP04_0039PE", 
-                 "DP04_0040PE", 
-                 "DP04_0041PE",
-                 "DP04_0042PE", 
-                 "DP04_0043PE", 
-                 "DP04_0044PE")
 
-#filter down the dataset
-acs1_2024_filtered <- acs1_2024_pcts[, c("GEOID", "NAME", vars_needed)]
 
-#rename ACS variable codes to real things
-acs1_2024_filtered <- acs1_2024_filtered %>%
-  rename(total_population = DP05_0001E,
-    pct_female = DP05_0003PE,
-    pct_white = DP05_0037PE,
-    pct_black = DP05_0045PE,
-    pct_aian = DP05_0053PE,
-    pct_asian = DP05_0061PE,
-    pct_nhpi = DP05_0069PE,
-    pct_two_or_more = DP05_0075PE,
-    pct_hispanic = DP05_0090PE,
-    median_age = DP05_0018E,
-    pct_under_18 = DP05_0019PE,
-    total_households = DP02_0001E,
-    pct_married_couple = DP02_0002PE,
-    pct_male_householder = DP02_0006PE,
-    pct_female_householder = DP02_0010PE,
-    pct_unemployed = DP03_0005PE,
-    pct_below_poverty = DP03_0119PE,
-    pct_income_lt10k = DP03_0052PE,
-    pct_income_10_14999 = DP03_0053PE,
-    pct_income_15_24999 = DP03_0054PE,
-    pct_income_25_34999 = DP03_0055PE,
-    pct_income_35_49999 = DP03_0056PE,
-    pct_income_50_74999 = DP03_0057PE,
-    pct_income_75_99999 = DP03_0058PE,
-    pct_income_100_149k = DP03_0059PE,
-    pct_income_150_199k = DP03_0060PE,
-    pct_income_200k_plus = DP03_0061PE,
-    median_household_income = DP03_0062E,
-    pct_high_school_plus = DP02_0067PE,
-    pct_bachelors_plus = DP02_0068PE,
-    total_housing_units = DP04_0001E,
-    pct_vacant_units = DP04_0003PE,
-    pct_owner_occupied = DP04_0046PE,
-    pct_built_2020_plus = DP04_0017PE,
-    pct_built_2010_2019 = DP04_0018PE,
-    pct_built_2000_2009 = DP04_0019PE,
-    pct_built_1990_1999 = DP04_0020PE,
-    pct_built_1980_1989 = DP04_0021PE,
-    pct_built_1970_1979 = DP04_0022PE,
-    pct_built_1960_1969 = DP04_0023PE,
-    pct_built_1950_1959 = DP04_0024PE,
-    pct_built_1940_1949 = DP04_0025PE,
-    pct_built_1939_earlier = DP04_0026PE,
-    pct_0_bed = DP04_0039PE,
-    pct_1_bed = DP04_0040PE,
-    pct_2_bed = DP04_0041PE,
-    pct_3_bed = DP04_0042PE,
-    pct_4_bed = DP04_0043PE,
-    pct_5plus_bed = DP04_0044PE)
-
-# #check it out
-head(acs1_2024_filtered)
-
-# remove a few collinear / unusable vars
+# #filter down the dataset
+# acs1_2024_filtered <- acs1_2024_pcts[, c("GEOID", "NAME", vars_needed)]
+# 
+# #rename ACS variable codes to real things
 # acs1_2024_filtered <- acs1_2024_filtered %>%
-#   select(-pct_male,
-#          -pct_hispanic,
-#          -pct_65_over,
-#          -pct_renter_occupied)
-
-#I want to make a area type var here before merging 
-#create area_type var
-acs1_2024_filtered <- acs1_2024_filtered %>%
-  mutate(area_type = ifelse(grepl("Micro Area",NAME), "Micro", "Metro"))
-
-unique(acs1_2024_filtered$area_type)
+#   rename(total_population = DP05_0001E,
+#     pct_female = DP05_0003PE,
+#     pct_white = DP05_0037PE,
+#     pct_black = DP05_0045PE,
+#     pct_aian = DP05_0053PE,
+#     pct_asian = DP05_0061PE,
+#     pct_nhpi = DP05_0069PE,
+#     pct_two_or_more = DP05_0075PE,
+#     pct_hispanic = DP05_0090PE,
+#     median_age = DP05_0018E,
+#     pct_under_18 = DP05_0019PE,
+#     total_households = DP02_0001E,
+#     pct_married_couple = DP02_0002PE,
+#     pct_male_householder = DP02_0006PE,
+#     pct_female_householder = DP02_0010PE,
+#     pct_unemployed = DP03_0005PE,
+#     pct_below_poverty = DP03_0119PE,
+#     pct_income_lt10k = DP03_0052PE,
+#     pct_income_10_14999 = DP03_0053PE,
+#     pct_income_15_24999 = DP03_0054PE,
+#     pct_income_25_34999 = DP03_0055PE,
+#     pct_income_35_49999 = DP03_0056PE,
+#     pct_income_50_74999 = DP03_0057PE,
+#     pct_income_75_99999 = DP03_0058PE,
+#     pct_income_100_149k = DP03_0059PE,
+#     pct_income_150_199k = DP03_0060PE,
+#     pct_income_200k_plus = DP03_0061PE,
+#     median_household_income = DP03_0062E,
+#     pct_high_school_plus = DP02_0067PE,
+#     pct_bachelors_plus = DP02_0068PE,
+#     total_housing_units = DP04_0001E,
+#     pct_vacant_units = DP04_0003PE,
+#     pct_owner_occupied = DP04_0046PE,
+#     pct_built_2020_plus = DP04_0017PE,
+#     pct_built_2010_2019 = DP04_0018PE,
+#     pct_built_2000_2009 = DP04_0019PE,
+#     pct_built_1990_1999 = DP04_0020PE,
+#     pct_built_1980_1989 = DP04_0021PE,
+#     pct_built_1970_1979 = DP04_0022PE,
+#     pct_built_1960_1969 = DP04_0023PE,
+#     pct_built_1950_1959 = DP04_0024PE,
+#     pct_built_1940_1949 = DP04_0025PE,
+#     pct_built_1939_earlier = DP04_0026PE,
+#     pct_0_bed = DP04_0039PE,
+#     pct_1_bed = DP04_0040PE,
+#     pct_2_bed = DP04_0041PE,
+#     pct_3_bed = DP04_0042PE,
+#     pct_4_bed = DP04_0043PE,
+#     pct_5plus_bed = DP04_0044PE)
+# 
+# # #check it out
+# head(acs1_2024_filtered)
+# 
+# # remove a few collinear / unusable vars
+# # acs1_2024_filtered <- acs1_2024_filtered %>%
+# #   select(-pct_male,
+# #          -pct_hispanic,
+# #          -pct_65_over,
+# #          -pct_renter_occupied)
+# 
+# #I want to make a area type var here before merging 
+# #create area_type var
+# acs1_2024_filtered <- acs1_2024_filtered %>%
+#   mutate(area_type = ifelse(grepl("Micro Area",NAME), "Micro", "Metro"))
+# 
+# unique(acs1_2024_filtered$area_type)
 ```
 
 
