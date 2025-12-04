@@ -1024,7 +1024,6 @@ inventory_2024_filtered <- inventory_2024%>%
     month_date_yyyymm,
     cbsa_code,
     cbsa_title,
-    HouseholdRank,
     median_listing_price_per_square_foot,
     total_listing_count,
     pending_ratio,
@@ -1533,8 +1532,16 @@ ggplot(inventory_2024_filtered, aes(x = "", y = total_listing_count)) +
     x = "",
     y = "Total Listings (log scale)") +
   theme_minimal()
+```
 
-
+```{r household rank density}
+ggplot(inventory_2024_filtered, aes(x = HouseholdRank)) +
+  geom_histogram(binwidth = 50, fill = "steelblue", color = "white", alpha = 0.7) +
+  labs(
+    title = "Distribution of HouseholdRank",
+    x = "HouseholdRank (Metro Size)",
+    y = "Count") +
+  theme_minimal()
 ```
 
 
