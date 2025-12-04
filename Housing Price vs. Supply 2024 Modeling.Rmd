@@ -1567,7 +1567,7 @@ print(dataset_grouped)
 ```
 
 
-### EDA
+## EDA
 
 ```{r dist price}
 ggplot(inventory_2024_filtered, aes(x = median_listing_price_per_square_foot)) +
@@ -1877,6 +1877,8 @@ ggplot(combined_metros, aes(x = cbsa_title, y = median_listing_price, fill = lis
 
 ## Modeling
 
+### Linear Regression
+
 ```{r}
 #modeling/ statistical analysis 
 #linear regression
@@ -1893,6 +1895,11 @@ summary(reg_model_1)
 
 #random forest 
 ```
+
+#### LASSO
+
+### Regression Tree
+
 
 ```{r RT_simple}
 options(scipen = 999)   # turn off scientific notation
@@ -1925,9 +1932,11 @@ rpart.plot(
   main = "Regression Tree: Price per Sq.Ft"
 )
 summary(inventory_2024$total_listing_count)
-summary(inventory_2024$)
+# summary(inventory_2024$)
 
 ```
+
+### Random Forest Regression
 
 ```{r}
 # remove rows with missing predictor/target values
@@ -1974,10 +1983,10 @@ varImpPlot(rf_model,
 #data manipulation 
 EDA- summary statistics(baylee)
 Modeling- linear regressions (alex)
+Modeling- lasso regression  (alex)
 -- probably lots of options here 
 Modeling- regression tree (steph)
 Modeling- regression forest (baylee) (ilgaz)
-Modeling- lasso regression 
 
 
 
