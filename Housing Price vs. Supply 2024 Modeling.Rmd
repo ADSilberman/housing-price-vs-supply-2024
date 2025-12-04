@@ -1609,7 +1609,11 @@ summary(reg_model_1)
 ```
 
 
-
+#data manipulation 
+-log of price in inventory 
+-factor household rank 
+EDA- summary statistics 
+EDA- graphing different target vars against eachother (i.e. price vs supply, price vs demand, price vs pending_ratio, price vs median_days_on_market)
 
 
 
