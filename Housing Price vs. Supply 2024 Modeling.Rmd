@@ -1138,9 +1138,15 @@ head(acs1_2024_orig)
 
 This includes both percents as well as margins of error. I have included code to drop the margins of error.
 
+
+```{r dropping margins of error}
+acs1_2024_no_M = select(acs1_2024_orig, -grepv("M$", names(acs1_2024_orig)))
+head(acs1_2024_no_M)
+```
+
 ```{r rename_acs_vars}
 #rename ACS variable codes to real things
-acs1_2024 <- acs1_2024_orig %>% select(vars_needed) %>%
+acs1_2024 <- acs1_2024_no_M %>%
   rename(total_population = DP05_0001E,
     pct_female = DP05_0003PE,
     pct_white = DP05_0037PE,
@@ -1203,50 +1209,6 @@ acs1_2024 <- acs1_2024 %>%
 
 unique(acs1_2024$area_type)
 ```
-
-
-
-#### Realtor.com
-
-```{r load_realtor}
-#loading in inventory data
-inventory_raw <- read_csv(here("../RDC_Inventory_Core_Metrics_Metro_History.csv"))
-
-#cleaning names
-clean_names(inventory_raw)
-
-#hunting down year
-glimpse(inventory_raw)
-
-#filtering for 2024
-inventory_2024 <- inventory_raw %>%
-  filter(month_date_yyyymm >= 202401 & month_date_yyyymm <= 202412)
-
-#filtered for target vars
-inventory_2024_filtered <- inventory_2024%>%
-  select(
-    month_date_yyyymm,
-    cbsa_code,
-    cbsa_title,
-    median_listing_price_per_square_foot,
-    total_listing_count,
-    pending_ratio,
-    median_days_on_market)%>%
-  mutate(
-    log_median_price_sqft = log(median_listing_price_per_square_foot))
-
-summary(inventory_2024_filtered)
-```
-
-
-The Realtor.com inventory dataset provides monthly metro-level housing indicators like listing counts, median prices, and days on market. Unlike the ACS, it doesn’t include paired estimates or margins of error. Each variable is already given as a direct point estimate. Some fields (the _mm and _yy columns) represent month-over-month or year-over-year percent changes, which introduce redundancy, so we later drop those before modeling. Aside from that, the data only need to be filtered to the 2024 months and are ready for use.
-
-
-```{r dropping margins of error}
-acs1_2024_pcts = select(acs1_2024, -grepv("M$", names(acs1_2024)))
-head(acs1_2024_pcts)
-```
-
 
 ```{r ilgaz' correlation check & steph's attempt at multiColl detection}
 #ilgaz' correlation stuff
@@ -1430,13 +1392,49 @@ head(acs1_2024_pcts)
 ```
 
 
+#### Realtor.com
+
+```{r load_realtor}
+#loading in inventory data
+inventory_raw <- read_csv(here("../data/RDC_Inventory_Core_Metrics_Metro_History.csv"))
+
+#cleaning names
+clean_names(inventory_raw)
+
+#hunting down year
+glimpse(inventory_raw)
+
+#filtering for 2024
+inventory_2024 <- inventory_raw %>%
+  filter(month_date_yyyymm >= 202401 & month_date_yyyymm <= 202412)
+
+#filtered for target vars
+inventory_2024_filtered <- inventory_2024%>%
+  select(
+    month_date_yyyymm,
+    cbsa_code,
+    cbsa_title,
+    median_listing_price_per_square_foot,
+    total_listing_count,
+    pending_ratio,
+    median_days_on_market)%>%
+  mutate(
+    log_median_price_sqft = log(median_listing_price_per_square_foot))
+
+summary(inventory_2024_filtered)
+```
+
+
+The Realtor.com inventory dataset provides monthly metro-level housing indicators like listing counts, median prices, and days on market. Unlike the ACS, it doesn’t include paired estimates or margins of error. Each variable is already given as a direct point estimate. Some fields (the _mm and _yy columns) represent month-over-month or year-over-year percent changes, which introduce redundancy, so we later drop those before modeling. Aside from that, the data only need to be filtered to the 2024 months and are ready for use.
+
+
 ```{r merge datasets & clean}
 #cbsa code var to chr so merge works
 inventory_2024 <- inventory_2024 %>%
   mutate(cbsa_code = as.character(cbsa_code))
 
 #merge ACS and inventory datasets
-full_dataset <- acs1_2024_filtered %>%
+full_dataset <- acs1_2024 %>%
   left_join(inventory_2024, by = c("GEOID" = "cbsa_code"))
 
 #which vars to factor
@@ -1565,8 +1563,8 @@ dataset_grouped <- full_dataset_clean %>%
 print(dataset_grouped)
 ```
 
-EDA
 
+### EDA
 
 ```{r dist price}
 ggplot(inventory_2024_filtered, aes(x = median_listing_price_per_square_foot)) +
@@ -1874,9 +1872,11 @@ ggplot(combined_metros, aes(x = cbsa_title, y = median_listing_price, fill = lis
 ```
 
 
+## Modeling
+
 ```{r}
 #modeling/ statistical analysis 
-#basic regression 
+#linear regression
 names(dataset_grouped)
 #reg d- "avg_log_median_listing_price" i- "total_active_listing_count" 
 reg_model_1 <- lm(avg_log_median_listing_price ~ total_active_listing_count,
