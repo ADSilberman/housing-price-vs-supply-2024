@@ -1028,7 +1028,9 @@ inventory_2024_filtered <- inventory_2024%>%
     median_listing_price_per_square_foot,
     total_listing_count,
     pending_ratio,
-    median_days_on_market)
+    median_days_on_market)%>%
+  mutate(
+    log_median_price_sqft = log(median_listing_price_per_square_foot))
 
 summary(inventory_2024_filtered)
 ```
