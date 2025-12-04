@@ -1138,39 +1138,100 @@ head(acs1_2024_pcts)
 
 #demographics
 
-#DP02_0001PE – Total households
-#DP05_0002PE – % Male (removed due to collinearity with female)
+#DP05_0001E - Total Population
+
 #DP05_0003PE – % Female
 #DP05_0037PE – % White alone
 #DP05_0045PE – % Black or African American alone
+#DP05_0053PE - % American Indian and Alaska Native alone
 #DP05_0061PE – % Asian alone
-#DP05_0089PE – % Hispanic or Latino (removed due to estimate total)
-#DP05_0019PE – % Under 18
-#DP05_0029PE – % 65 and over (removed due to estimate total)
+#DP05_0069PE - % Native Hawaiian and Other Pacific Islander alone
+#DP05_0075PE - % Two or More Races
+
+#DP05_0090PE – % Hispanic or Latino
+
+#DP05_0018E - Median age (years)
+#DP05_0019PE - % Under 18 years
+
+#households
+
+#DP02_0001E – Total households
 #DP02_0002PE – % Married-couple households
-#DP02_0010PE – % Female householder, no spouse
 #DP02_0006PE – % Male householder, no spouse
+#DP02_0010PE – % Female householder, no spouse
 
 #economics
 
 #DP03_0005PE – % Unemployed
 #DP03_0119PE – % Below poverty level
+
+#DP03_0052PE - % Household income <$10,000
+#DP03_0053PE - % Household income $10,000 to $14,999
+#DP03_0054PE - % Household income $15,000 to $24,999
+#DP03_0055PE - % Household income $25,000 to $34,999
+#DP03_0056PE - % Household income $35,000 to $49,999
+#DP03_0057PE - % Household income $50,000 to $74,999
+#DP03_0058PE – % Household income $75,000 to $99,999
+#DP03_0059PE – % Household income $100,000 to $149,999
+#DP03_0060PE – % Household income $150,000 to $199,999
+#DP03_0061PE – % Household income $200,000 or more
+
+#DP03_0062E - Median household income (dollars)
+
+#DP02_0067PE - % High school graduate or higher
 #DP02_0068PE – % Bachelor’s degree or higher
-#DP03_0058PE – % Household income $75,000+
+
 
 #housing
 
-#DP04_0001PE – Total housing units
-#DP04_0046PE – % Owner-occupied
-#DP04_0047PE – % Renter-occupied (removed due to collinearity with 'owner-occupied')
-#DP04_0019PE – % Units built 2000 or later
+#DP04_0001E – Total housing units
 #DP04_0003PE – % Vacant units
+
+#DP04_0046PE – % of occupied that are Owner-occupied
+
+#DP04_0017PE - % Units built 2020 or later
+#DP04_0018PE - % Units built 2010 to 2019
+#DP04_0019PE – % Units built 2000 to 2009
+#DP04_0020PE – % Units built 1990 to 1999
+#DP04_0021PE – % Units built 1980 to 1989
+#DP04_0022PE – % Units built 1970 to 1979
+#DP04_0023PE – % Units built 1960 to 1969
+#DP04_0024PE – % Units built 1950 to 1959
+#DP04_0025PE – % Units built 1940 to 1949
+#DP04_0026PE – % Units built 1939 or earlier
+
+#DP04_0039PE - % 0 Bedrooms
+#DP04_0040PE - % 1 Bedrooms
+#DP04_0041PE - % 2 Bedrooms
+#DP04_0042PE - % 3 Bedrooms
+#DP04_0043PE - % 4 Bedrooms
+#DP04_0044PE - % 5 Bedrooms or more
 ```
 
 
 ```{r filter acs data down}
 #which variables to keep
-vars_needed <- c("DP02_0001PE", "DP05_0002PE", "DP05_0003PE", "DP05_0037PE", "DP05_0045PE", "DP05_0061PE", "DP05_0089PE", "DP05_0019PE", "DP05_0029PE", "DP02_0002PE", "DP02_0010PE", "DP02_0006PE", "DP03_0005PE", "DP03_0119PE", "DP02_0068PE", "DP03_0058PE", "DP04_0001PE", "DP04_0046PE", "DP04_0047PE", "DP04_0019PE", "DP04_0003PE")
+vars_needed <- c("DP02_0001PE", 
+                 "DP05_0003PE", 
+                 "DP05_0003PE", 
+                 "DP05_0037PE", 
+                 "DP05_0045PE", 
+                 "DP05_0061PE", 
+                 "DP05_0089PE", 
+                 "DP05_0019PE", 
+                 "DP05_0029PE", 
+                 "DP02_0002PE", 
+                 "DP02_0010PE", 
+                 "DP02_0006PE", 
+                 "DP03_0005PE", 
+                 "DP03_0119PE", 
+                 "DP02_0068PE", 
+                 "DP03_0058PE", 
+                 "DP04_0001PE", 
+                 "DP04_0046PE", 
+                 "DP04_0047PE", 
+                 "DP04_0019PE", 
+                 "DP04_0003PE")
 
 #filter down the dataset
 acs1_2024_filtered <- acs1_2024_pcts[, c("GEOID", "NAME", vars_needed)]
