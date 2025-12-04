@@ -1623,6 +1623,12 @@ ggplot(inventory_2024_filtered, aes(x = HouseholdRank)) +
     y = "Count") +
   theme_minimal()
 ```
+```{r household rank density}
+install.packages("randomForest")
+
+library(randomForest)
+
+
 
 
 ```{r EDA price vs supply}
@@ -1900,7 +1906,83 @@ Modeling- regression tree (steph)
 Modeling- regression forest (baylee) (ilgaz)
 Modeling- lasso regression 
 
+```{r RT_simple}
+library(rpart)
+library(rpart.plot)
+options(scipen = 999)   # turn off scientific notation
+
+# keep only interpretable economic drivers
+inventory_model_simple <- inventory_2024 %>%
+  select(
+    median_listing_price_per_square_foot,  # 🎯 Target
+    total_listing_count,                   # 📉 Supply
+    pending_ratio,                         # 🔄 Market Tightness
+    median_days_on_market                  # ⏱ Market Speed
+  )
+
+# fit a simple, readable regression tree
+reg_tree_simple <- rpart(
+  median_listing_price_per_square_foot ~
+    total_listing_count + pending_ratio + median_days_on_market,
+  data = inventory_model_simple,
+  method = "anova",
+  control = rpart.control(maxdepth = 3, minbucket = 200)  # controls complexity
+)
+
+rpart.plot(
+  reg_tree_simple,
+  type = 2,
+  extra = 101,
+  under = TRUE,
+  fallen.leaves = TRUE,
+  roundint = TRUE,
+  main = "Regression Tree: Price per Sq.Ft"
+)
+summary(inventory_2024$total_listing_count)
+summary(inventory_2024$)
+
+```
+
+```{r}
+library(randomForest)
+
+# remove rows with missing predictor/target values
+inventory_model_simple <- inventory_model_simple %>% na.omit()
+
+rf_model <- randomForest(
+  median_listing_price_per_square_foot ~
+    total_listing_count + pending_ratio + median_days_on_market,
+  data = inventory_model_simple,
+  ntree = 500,       # number of trees
+  mtry = 2,          # number of variables per split (sqrt rule works here)
+  importance = TRUE,
+  na.action = na.omit    # <--- FIX
+)
+
+rf_model
+
+varImp <- importance(rf_model)
+
+# Scale Node Purity to thousands
+varImp[,2] <- varImp[,2] / 1000
+
+colnames(varImp)[2] <- "IncNodePurity (x1000)"
+
+varImpPlot(rf_model,
+           main = "Variable Importance (Market Drivers)",
+           cex.main = 1.2, 
+           cex.lab = 0.9, 
+           cex.axis = 0.8)
+varImpPlot(rf_model,
+           main = "Importance of Supply & Demand Drivers",
+           col = "steelblue",
+           pch = 19,
+           cex.main = 1.3,
+           cex.lab = 1,
+           cex.axis = 0.9,
+           lwd = 3)
 
 
+```
 
 
