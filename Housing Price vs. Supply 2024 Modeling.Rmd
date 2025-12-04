@@ -1017,6 +1017,20 @@ glimpse(inventory_raw)
 #filtering for 2024
 inventory_2024 <- inventory_raw %>%
   filter(month_date_yyyymm >= 202401 & month_date_yyyymm <= 202412)
+
+#filtered for target vars
+inventory_2024_filtered <- inventory_2024%>%
+  select(
+    month_date_yyyymm,
+    cbsa_code,
+    cbsa_title,
+    HouseholdRank,
+    median_listing_price_per_square_foot,
+    total_listing_count,
+    pending_ratio,
+    median_days_on_market)
+
+summary(inventory_2024_filtered)
 ```
 
 
