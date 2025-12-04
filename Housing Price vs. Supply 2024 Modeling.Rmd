@@ -1431,6 +1431,29 @@ dataset_grouped <- full_dataset_clean %>%
 print(dataset_grouped)
 ```
 
+EDA
+
+
+```{r dist price}
+ggplot(inventory_2024_filtered, aes(x = median_listing_price_per_square_foot)) +
+  geom_histogram(binwidth = 50, fill = "steelblue", color = "black") +
+  labs(
+    title = "Distribution of Median Listing Price per Square Foot",
+    x = "Median Price per Square Foot",
+    y = "Count") +
+  theme_void()
+```
+
+
+```{r dist log price}
+ggplot(inventory_2024_filtered, aes(x = log_median_price_sqft)) +
+  geom_histogram(binwidth = 0.1, fill = "coral", color = "black") +
+  labs(
+    title = "Distribution of Log Median Listing Price per Square Foot",
+    x = "Log Median Price per Square Foot",
+    y = "Count") +
+  theme_void()
+```
 
 ```{r vars w highest correlations}
 #eda
@@ -1612,11 +1635,14 @@ summary(reg_model_1)
 
 
 #data manipulation 
--log of price in inventory 
 -factor household rank 
 EDA- summary statistics 
 EDA- graphing different target vars against eachother (i.e. price vs supply, price vs demand, price vs pending_ratio, price vs median_days_on_market)
-
+Modeling- linear regressions
+-- probably lots of options here 
+Modeling- regression tree
+Modeling- regression forest
+Modeling- lasso regression
 
 
 
