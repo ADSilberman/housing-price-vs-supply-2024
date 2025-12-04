@@ -1510,7 +1510,33 @@ ggplot(inventory_2024_filtered, aes(x = log_median_price_sqft)) +
   theme_minimal()
 ```
 
-EDA- graphing different target vars against eachother (i.e. price vs supply, price vs demand, price vs pending_ratio, price vs median_days_on_market) (baylee)
+```{r housing count violin}
+ggplot(inventory_2024_filtered, aes(x = "", y = total_listing_count)) +
+  geom_violin(fill = "lightblue", color = "steelblue", alpha = 0.7) +
+  geom_jitter(width = 0.1, alpha = 0.3, color = "darkblue") + 
+  labs(
+    title = "Distribution of Total Listing Count",
+    x = "",
+    y = "Total Listings") +
+  theme_minimal()
+
+```
+
+
+```{r log housing count violin}
+ggplot(inventory_2024_filtered, aes(x = "", y = total_listing_count)) +
+  geom_violin(fill = "lightblue", color = "steelblue", alpha = 0.7) +
+  geom_jitter(width = 0.1, alpha = 0.3, color = "darkblue") +
+  scale_y_log10() +
+  labs(
+    title = "Distribution of Total Listing Count (Log Scale)",
+    x = "",
+    y = "Total Listings (log scale)") +
+  theme_minimal()
+
+
+```
+
 
 ```{r EDA price vs supply}
 ggplot(inventory_2024_filtered, aes(x = total_listing_count, y = median_listing_price_per_square_foot)) +
