@@ -1072,6 +1072,7 @@ census_api_key("29e7dfea2f8b253a0a10ccd9626f78e49f4f0a4f")
 # head(acs1_2024)
 ```
 
+
 ```{r new_load_acs}
 vars_needed <- c("NAME",
                  "GEOID",
@@ -1209,7 +1210,7 @@ unique(acs1_2024$area_type)
 
 ```{r load_realtor}
 #loading in inventory data
-inventory_raw <- read_csv(here("../data/RDC_Inventory_Core_Metrics_Metro_History.csv"))
+inventory_raw <- read_csv(here("../RDC_Inventory_Core_Metrics_Metro_History.csv"))
 
 #cleaning names
 clean_names(inventory_raw)
@@ -1892,14 +1893,12 @@ summary(reg_model_1)
 
 
 #data manipulation 
--factor household rank 
-EDA- summary statistics 
-EDA- graphing different target vars against eachother (i.e. price vs supply, price vs demand, price vs pending_ratio, price vs median_days_on_market) (baylee)
-Modeling- linear regressions
+EDA- summary statistics(baylee)
+Modeling- linear regressions (alex)
 -- probably lots of options here 
-Modeling- regression tree
-Modeling- regression forest
-Modeling- lasso regression
+Modeling- regression tree (steph)
+Modeling- regression forest (baylee) (ilgaz)
+Modeling- lasso regression 
 
 
 
