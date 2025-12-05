@@ -1885,7 +1885,7 @@ summary(reg_model_by_1)
 
 ```{r}
 #reg d- "avg_log_median_listing_price" i- "total_active_listing_count" "area_type" "avg_pct_income_75k_plus" "avg_pct_units_built_2000_plus" "avg_pct_bachelors_or_higher" 
-reg_model_by_all <- lm(median_listing_price_per_square_foot ~ . -GEOID -cbsa_title,
+reg_model_by_all <- lm(median_listing_price_per_square_foot ~ . -cbsa_title,
             data = train)
 
 summary(reg_model_by_all)
@@ -1908,7 +1908,7 @@ Nearly double the multiple R-squared.
 
 ```{r}
 #reg d- "avg_log_median_listing_price" i- "total_active_listing_count" "area_type" "avg_pct_income_75k_plus" "avg_pct_units_built_2000_plus" "avg_pct_bachelors_or_higher" 
-reg_model_log_by_all <- lm(log_median_price_sqft ~ . -GEOID -cbsa_title,
+reg_model_log_by_all <- lm(log_median_price_sqft ~ . -cbsa_title,
             data = train)
 
 summary(reg_model_log_by_all)
