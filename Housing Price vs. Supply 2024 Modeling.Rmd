@@ -22,9 +22,9 @@ rm(list=ls())
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
-                      root.dir = "C:\\Users\\alexa\\Code\\GW DATS\\6101 Intro to Data Science\\Project 1\\GitHub",
+                      root.dir = "C:\\Users\\alexa\\Code\\GW DATS\\6101 Intro to Data Science\\Project 2\\GitHub",
                       warning = F, message = F)
-options(scientific = T, digits = 3)
+options(scientific = F, digits = 3)
 ```
 
 ```{r libraries}
@@ -1457,18 +1457,18 @@ full_dataset <- acs1_2024 %>%
 
 #which vars to factor
 factor_vars <- c("GEOID",
-                 "NAME",
+                 # "NAME",
                  "cbsa_title",
                  # "HouseholdRank",
                  # "quality_flag",
                  "area_type")
 
 #drop redundant columns
-# redundant_vars <- c()
+redundant_vars <- c("NAME")
 
 #clean dataset
 full_dataset_clean <- full_dataset %>% 
-  # select(-all_of(redundant_vars)) %>% # Drop redundant columns
+  select(-all_of(redundant_vars)) %>% # Drop redundant columns
   mutate(across(all_of(factor_vars), as.factor)) #%>% # Convert factor variables
   # mutate(log_median_listing_price = log(median_listing_price)) # Log home price
 
@@ -1838,24 +1838,54 @@ ggplot(combined_metros, aes(x = cbsa_title, y = median_listing_price_per_square_
 
 ### Linear Regression
 
+#### non-log
+
 ```{r}
-#modeling/ statistical analysis 
-#linear regression
-names(dataset_grouped)
+# names(full_dataset_clean)
 #reg d- "avg_log_median_listing_price" i- "total_active_listing_count" 
-reg_model_1 <- lm(avg_log_median_listing_price ~ total_active_listing_count,
-            data = dataset_grouped)
+reg_model_by_1 <- lm(median_listing_price_per_square_foot ~ total_listing_count,
+            data = full_dataset_clean)
 
-summary(reg_model_1)
-
-#reg d- "avg_log_median_listing_price" i- "total_active_listing_count" "area_type" "avg_pct_income_75k_plus" "avg_pct_units_built_2000_plus" "avg_pct_bachelors_or_higher" 
- 
- 
-
-#random forest 
+summary(reg_model_by_1)
 ```
 
-#### LASSO
+
+```{r}
+#reg d- "avg_log_median_listing_price" i- "total_active_listing_count" "area_type" "avg_pct_income_75k_plus" "avg_pct_units_built_2000_plus" "avg_pct_bachelors_or_higher" 
+reg_model_by_all <- lm(median_listing_price_per_square_foot ~ . -GEOID -cbsa_title,
+            data = full_dataset_clean)
+
+summary(reg_model_by_all)
+```
+
+Have to eliminate GEOID and cbsa_title or we would overfit
+
+#### log median listing price
+```{r}
+# names(full_dataset_clean)
+#reg d- "avg_log_median_listing_price" i- "total_active_listing_count" 
+reg_model_log_by_1 <- lm(log_median_price_sqft ~ total_listing_count,
+            data = full_dataset_clean)
+
+summary(reg_model_log_by_1)
+```
+
+Nearly double the multiple R-squared.
+
+
+```{r}
+#reg d- "avg_log_median_listing_price" i- "total_active_listing_count" "area_type" "avg_pct_income_75k_plus" "avg_pct_units_built_2000_plus" "avg_pct_bachelors_or_higher" 
+reg_model_log_by_all <- lm(log_median_price_sqft ~ . -GEOID -cbsa_title,
+            data = full_dataset_clean)
+
+summary(reg_model_log_by_all)
+```
+
+Have to eliminate GEOID and cbsa_title or we would overfit
+
+Slightly better fit (also around 2% better, coincidentally)
+
+### LASSO
 
 ### Regression Tree
 
