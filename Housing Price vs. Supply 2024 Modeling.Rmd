@@ -1924,6 +1924,7 @@ Slightly better fit (also around 2% better, coincidentally)
 
 ### LASSO
 
+#### Price
 ```{r lasso_price}
 cv_lasso_price = cv.glmnet(X_train_matrix, price_train, alpha = 1)
 
@@ -1940,7 +1941,7 @@ lasso_price_best_model = glmnet(X_train_matrix, price_train, alpha = 1, lambda=l
 coef(lasso_price_best_model)
 ```
 
-#### No CBSA
+##### Price No CBSA
 ```{r lasso_price_no_cbsa}
 cv_lasso_price_no_cbsa = cv.glmnet(X_train_no_cbsa_matrix, price_train, alpha = 1)
 
@@ -1948,11 +1949,45 @@ lasso_price_no_cbsa_best_lambda = cv_lasso_price$lambda.min
 lasso_price_no_cbsa_best_lambda
 ```
 
-```{r lasso_price_plot}
+```{r lasso_price_no_cbsa_plot}
 plot(cv_lasso_price_no_cbsa)
 ```
 
-```{r lasso_price_best}
+```{r lasso_price_no_cbsa_best}
+lasso_price_no_cbsa_best_model = glmnet(X_train_no_cbsa_matrix, price_train, alpha = 1, lambda=lasso_price_no_cbsa_best_lambda)
+coef(lasso_price_no_cbsa_best_model)
+```
+
+#### Log Price
+```{r lasso_log_price}
+cv_lasso_log_price = cv.glmnet(X_train_matrix, log_price_train, alpha = 1)
+
+lasso_log_price_best_lambda = cv_lasso_log_price$lambda.min
+lasso_log_price_best_lambda
+```
+
+```{r lasso_log_price_plot}
+plot(cv_lasso_price)
+```
+
+```{r lasso_log_price_best}
+lasso_price_best_model = glmnet(X_train_matrix, price_train, alpha = 1, lambda=lasso_price_best_lambda)
+coef(lasso_price_best_model)
+```
+
+##### Log Price No CBSA
+```{r lasso_log_price_no_cbsa}
+cv_lasso_price_no_cbsa = cv.glmnet(X_train_no_cbsa_matrix, price_train, alpha = 1)
+
+lasso_price_no_cbsa_best_lambda = cv_lasso_price$lambda.min
+lasso_price_no_cbsa_best_lambda
+```
+
+```{r lasso_log_price_no_cbsa_plot}
+plot(cv_lasso_price_no_cbsa)
+```
+
+```{r lasso_log_price_no_cbsa_best}
 lasso_price_no_cbsa_best_model = glmnet(X_train_no_cbsa_matrix, price_train, alpha = 1, lambda=lasso_price_no_cbsa_best_lambda)
 coef(lasso_price_no_cbsa_best_model)
 ```
@@ -2111,6 +2146,9 @@ varImpPlot(rf_model,
 
 ## Model Evaluation
 
+```{r generate predictors}
+
+```
 
 
 
