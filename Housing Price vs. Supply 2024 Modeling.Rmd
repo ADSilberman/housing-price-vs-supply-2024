@@ -1923,6 +1923,65 @@ rpart.plot(
 summary(inventory_2024$total_listing_count)
 # summary(inventory_2024$)
 
+#stephs expanded regression tree
+tree_vars <- c("median_listing_price_per_square_foot",
+               "total_listing_count",
+               "pending_ratio",
+               "median_days_on_market",
+               "total_population",
+               "total_households",
+               "median_household_income",
+               "pct_bachelors_plus",
+               "pct_below_poverty",
+               "pct_owner_occupied",
+               "pct_vacant_units",
+               "pct_built_2000_2009",
+               "pct_2_bed",
+               "pct_3_bed",
+               "area_type")
+
+tree_data <- full_dataset_clean %>%
+  select(any_of(tree_vars)) %>%
+  mutate(area_type = as.factor(area_type)) %>%
+  na.omit()
+
+set.seed(42)
+reg_tree_exp <- rpart(median_listing_price_per_square_foot ~ .,
+                      data = tree_data,
+                      method = "anova",
+                      control = rpart.control(maxdepth = 4, 
+                                              minbucket = 120, 
+                                              cp = 0.001))
+
+options(repr.plot.width = 20, 
+        repr.plot.height = 12)
+
+rpart.plot(reg_tree_exp,
+           type = 2,
+           extra = 101,
+           under = TRUE,
+           fallen.leaves = TRUE,
+           roundint = FALSE,
+           main = "Expanded Regression Tree: Price per Sq.Ft",
+           box.palette = "Blues",
+           tweak = 2)
+
+tree_preds <- predict(reg_tree_exp, tree_data)
+
+pred_df <- tibble(actual = tree_data$median_listing_price_per_square_foot,
+                  predicted = tree_preds)
+
+ggplot(pred_df, aes(x = actual, y = predicted)) +
+  geom_point(alpha = 0.5) +
+  geom_abline(intercept = 0, 
+              slope = 1, 
+              linetype = "dashed") +
+  labs(title = "Predicted vs Actual: Expanded Regression Tree",
+       x = "Actual Median Price per Sq.Ft",
+       y = "Predicted Median Price per Sq.Ft") +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(labels = comma) +
+  theme_minimal()
 ```
 
 ### Random Forest Regression
