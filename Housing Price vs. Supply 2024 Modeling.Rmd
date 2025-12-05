@@ -24,7 +24,9 @@ rm(list=ls())
 knitr::opts_chunk$set(echo = TRUE,
                       root.dir = "C:\\Users\\alexa\\Code\\GW DATS\\6101 Intro to Data Science\\Project 2\\GitHub",
                       warning = F, message = F)
-options(scientific = F, digits = 3)
+options(scientific = T, digits = 3)
+options(scipen=9, digits = 3) 
+
 ```
 
 ```{r libraries}
@@ -41,9 +43,11 @@ library(scales)
 library(tidycensus)
 library(here)
 library(car)
+library(caTools)
 library(randomForest)
 library(rpart)
 library(rpart.plot)
+library(glmnet)
 ```
 
 ## Introduction
@@ -1836,6 +1840,35 @@ ggplot(combined_metros, aes(x = cbsa_title, y = median_listing_price_per_square_
 
 ## Modeling
 
+### Split the Data into train and test
+
+```{r train_test_split}
+set.seed(4)
+
+targets = c("median_listing_price_per_square_foot", "log_median_price_sqft")
+
+split = sample.split(full_dataset_clean$GEOID, SplitRatio = 0.8)
+train = subset(full_dataset_clean %>% select(-"GEOID"), split == TRUE)
+test = subset(full_dataset_clean %>% select(-"GEOID"), split == FALSE)
+
+# train
+price_train = train$median_listing_price_per_square_foot
+log_price_train = train$log_median_price_sqft
+
+X_train = train %>% select(-all_of(targets))
+
+X_train_matrix = model.matrix(~.,X_train)
+
+# test
+price_test = test$median_listing_price_per_square_foot
+log_price_test = test$log_median_price_sqft
+
+X_test = test %>% select(-all_of(targets))
+
+X_test_matrix = model.matrix(~.,X_test)
+```
+
+
 ### Linear Regression
 
 #### non-log
@@ -1844,7 +1877,7 @@ ggplot(combined_metros, aes(x = cbsa_title, y = median_listing_price_per_square_
 # names(full_dataset_clean)
 #reg d- "avg_log_median_listing_price" i- "total_active_listing_count" 
 reg_model_by_1 <- lm(median_listing_price_per_square_foot ~ total_listing_count,
-            data = full_dataset_clean)
+            data = train)
 
 summary(reg_model_by_1)
 ```
@@ -1852,8 +1885,8 @@ summary(reg_model_by_1)
 
 ```{r}
 #reg d- "avg_log_median_listing_price" i- "total_active_listing_count" "area_type" "avg_pct_income_75k_plus" "avg_pct_units_built_2000_plus" "avg_pct_bachelors_or_higher" 
-reg_model_by_all <- lm(median_listing_price_per_square_foot ~ . -GEOID -cbsa_title,
-            data = full_dataset_clean)
+reg_model_by_all <- lm(median_listing_price_per_square_foot ~ . -cbsa_title,
+            data = train)
 
 summary(reg_model_by_all)
 ```
@@ -1865,7 +1898,7 @@ Have to eliminate GEOID and cbsa_title or we would overfit
 # names(full_dataset_clean)
 #reg d- "avg_log_median_listing_price" i- "total_active_listing_count" 
 reg_model_log_by_1 <- lm(log_median_price_sqft ~ total_listing_count,
-            data = full_dataset_clean)
+            data = train)
 
 summary(reg_model_log_by_1)
 ```
@@ -1875,8 +1908,8 @@ Nearly double the multiple R-squared.
 
 ```{r}
 #reg d- "avg_log_median_listing_price" i- "total_active_listing_count" "area_type" "avg_pct_income_75k_plus" "avg_pct_units_built_2000_plus" "avg_pct_bachelors_or_higher" 
-reg_model_log_by_all <- lm(log_median_price_sqft ~ . -GEOID -cbsa_title,
-            data = full_dataset_clean)
+reg_model_log_by_all <- lm(log_median_price_sqft ~ . -cbsa_title,
+            data = train)
 
 summary(reg_model_log_by_all)
 ```
@@ -1886,6 +1919,23 @@ Have to eliminate GEOID and cbsa_title or we would overfit
 Slightly better fit (also around 2% better, coincidentally)
 
 ### LASSO
+
+```{r lasso_price}
+cv_lasso_price = cv.glmnet(X_train_matrix, price_train, alpha = 1)
+
+lasso_price_best_lambda = cv_lasso_price$lambda.min
+lasso_price_best_lambda
+```
+
+```{r lasso_price_plot}
+plot(cv_lasso_price)
+```
+
+```{r lasso_price_best}
+lasso_price_best_model = glmnet(X_train_matrix, price_train, alpha = 1, lambda=lasso_price_best_lambda)
+coef(lasso_price_best_model)
+```
+
 
 ### Regression Tree
 
@@ -1926,6 +1976,65 @@ rpart.plot(
 # Basic check: supply distribution
 summary(full_dataset_clean$total_listing_count)
 
+#stephs expanded regression tree
+tree_vars <- c("median_listing_price_per_square_foot",
+               "total_listing_count",
+               "pending_ratio",
+               "median_days_on_market",
+               "total_population",
+               "total_households",
+               "median_household_income",
+               "pct_bachelors_plus",
+               "pct_below_poverty",
+               "pct_owner_occupied",
+               "pct_vacant_units",
+               "pct_built_2000_2009",
+               "pct_2_bed",
+               "pct_3_bed",
+               "area_type")
+
+tree_data <- full_dataset_clean %>%
+  select(any_of(tree_vars)) %>%
+  mutate(area_type = as.factor(area_type)) %>%
+  na.omit()
+
+set.seed(42)
+reg_tree_exp <- rpart(median_listing_price_per_square_foot ~ .,
+                      data = tree_data,
+                      method = "anova",
+                      control = rpart.control(maxdepth = 4, 
+                                              minbucket = 120, 
+                                              cp = 0.001))
+
+options(repr.plot.width = 20, 
+        repr.plot.height = 12)
+
+rpart.plot(reg_tree_exp,
+           type = 2,
+           extra = 101,
+           under = TRUE,
+           fallen.leaves = TRUE,
+           roundint = FALSE,
+           main = "Expanded Regression Tree: Price per Sq.Ft",
+           box.palette = "Blues",
+           tweak = 2)
+
+tree_preds <- predict(reg_tree_exp, tree_data)
+
+pred_df <- tibble(actual = tree_data$median_listing_price_per_square_foot,
+                  predicted = tree_preds)
+
+ggplot(pred_df, aes(x = actual, y = predicted)) +
+  geom_point(alpha = 0.5) +
+  geom_abline(intercept = 0, 
+              slope = 1, 
+              linetype = "dashed") +
+  labs(title = "Predicted vs Actual: Expanded Regression Tree",
+       x = "Actual Median Price per Sq.Ft",
+       y = "Predicted Median Price per Sq.Ft") +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(labels = comma) +
+  theme_minimal()
 ```
 
 
@@ -1971,6 +2080,9 @@ varImpPlot(rf_model,
            lwd = 3)
 
 ```
+
+
+## Model Evaluation
 
 
 
