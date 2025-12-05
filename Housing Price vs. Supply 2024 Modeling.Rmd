@@ -47,7 +47,7 @@ library(caTools)
 library(randomForest)
 library(rpart)
 library(rpart.plot)
-library(glmnet)
+library(rattle)
 ```
 
 ## Introduction
@@ -2051,52 +2051,11 @@ pruned_tree_data_med <- prune(reg_tree_exp_med,
 options(repr.plot.width = 28, 
         repr.plot.height = 14)
 
-rpart.plot(pruned_tree_data_med,
-           type = 2,
-           extra = 101,
-           under = TRUE,
-           fallen.leaves = TRUE,
-           roundint = FALSE,
-           main = "Expanded Regression Tree: Median Price per Sq.Ft",
-           box.palette = "Blues",
-           tweak = 1,
-           nn = TRUE,
-           cex = 0.9,
-           split.cex = 0.9)
-
-#stephs expanded regression tree (log)
-tree_data_log <- train %>%
-  select(-median_listing_price_per_square_foot,
-         -cbsa_title) %>%
-  na.omit()
-
-set.seed(42)
-reg_tree_exp_log <- rpart(log_median_price_sqft ~ .,
-                      data = tree_data_log,
-                      method = "anova",
-                      control = rpart.control(minbucket = 200))
-
-best_cp_log <- reg_tree_exp_log$cptable[which.min(reg_tree_exp_log$cptable[,"xerror"]), "CP"]
-best_cp_log
-pruned_tree_data_log <- prune(reg_tree_exp_log, 
-                              cp = best_cp_log)
-
-options(repr.plot.width = 28, 
-        repr.plot.height = 14)
-
-rpart.plot(pruned_tree_data_log,
-           type = 2,
-           extra = 101,
-           under = TRUE,
-           fallen.leaves = TRUE,
-           roundint = FALSE,
-           main = "Expanded Regression Tree: Log Price per Sq.Ft",
-           box.palette = "Blues",
-           tweak = 1,
-           nn = TRUE,
-           cex = 0.9,
-           split.cex = 0.9)
-
+fancyRpartPlot(reg_tree_exp_med,
+               main = "Expanded Regression Tree: Median Price per Sq.Ft",
+               sub = paste0("n=", nrow(tree_data_med), "  |  maxdepth=", reg_tree_exp_med$control$maxdepth),
+               cex = 1.4,
+               tweak = 0.5)   
 ```
 
 
