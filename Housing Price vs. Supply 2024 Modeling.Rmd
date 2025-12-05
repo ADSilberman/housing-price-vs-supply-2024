@@ -1855,17 +1855,17 @@ test = subset(full_dataset_clean, split == FALSE)
 price_train = train$median_listing_price_per_square_foot
 log_price_train = train$log_median_price_sqft
 
-X_train = train %>% select(-all_of(targets))
+X_train = train %>% select(-all_of(c(targets, "GEOID")))
 
-X_train_matrix = data.matrix(X_train)
+X_train_matrix = model.matrix(~.,X_train)
 
 # test
 price_test = test$median_listing_price_per_square_foot
 log_price_test = test$log_median_price_sqft
 
-X_test = test %>% select(-all_of(targets))
+X_test = test %>% select(-all_of(c(targets, "GEOID")))
 
-X_test_matrix = data.matrix(X_test)
+X_test_matrix = model.matrix(~.,X_test)
 ```
 
 
@@ -1932,7 +1932,7 @@ plot(cv_lasso_price)
 ```
 
 ```{r lasso_price_best}
-lasso_price_best_model = glmnet(X_train, price_train, alpha = 1, lambda=lasso_price_best_lambda)
+lasso_price_best_model = glmnet(X_train_matrix, price_train, alpha = 1, lambda=lasso_price_best_lambda)
 coef(lasso_price_best_model)
 ```
 
@@ -2075,6 +2075,9 @@ varImpPlot(rf_model,
 
 
 ```
+
+
+## Model Evaluation
 
 
 
