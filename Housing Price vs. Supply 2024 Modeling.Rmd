@@ -1998,23 +1998,25 @@ summary(full_dataset_clean$total_listing_count)
 
 #stephs expanded regression tree (median)
 tree_data_med <- train %>%
-  mutate(across(where(is.character), 
-                as.factor)) %>%
-  select(-log_median_price_sqft) %>%
+  select(-log_median_price_sqft,
+         -cbsa_title) %>%
   na.omit()
 
 set.seed(42)
 reg_tree_exp_med <- rpart(median_listing_price_per_square_foot ~ .,
                       data = tree_data_med,
                       method = "anova",
-                      control = rpart.control(maxdepth = 4, 
-                                              minbucket = 120, 
-                                              cp = 0.001))
+                      control = rpart.control(minbucket = 200))
 
-options(repr.plot.width = 20, 
-        repr.plot.height = 12)
+best_cp_med <- reg_tree_exp_med$cptable[which.min(reg_tree_exp_med$cptable[,"xerror"]), "CP"]
+best_cp_med
+pruned_tree_data_med <- prune(reg_tree_exp_med, 
+                              cp = best_cp_med)
 
-rpart.plot(reg_tree_exp_med,
+options(repr.plot.width = 28, 
+        repr.plot.height = 14)
+
+rpart.plot(pruned_tree_data_med,
            type = 2,
            extra = 101,
            under = TRUE,
@@ -2022,46 +2024,32 @@ rpart.plot(reg_tree_exp_med,
            roundint = FALSE,
            main = "Expanded Regression Tree: Median Price per Sq.Ft",
            box.palette = "Blues",
-           tweak = 1.2,
+           tweak = 1,
            nn = TRUE,
-           cex = 0.8)
-
-tree_preds_med <- predict(reg_tree_exp_med, tree_data_med)
-
-pred_df_med <- tibble(actual = tree_data_med$median_listing_price_per_square_foot,
-                      predicted = tree_preds_med)
-
-ggplot(pred_df_med, aes(x = actual, y = predicted)) +
-  geom_point(alpha = 0.5) +
-  geom_abline(intercept = 0, 
-              slope = 1, 
-              linetype = "dashed") +
-  labs(title = "Predicted vs Actual: Expanded Regression Tree",
-       x = "Actual Median Price per Sq.Ft",
-       y = "Predicted Median Price per Sq.Ft") +
-  scale_y_continuous(labels = comma) +
-  scale_x_continuous(labels = comma) +
-  theme_minimal()
+           cex = 0.9,
+           split.cex = 0.9)
 
 #stephs expanded regression tree (log)
 tree_data_log <- train %>%
-  mutate(across(where(is.character), 
-                as.factor)) %>%
-  select(-median_listing_price_per_square_foot) %>%
+  select(-median_listing_price_per_square_foot,
+         -cbsa_title) %>%
   na.omit()
 
 set.seed(42)
 reg_tree_exp_log <- rpart(log_median_price_sqft ~ .,
                       data = tree_data_log,
                       method = "anova",
-                      control = rpart.control(maxdepth = 4, 
-                                              minbucket = 120, 
-                                              cp = 0.001))
+                      control = rpart.control(minbucket = 200))
 
-options(repr.plot.width = 20, 
-        repr.plot.height = 12)
+best_cp_log <- reg_tree_exp_log$cptable[which.min(reg_tree_exp_log$cptable[,"xerror"]), "CP"]
+best_cp_log
+pruned_tree_data_log <- prune(reg_tree_exp_log, 
+                              cp = best_cp_log)
 
-rpart.plot(reg_tree_exp_log,
+options(repr.plot.width = 28, 
+        repr.plot.height = 14)
+
+rpart.plot(pruned_tree_data_log,
            type = 2,
            extra = 101,
            under = TRUE,
@@ -2069,24 +2057,11 @@ rpart.plot(reg_tree_exp_log,
            roundint = FALSE,
            main = "Expanded Regression Tree: Log Price per Sq.Ft",
            box.palette = "Blues",
-           tweak = 1.9)
+           tweak = 1,
+           nn = TRUE,
+           cex = 0.9,
+           split.cex = 0.9)
 
-tree_preds_log <- predict(reg_tree_exp_log, tree_data_log)
-
-pred_df_log <- tibble(actual = tree_data_log$log_median_price_sqft,
-                  predicted = tree_preds_log)
-
-ggplot(pred_df_log, aes(x = actual, y = predicted)) +
-  geom_point(alpha = 0.5) +
-  geom_abline(intercept = 0, 
-              slope = 1, 
-              linetype = "dashed") +
-  labs(title = "Predicted vs Actual: Expanded Regression Tree",
-       x = "Actual Log Price per Sq.Ft",
-       y = "Predicted Log Price per Sq.Ft") +
-  scale_y_continuous(labels = comma) +
-  scale_x_continuous(labels = comma) +
-  theme_minimal()
 ```
 
 
