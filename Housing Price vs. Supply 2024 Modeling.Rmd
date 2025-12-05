@@ -2092,44 +2092,42 @@ ggplot(pred_df_log, aes(x = actual, y = predicted)) +
 
 ### Random Forest Regression
 
-```{r_RFR}
-## ---- RF_model ----
 
-# Remove rows with missing predictor/target values
-inventory_model_simple <- inventory_model_simple %>% na.omit()
+```{r}
+set.seed(42)
+rf_data_med <- train %>%
+  mutate(across(where(is.character), as.factor)) %>%
+  select(-log_median_price_sqft,-cbsa_title ) %>% #log(price) is basically price. ; cbsa can't be used anyway
+  na.omit()
 
-rf_model <- randomForest(
-  median_listing_price_per_square_foot ~
-    total_listing_count + pending_ratio + median_days_on_market,
-  data = inventory_model_simple,
-  ntree = 500,       # number of trees
-  mtry = 2,          # sqrt rule ~ good for 3 predictors
+rf_exp_med <- randomForest(
+  median_listing_price_per_square_foot ~ .,
+  data = rf_data_med,
+  ntree = 500,
+  mtry = floor(sqrt(ncol(rf_data_med) - 1)),
+  nodesize = 15,
   importance = TRUE,
   na.action = na.omit
 )
+imp <- importance(rf_exp_med)
+imp_df <- data.frame(
+  Feature = rownames(imp),
+  Importance = imp[, "%IncMSE"]
+)
 
-rf_model  # print results
+imp_df %>%
+  top_n(25, Importance) %>% #top 25 indicators
+  ggplot(aes(x=reorder(Feature, Importance), y=Importance)) +
+  geom_col(fill="steelblue") +
+  coord_flip() +
+  labs(title="Top 25 Key Indicators",
+       x="Feature",
+       y="MSE-contribution (%)") +
+  theme_minimal(base_size = 13)
 
-# Extract & scale variable importance
-varImp <- importance(rf_model)
-varImp[,2] <- varImp[,2] / 1000  # scale node purity to thousands
-colnames(varImp)[2] <- "IncNodePurity (x1000)"
 
-# Plot variable importance
-varImpPlot(rf_model,
-           main = "Variable Importance (Market Drivers)",
-           cex.main = 1.2, 
-           cex.lab = 0.9, 
-           cex.axis = 0.8)
 
-varImpPlot(rf_model,
-           main = "Importance of Supply & Demand Drivers",
-           col = "steelblue",
-           pch = 19,
-           cex.main = 1.3,
-           cex.lab = 1,
-           cex.axis = 0.9,
-           lwd = 3)
+
 
 ```
 
