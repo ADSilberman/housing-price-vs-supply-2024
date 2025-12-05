@@ -1866,10 +1866,10 @@ options(scipen = 999)   # turn off scientific notation
 # keep only interpretable economic drivers
 inventory_model_simple <- inventory_2024 %>%
   select(
-    median_listing_price_per_square_foot,  # 🎯 Target
-    total_listing_count,                   # 📉 Supply
-    pending_ratio,                         # 🔄 Market Tightness
-    median_days_on_market                  # ⏱ Market Speed
+    median_listing_price_per_square_foot,  #Target
+    total_listing_count,                   #Supply
+    pending_ratio,                         #Market Tightness
+    median_days_on_market                  #Market Speed
   )
 
 # fit a simple, readable regression tree
@@ -1936,6 +1936,7 @@ varImpPlot(rf_model,
 
 
 ```
+
 
 
 
