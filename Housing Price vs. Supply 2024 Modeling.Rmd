@@ -1848,14 +1848,14 @@ set.seed(4)
 targets = c("median_listing_price_per_square_foot", "log_median_price_sqft")
 
 split = sample.split(full_dataset_clean$GEOID, SplitRatio = 0.8)
-train = subset(full_dataset_clean, split == TRUE)
-test = subset(full_dataset_clean, split == FALSE)
+train = subset(full_dataset_clean %>% select(-"GEOID"), split == TRUE)
+test = subset(full_dataset_clean %>% select(-"GEOID"), split == FALSE)
 
 # train
 price_train = train$median_listing_price_per_square_foot
 log_price_train = train$log_median_price_sqft
 
-X_train = train %>% select(-all_of(c(targets, "GEOID")))
+X_train = train %>% select(-all_of(targets))
 
 X_train_matrix = model.matrix(~.,X_train)
 
@@ -1863,7 +1863,7 @@ X_train_matrix = model.matrix(~.,X_train)
 price_test = test$median_listing_price_per_square_foot
 log_price_test = test$log_median_price_sqft
 
-X_test = test %>% select(-all_of(c(targets, "GEOID")))
+X_test = test %>% select(-all_of(targets))
 
 X_test_matrix = model.matrix(~.,X_test)
 ```
