@@ -1890,27 +1890,29 @@ Slightly better fit (also around 2% better, coincidentally)
 ### Regression Tree
 
 
-```{r RT_simple}
+```{r}
+## ---- RT_simple ----
 options(scipen = 999)   # turn off scientific notation
 
-# keep only interpretable economic drivers
-inventory_model_simple <- inventory_2024 %>%
+# Keep only interpretable economic drivers
+inventory_model_simple <- full_dataset_clean %>%
   select(
-    median_listing_price_per_square_foot,  #Target
-    total_listing_count,                   #Supply
-    pending_ratio,                         #Market Tightness
-    median_days_on_market                  #Market Speed
+    median_listing_price_per_square_foot, 
+    total_listing_count,                   
+    pending_ratio,                        
+    median_days_on_market                 
   )
 
-# fit a simple, readable regression tree
+# Fit a simple, readable regression tree
 reg_tree_simple <- rpart(
   median_listing_price_per_square_foot ~
     total_listing_count + pending_ratio + median_days_on_market,
   data = inventory_model_simple,
   method = "anova",
-  control = rpart.control(maxdepth = 3, minbucket = 200)  # controls complexity
+  control = rpart.control(maxdepth = 3, minbucket = 200)  
 )
 
+# Plot the tree
 rpart.plot(
   reg_tree_simple,
   type = 2,
@@ -1920,15 +1922,19 @@ rpart.plot(
   roundint = TRUE,
   main = "Regression Tree: Price per Sq.Ft"
 )
-summary(inventory_2024$total_listing_count)
-# summary(inventory_2024$)
+
+# Basic check: supply distribution
+summary(full_dataset_clean$total_listing_count)
 
 ```
 
+
 ### Random Forest Regression
 
-```{r}
-# remove rows with missing predictor/target values
+```{r_RFR}
+## ---- RF_model ----
+
+# Remove rows with missing predictor/target values
 inventory_model_simple <- inventory_model_simple %>% na.omit()
 
 rf_model <- randomForest(
@@ -1936,25 +1942,25 @@ rf_model <- randomForest(
     total_listing_count + pending_ratio + median_days_on_market,
   data = inventory_model_simple,
   ntree = 500,       # number of trees
-  mtry = 2,          # number of variables per split (sqrt rule works here)
+  mtry = 2,          # sqrt rule ~ good for 3 predictors
   importance = TRUE,
-  na.action = na.omit    # <--- FIX
+  na.action = na.omit
 )
 
-rf_model
+rf_model  # print results
 
+# Extract & scale variable importance
 varImp <- importance(rf_model)
-
-# Scale Node Purity to thousands
-varImp[,2] <- varImp[,2] / 1000
-
+varImp[,2] <- varImp[,2] / 1000  # scale node purity to thousands
 colnames(varImp)[2] <- "IncNodePurity (x1000)"
 
+# Plot variable importance
 varImpPlot(rf_model,
            main = "Variable Importance (Market Drivers)",
            cex.main = 1.2, 
            cex.lab = 0.9, 
            cex.axis = 0.8)
+
 varImpPlot(rf_model,
            main = "Importance of Supply & Demand Drivers",
            col = "steelblue",
@@ -1963,7 +1969,6 @@ varImpPlot(rf_model,
            cex.lab = 1,
            cex.axis = 0.9,
            lwd = 3)
-
 
 ```
 
