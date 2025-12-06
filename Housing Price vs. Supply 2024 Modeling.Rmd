@@ -503,7 +503,7 @@ unique(acs1_2024$area_type)
 
 ```{r load_realtor}
 #loading in inventory data
-inventory_raw <- read_csv(here("../data/RDC_Inventory_Core_Metrics_Metro_History.csv"))
+inventory_raw <- read_csv(here("../RDC_Inventory_Core_Metrics_Metro_History.csv"))
 
 #cleaning names
 clean_names(inventory_raw)
@@ -638,31 +638,67 @@ ggplot(inventory_2024_filtered, aes(x = median_listing_price_per_square_foot)) +
   geom_histogram(binwidth = 50, fill = "steelblue", color = "black") +
   labs(
     title = "Distribution of Median Listing Price per Square Foot",
+    subtitle = "Median Price per Square Foot is heavily right-skewed",
     x = "Median Price per Square Foot",
-    y = "Count") +
-  theme_minimal()
+    y = "Count",
+    caption = "SOURCE: Realtor.com") +
+  scale_x_continuous(labels= dollar_format(accuracy=1))+
+  theme_minimal(base_size = 11)+
+  theme(plot.title=element_text(face="bold",size=14,margin=ggplot2::margin(b=3)),
+  plot.subtitle = element_text(size=10,color="gray25",margin=ggplot2::margin(b=8)),
+  plot.caption  = element_text(size=8,color="gray40",hjust=0),
+  axis.title    = element_text(size=10,face="bold"),
+  axis.text     = element_text(size=9),
+  panel.grid.minor = element_blank(),
+  panel.background  = element_blank(),
+  plot.background   = element_blank())
+
 ```
+
+
 
 
 ```{r dist log price}
 ggplot(inventory_2024_filtered, aes(x = log_median_price_sqft)) +
   geom_histogram(binwidth = 0.1, fill = "steelblue", color = "black") +
-  labs(
-    title = "Distribution of Log Median Listing Price per Square Foot",
+  labs(title = "Distribution of Log Median Listing Price per Square Foot",
+    subtitle = "Log transformation reduces right skew and reveals the underlying distribution",
     x = "Log Median Price per Square Foot",
-    y = "Count") +
-  theme_minimal()
+    y = "Count",
+    caption = "SOURCE: Realtor.com") +
+  scale_x_continuous(
+    labels = function(x) dollar(exp(x), accuracy = 1)) +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face = "bold", size = 14, margin = ggplot2::margin(b = 3)),
+    plot.subtitle = element_text(size = 10, color = "gray25", margin = ggplot2::margin(b = 8)),
+    plot.caption  = element_text(size = 8, color = "gray40", hjust = 0),
+    axis.title    = element_text(size = 10, face = "bold"),
+    axis.text     = element_text(size = 9),
+    panel.grid.minor = element_blank(),
+    panel.background  = element_blank(),
+    plot.background   = element_blank())
+
 ```
 
 ```{r housing count violin}
 ggplot(inventory_2024_filtered, aes(x = "", y = total_listing_count)) +
   geom_violin(fill = "lightblue", color = "steelblue", alpha = 0.7) +
-  geom_jitter(width = 0.1, alpha = 0.3, color = "darkblue") + 
-  labs(
-    title = "Distribution of Total Listing Count",
+  geom_jitter(width = 0.1, alpha = 0.3, color = "darkblue") +
+  labs(title = "Distribution of Total Listing Count",
+    subtitle = "Before transformation, the distribution is heavily centered at the lower price range",
     x = "",
-    y = "Total Listings") +
-  theme_minimal()
+    y = "Total Listings",
+    caption = "SOURCE: Realtor.com") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face="bold", size=14, margin=ggplot2::margin(b=3)),
+    plot.subtitle = element_text(size=10, color="gray25", margin=ggplot2::margin(b=8)),
+    plot.caption  = element_text(size=8, color="gray40", hjust=0),
+    axis.title    = element_text(size=10, face="bold"),
+    axis.text     = element_text(size=9),
+    panel.grid.minor = element_blank(),
+    panel.background  = element_blank(),
+    plot.background   = element_blank())
+
 
 ```
 
@@ -672,43 +708,96 @@ ggplot(inventory_2024_filtered, aes(x = "", y = total_listing_count)) +
   geom_violin(fill = "lightblue", color = "steelblue", alpha = 0.7) +
   geom_jitter(width = 0.1, alpha = 0.3, color = "darkblue") +
   scale_y_log10() +
-  labs(
-    title = "Distribution of Total Listing Count (Log Scale)",
+  labs(title = "Distribution of Total Listing Count (Log Scale)",
+    subtitle = "The distribution density of total listing count is more easily visualized with a log transformation and violin plot",
     x = "",
-    y = "Total Listings (log scale)") +
-  theme_minimal()
-```
+    y = "Log of Total Listings",
+    caption = "SOURCE: Realtor.com") +
+  theme_minimal(base_size = 11) +
+  theme(
+    plot.title    = element_text(face="bold", size=14, margin=ggplot2::margin(b=3)),
+    plot.subtitle = element_text(size=10, color="gray25", margin=ggplot2::margin(b=8)),
+    plot.caption  = element_text(size=8, color="gray40", hjust=0),
+    axis.title    = element_text(size=10, face="bold"),
+    axis.text     = element_text(size=9),
+    panel.grid.minor = element_blank(),
+    panel.background  = element_blank(),
+    plot.background   = element_blank())
 
-```{r household rank density}
-# ggplot(inventory_2024_filtered, aes(x = HouseholdRank)) +
-#   geom_histogram(binwidth = 50, fill = "steelblue", color = "white", alpha = 0.7) +
-#   labs(
-#     title = "Distribution of HouseholdRank",
-#     x = "HouseholdRank (Metro Size)",
-#     y = "Count") +
-#   theme_minimal()
+
 ```
 
 
 ```{r EDA price vs supply}
 ggplot(inventory_2024_filtered, aes(x = total_listing_count, y = median_listing_price_per_square_foot)) +
   geom_point(alpha = 0.6, color = "steelblue") +
-  labs(
-    title = "Price vs Total Supply",
+  labs(title = "Price vs Total Supply",
+    subtitle = "Median price per square foot tends to decrease as total listings increase",
     x = "Total Listing Count",
-    y = "Median Price per Square Foot") +
-  theme_minimal()
+    y = "Median Price per Square Foot",
+    caption = "SOURCE: Realtor.com") +
+  scale_y_continuous(labels = dollar_format(accuracy = 1)) +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face="bold", size=14, margin=ggplot2::margin(b=3)),
+    plot.subtitle = element_text(size=10, color="gray25", margin=ggplot2::margin(b=8)),
+    plot.caption  = element_text(size=8, color="gray40", hjust=0),
+    axis.title    = element_text(size=10, face="bold"),
+    axis.text     = element_text(size=9),
+    panel.grid.minor = element_blank(),
+    panel.background  = element_blank(),
+    plot.background   = element_blank())
+
 ```
 
 ```{r EDA log price vs supply}
 ggplot(inventory_2024_filtered, aes(x = total_listing_count, y = log_median_price_sqft)) +
   geom_point(alpha = 0.6, color = "steelblue") +
-  labs(
-    title = "Log price vs Total Supply",
+  labs(title = "Log Price vs Total Supply",
+    subtitle = "Log transformation reduces skew and reveals variation across listings",
     x = "Total Listing Count",
-    y = "Median Price per Square Foot") +
-  theme_minimal()
+    y = "Median Price per Square Foot (log scale)",
+    caption = "SOURCE: Realtor.com") +
+  scale_y_continuous(labels = function(x) dollar(exp(x), accuracy = 1)) +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face="bold", size=14, margin=ggplot2::margin(b=3)),
+    plot.subtitle = element_text(size=10, color="gray25", margin=ggplot2::margin(b=8)),
+    plot.caption  = element_text(size=8, color="gray40", hjust=0),
+    axis.title    = element_text(size=10, face="bold"),
+    axis.text     = element_text(size=9),
+    panel.grid.minor = element_blank(),
+    panel.background  = element_blank(),
+    plot.background   = element_blank())
+
 ```
+
+
+```{r EDA log price vs log supply scatter}
+#log by log scatter with a regression line on top and the actual values associated with the log transformation
+ggplot(inventory_2024_filtered,
+       aes(x = log(total_listing_count),
+           y = log(median_listing_price_per_square_foot))) +
+  geom_point(alpha = 0.6, color = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "darkred", linewidth = 1) +
+  scale_x_continuous(name = "Total Listing Count (log scale)",
+    labels = function(x) scales::comma(round(exp(x)))) +
+  scale_y_continuous(
+    name = "Median Price per Square Foot (log scale)",
+    labels = function(y) scales::dollar(round(exp(y), 0))) +
+  labs(title = "Log Price vs Log Total Supply",
+    subtitle = "Higher listing counts are generally associated with higher listing prices",
+    caption = "SOURCE: Realtor.com") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face="bold", size=14, margin = ggplot2::margin(b=3)),
+    plot.subtitle = element_text(size=10, color="gray25", margin = ggplot2::margin(b=8)),
+    plot.caption  = element_text(size=8, color="gray40", hjust=0),
+    axis.title    = element_text(size=10, face="bold"),
+    axis.text     = element_text(size=9),
+    panel.grid.minor = element_blank(),
+    panel.background  = element_blank(),
+    plot.background   = element_blank())
+
+```
+
 
 ```{r EDA price vs demand}
 ggplot(inventory_2024_filtered, aes(x = pending_ratio, y = median_listing_price_per_square_foot)) +
