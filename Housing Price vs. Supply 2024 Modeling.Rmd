@@ -48,6 +48,7 @@ library(randomForest)
 library(rpart)
 library(rpart.plot)
 library(rattle)
+library(kableExtra)
 ```
 
 ## Introduction
@@ -689,6 +690,28 @@ full_dataset_clean <- full_dataset_clean %>%
 nrow(full_dataset_clean)
 ```
 
+```{r summary stats}
+summary_long <- full_dataset_clean %>%
+  summarise(median_price = median(median_listing_price_per_square_foot, na.rm = TRUE),
+    mean_price   = mean(median_listing_price_per_square_foot, na.rm = TRUE),
+    sd_price     = sd(median_listing_price_per_square_foot, na.rm = TRUE),
+    median_supply = median(total_listing_count, na.rm = TRUE),
+    mean_supply   = mean(total_listing_count, na.rm = TRUE),
+    sd_supply     = sd(total_listing_count, na.rm = TRUE),
+    median_income = median(median_household_income, na.rm = TRUE),
+    mean_income   = mean(median_household_income, na.rm = TRUE),
+    sd_income     = sd(median_household_income, na.rm = TRUE),
+    median_pending_ratio = median(pending_ratio, na.rm = TRUE),
+    mean_pending_ratio   = mean(pending_ratio, na.rm = TRUE),
+    sd_pending_ratio     = sd(pending_ratio, na.rm = TRUE)) %>%
+  pivot_longer(everything(), names_to = "Metric", values_to = "Value")
+
+summary_table_kable <- kable(summary_long, caption = "Summary Statistics") %>%
+  kable_styling(full_width = F, bootstrap_options = c("striped", "hover"))
+
+summary_table_kable
+
+```
 
 ## EDA
 
