@@ -731,43 +731,44 @@ ggplot(inventory_2024_filtered, aes(x = "", y = total_listing_count)) +
 ```{r EDA price vs supply}
 ggplot(inventory_2024_filtered, aes(x = total_listing_count, y = median_listing_price_per_square_foot)) +
   geom_point(alpha = 0.6, color = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "darkred", linewidth = 1) +
   labs(title = "Price vs Total Supply",
-    subtitle = "Median price per square foot tends to decrease as total listings increase",
-    x = "Total Listing Count",
-    y = "Median Price per Square Foot",
-    caption = "SOURCE: Realtor.com") +
+       subtitle = "Median price per square foot tends to decrease as total listings increase",
+       x = "Total Listing Count",
+       y = "Median Price per Square Foot",
+       caption = "SOURCE: Realtor.com") +
   scale_y_continuous(labels = dollar_format(accuracy = 1)) +
   theme_minimal(base_size = 11) +
   theme(plot.title    = element_text(face="bold", size=14, margin=ggplot2::margin(b=3)),
-    plot.subtitle = element_text(size=10, color="gray25", margin=ggplot2::margin(b=8)),
-    plot.caption  = element_text(size=8, color="gray40", hjust=0),
-    axis.title    = element_text(size=10, face="bold"),
-    axis.text     = element_text(size=9),
-    panel.grid.minor = element_blank(),
-    panel.background  = element_blank(),
-    plot.background   = element_blank())
+        plot.subtitle = element_text(size=10, color="gray25", margin=ggplot2::margin(b=8)),
+        plot.caption  = element_text(size=8, color="gray40", hjust=0),
+        axis.title    = element_text(size=10, face="bold"),
+        axis.text     = element_text(size=9),
+        panel.grid.minor = element_blank(),
+        panel.background  = element_blank(),
+        plot.background   = element_blank())
 
 ```
 
 ```{r EDA log price vs supply}
 ggplot(inventory_2024_filtered, aes(x = total_listing_count, y = log_median_price_sqft)) +
   geom_point(alpha = 0.6, color = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "darkred", linewidth = 1) +
   labs(title = "Log Price vs Total Supply",
-    subtitle = "Log transformation reduces skew and reveals variation across listings",
-    x = "Total Listing Count",
-    y = "Median Price per Square Foot (log scale)",
-    caption = "SOURCE: Realtor.com") +
+       subtitle = "Log transformation reduces skew and reveals variation across listings",
+       x = "Total Listing Count",
+       y = "Median Price per Square Foot (log scale)",
+       caption = "SOURCE: Realtor.com") +
   scale_y_continuous(labels = function(x) dollar(exp(x), accuracy = 1)) +
   theme_minimal(base_size = 11) +
   theme(plot.title    = element_text(face="bold", size=14, margin=ggplot2::margin(b=3)),
-    plot.subtitle = element_text(size=10, color="gray25", margin=ggplot2::margin(b=8)),
-    plot.caption  = element_text(size=8, color="gray40", hjust=0),
-    axis.title    = element_text(size=10, face="bold"),
-    axis.text     = element_text(size=9),
-    panel.grid.minor = element_blank(),
-    panel.background  = element_blank(),
-    plot.background   = element_blank())
-
+        plot.subtitle = element_text(size=10, color="gray25", margin=ggplot2::margin(b=8)),
+        plot.caption  = element_text(size=8, color="gray40", hjust=0),
+        axis.title    = element_text(size=10, face="bold"),
+        axis.text     = element_text(size=9),
+        panel.grid.minor = element_blank(),
+        panel.background  = element_blank(),
+        plot.background   = element_blank())
 ```
 
 
@@ -802,44 +803,47 @@ ggplot(inventory_2024_filtered,
 ```{r EDA price vs demand}
 ggplot(inventory_2024_filtered, aes(x = pending_ratio, y = median_listing_price_per_square_foot)) +
   geom_point(alpha = 0.6, color = "steelblue") +
-  labs(
-    title = "Price vs Market Tightness (Demand)",
+  geom_smooth(method = "lm", se = FALSE, color = "darkred", linewidth = 1) +
+  scale_y_continuous(labels = dollar_format(accuracy = 1)) +
+  labs(title = "Price vs Market Tightness (Demand)",
+    subtitle = "Higher market demand is associated with lower prices",
     x = "Pending Ratio (Pending / Active Listings)",
-    y = "Median Price per Square Foot") +
-  theme_minimal()
+    y = "Median Price per Square Foot",
+    caption = "SOURCE: Realtor.com") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face="bold", size=14, margin = ggplot2::margin(b=3)),
+    plot.subtitle = element_text(size=10, color="gray25", margin = ggplot2::margin(b=8)),
+    plot.caption  = element_text(size=8, color="gray40", hjust=0),
+    axis.title    = element_text(size=10, face="bold"),
+    axis.text     = element_text(size=9),
+    panel.grid.minor = element_blank(),
+    panel.background  = element_blank(),
+    plot.background   = element_blank())
+
+
 ```
 
 
-```{r EDA price vs demand}
+```{r EDA log price vs demand(pending ratio)}
 ggplot(inventory_2024_filtered, aes(x = pending_ratio, y = log_median_price_sqft)) +
   geom_point(alpha = 0.6, color = "steelblue") +
-  labs(
-    title = "Price vs Market Tightness (Demand)",
+  geom_smooth(method = "lm", se = FALSE, color = "darkred", linewidth = 1) +
+  scale_y_continuous(
+    labels = function(x) dollar(exp(x), accuracy = 1)) +
+  labs(title = "Log Price vs Market Tightness (Demand)",
+    subtitle = "Higher market demand is associated with lower log prices",
     x = "Pending Ratio (Pending / Active Listings)",
-    y = "Median Price per Square Foot") +
-  theme_minimal()
-```
-
-
-```{r EDA price vs pending_ratio}
-ggplot(inventory_2024_filtered, aes(x = pending_ratio, y = median_listing_price_per_square_foot)) +
-  geom_point(alpha = 0.6, color = "steelblue") +
-  labs(
-    title = "Price vs Pending Ratio",
-    x = "Pending Ratio",
-    y = "Median Price per Square Foot") +
-  theme_minimal()
-```
-
-
-```{r EDA price vs pending_ratio}
-ggplot(inventory_2024_filtered, aes(x = pending_ratio, y = log_median_price_sqft)) +
-  geom_point(alpha = 0.6, color = "steelblue") +
-  labs(
-    title = "Price vs Pending Ratio",
-    x = "Pending Ratio",
-    y = "Median Price per Square Foot") +
-  theme_minimal()
+    y = "Median Price per Square Foot (log scale)",
+    caption = "SOURCE: Realtor.com") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face="bold", size=14, margin = ggplot2::margin(b=3)),
+    plot.subtitle = element_text(size=10, color="gray25", margin = ggplot2::margin(b=8)),
+    plot.caption  = element_text(size=8, color="gray40", hjust=0),
+    axis.title    = element_text(size=10, face="bold"),
+    axis.text     = element_text(size=9),
+    panel.grid.minor = element_blank(),
+    panel.background  = element_blank(),
+    plot.background   = element_blank())
 ```
 
 
@@ -847,82 +851,47 @@ ggplot(inventory_2024_filtered, aes(x = pending_ratio, y = log_median_price_sqft
 ```{r EDA price vs median_days_on_market}
 ggplot(inventory_2024_filtered, aes(x = median_days_on_market, y = median_listing_price_per_square_foot)) +
   geom_point(alpha = 0.6, color = "steelblue") +
-  labs(
-    title = "Price vs Market Speed",
+  geom_smooth(method = "lm", se = FALSE, color = "darkred", linewidth = 1) +
+  scale_y_continuous(labels = dollar_format(accuracy = 1)) +
+  labs(title = "Price vs Market Speed",
+    subtitle = "The relationship between price and market speed is minimal",
     x = "Median Days on Market",
-    y = "Median Price per Square Foot") +
-  theme_minimal()
+    y = "Median Price per Square Foot",
+    caption = "SOURCE: Realtor.com") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face="bold", size=14, margin = ggplot2::margin(b=3)),
+    plot.subtitle = element_text(size=10, color="gray25", margin = ggplot2::margin(b=8)),
+    plot.caption  = element_text(size=8, color="gray40", hjust=0),
+    axis.title    = element_text(size=10, face="bold"),
+    axis.text     = element_text(size=9),
+    panel.grid.minor = element_blank(),
+    panel.background  = element_blank(),
+    plot.background   = element_blank())
+
 ```
 
 
-```{r EDA price vs median_days_on_market}
+```{r EDA log price vs median_days_on_market}
 ggplot(inventory_2024_filtered, aes(x = median_days_on_market, y = log_median_price_sqft)) +
   geom_point(alpha = 0.6, color = "steelblue") +
-  labs(
-    title = "Price vs Market Speed",
+  geom_smooth(method = "lm", se = FALSE, color = "darkred", linewidth = 1) +
+  scale_y_continuous(labels = function(x) dollar(exp(x), accuracy = 1)) +
+  labs(title = "Log Price vs Market Speed",
+    subtitle = "The relationship between log price and market speed is also minimal",
     x = "Median Days on Market",
-    y = "Median Price per Square Foot") +
-  theme_minimal()
+    y = "Median Price per Square Foot (log scale)",
+    caption = "SOURCE: Realtor.com") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face="bold", size=14, margin = ggplot2::margin(b=3)),
+    plot.subtitle = element_text(size=10, color="gray25", margin = ggplot2::margin(b=8)),
+    plot.caption  = element_text(size=8, color="gray40", hjust=0),
+    axis.title    = element_text(size=10, face="bold"),
+    axis.text     = element_text(size=9),
+    panel.grid.minor = element_blank(),
+    panel.background  = element_blank(),
+    plot.background   = element_blank())
+
 ```
-
-
-
-```{r vars w highest correlations}
-# #eda
-# summary(dataset_grouped)
-# names(dataset_grouped)
-# 
-# #numeric vars for corr plot 
-# numeric_vars <- dataset_grouped %>%
-#   select(where(is.numeric))
-# 
-# #define price/supply variables
-# target_vars <- c("avg_median_listing_price",
-#                  "avg_log_median_listing_price",
-#                  "total_active_listing_count",
-#                  "avg_median_days_on_market",
-#                  "total_new_listing_count",
-#                  "total_price_increased_count",
-#                  "avg_price_increased_share",
-#                  "total_price_reduced_count",
-#                  "avg_price_reduced_share",
-#                  "total_pending_listing_count",
-#                  "avg_median_listing_price_per_square_foot",
-#                  "avg_median_square_feet",
-#                  "avg_average_listing_price",
-#                  "total_listing_count",
-#                  "avg_pending_ratio")
-# 
-# cor_matrix <- cor(numeric_vars, use = "pairwise.complete.obs")
-# 
-# #correlation matrix to tidy format
-# cor_tidy <- as.data.frame(as.table(cor_matrix)) %>%
-#   rename(var1 = Var1, var2 = Var2, correlation = Freq) %>%
-#   #only correlations where one of the variables is a target
-#   filter(var1 %in% target_vars | var2 %in% target_vars) %>%
-#   filter(var1 != var2) %>%                  #remove self-correlation
-#   mutate(abs_corr = abs(correlation)) %>%   #absolute correlation
-#   arrange(desc(abs_corr))                   #sort descending
-# 
-# #top correlations with price/supply variables
-# head(cor_tidy, 20)
-# 
-# #this is not helpful output. I've tried a few different corr plots and none of them are great because there are too many variables and they often correlate with variables that are just slight variations. I think we skip this in the actual presentation/ report, but keeping so y'all can see that it was attempted
-```
-
-
-```{r scatter- median price vs total listings}
-#median price vs total listings
-# ggplot(dataset_grouped, aes(x = total_listing_count, y = avg_median_listing_price)) +
-#   geom_point(alpha = 0.6) +
-#   geom_smooth(method = "lm", color = "blue") +
-#   scale_y_continuous(labels = scales::comma) +
-#   labs(title = "Median Listing Price vs Total Listings",
-#        x = "Total Listing Count",
-#        y = "Average Median Listing Price")
-```
-
-
 
 
 ```{r scatter- log median price vs active listings}
