@@ -830,7 +830,6 @@ ggplot(inventory_2024_filtered, aes(x = total_listing_count, y = log_median_pric
         plot.background   = element_blank())
 ```
 
-
 ```{r EDA log price vs log supply scatter}
 #log by log scatter with a regression line on top and the actual values associated with the log transformation
 ggplot(inventory_2024_filtered,
@@ -857,6 +856,32 @@ ggplot(inventory_2024_filtered,
     plot.background   = element_blank())
 
 ```
+
+
+```{r log price by supply boxplot}
+inventory_2024_filtered %>%
+  mutate(listing_bin = ntile(total_listing_count, 5)) %>%
+  ggplot(aes(x = factor(listing_bin), y = log_median_price_sqft)) +
+  geom_boxplot(fill = "lightblue", color = "steelblue") +
+  scale_y_continuous(
+    name = "Median Price per Square Foot (log scale)",
+    labels = function(y) scales::dollar(round(exp(y), 0))) +
+  labs(
+    title = "Price Distribution by Supply Quantiles",
+    subtitle= "Higher median log price is associated with higher supply",
+    x = "Supply Quantile (Total Listings)",
+    y = "Median Price per Sq Ft (log)",
+    caption = "SOURCE: Realtor.com") +
+  theme_minimal(base_size = 11) +
+  theme(
+    plot.title    = element_text(face="bold", size=14, margin = ggplot2::margin(b=3)),
+    plot.subtitle = element_text(size=10, color="gray25", margin = ggplot2::margin(b=8)),
+    plot.caption  = element_text(size=8, color="gray40", hjust=0),
+    axis.title    = element_text(size=10, face="bold"),
+    axis.text     = element_text(size=9))
+
+```
+
 
 
 ```{r EDA price vs demand}
@@ -953,104 +978,48 @@ ggplot(inventory_2024_filtered, aes(x = median_days_on_market, y = log_median_pr
 ```
 
 
-```{r scatter- log median price vs active listings}
-#log median price vs active listings
-# ggplot(dataset_grouped, aes(x = total_active_listing_count, y = avg_log_median_listing_price)) +
-#   geom_point(alpha = 0.6, color = "red") +
-#   geom_smooth(method = "lm", se = FALSE) +
-#   labs(title = "Log Median Listing Price vs Active Listings",
-#        x = "Total Active Listing Count",
-#        y = "Average Log Median Listing Price")
+```{r price vs median household income}
+ggplot(full_dataset_clean, aes(x = median_household_income, 
+                               y = median_listing_price_per_square_foot)) +
+  geom_point(alpha = 0.6, color = "steelblue") +
+  geom_smooth(method = "lm", se = TRUE, color = "darkred", linewidth = 1) +
+  scale_x_continuous(labels = scales::dollar) +
+  scale_y_continuous(labels = scales::dollar) +
+  labs(title = "Median Price vs Median Household Income",
+    subtitle = "There appears to be a strong positive relationship between median\nlisting price and median household income",
+    x = "Median Household Income",
+    y = "Median Price per Sq Ft",
+    caption = "SOURCE: Realtor.com & ACS 2024") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face="bold", size=14, margin=ggplot2::margin(b=3)),
+    plot.subtitle = element_text(size=10, color="gray25", margin=ggplot2::margin(b=8)),
+    plot.caption  = element_text(size=8, color="gray40", hjust=0),
+    axis.title    = element_text(size=10, face="bold"),
+    axis.text     = element_text(size=9))
 ```
 
 
-
-```{r box- metro area type}
-# #total listings by area type
-# ggplot(dataset_grouped, aes(x = area_type, y = total_listing_count)) +
-#   geom_boxplot(fill = "orange") +
-#   labs(title = "Total Listing Count by Area Type",
-#        x = "Area Type", y = "Total Listing Count")
-```
-
-```{r box- top 5 metro}
-#compare different metros (top 5 by total listings)
-top_metros <- full_dataset_clean %>%
-  filter(area_type == "Metro") %>%
-  group_by(cbsa_title) %>%
-  summarise(total_listings = sum(total_listing_count, na.rm = TRUE)) %>%
-  arrange(desc(total_listings)) %>%
-  slice_head(n = 5) %>%
-  pull(cbsa_title)
-
-ggplot(full_dataset_clean %>% filter(cbsa_title %in% top_metros),
-       aes(x = cbsa_title, y = median_listing_price_per_square_foot)) +
-  geom_boxplot(fill = "lightblue") +
-  scale_y_continuous(labels = scales::comma) +
-  labs(title = "Median Listing Price in Top 5 Metro Areas",
-       x = "Metro Area", y = "Median Listing Price") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-
-
-```{r box- bottom 5 metro}
-#compare different metros (bottom 5 by total listings)
-bottom_metros <- full_dataset %>%
-  filter(area_type == "Metro") %>%
-  group_by(cbsa_title) %>%
-  summarise(total_listings = sum(total_listing_count, na.rm = TRUE)) %>%
-  arrange(total_listings) %>%
-  slice_head(n = 5) %>%
-  pull(cbsa_title)
-
-ggplot(full_dataset %>% filter(cbsa_title %in% bottom_metros),
-       aes(x = cbsa_title, y = median_listing_price_per_square_foot)) +
-  geom_boxplot(fill = "salmon") +
-  scale_y_continuous(labels = scales::comma) +
-  labs(title = "Median Listing Price in Bottom 5 Metro Areas",
-       x = "Metro Area", y = "Median Listing Price") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-
-
-```{r box- top and bottom 5 metro}
-#top 5 metros by total listings
-top_metros <- full_dataset %>%
-  filter(area_type == "Metro") %>%
-  group_by(cbsa_title) %>%
-  summarise(total_listings = sum(total_listing_count, na.rm = TRUE)) %>%
-  arrange(desc(total_listings)) %>%
-  slice_head(n = 5) %>%
-  pull(cbsa_title)
-
-#bottom 5 metros by total listings
-bottom_metros <- full_dataset %>%
-  filter(area_type == "Metro") %>%
-  group_by(cbsa_title) %>%
-  summarise(total_listings = sum(total_listing_count, na.rm = TRUE)) %>%
-  arrange(total_listings) %>%
-  slice_head(n = 5) %>%
-  pull(cbsa_title)
-
-#combine top and bottom metros into one dataset
-combined_metros <- full_dataset %>%
-  filter(cbsa_title %in% c(top_metros, bottom_metros)) %>%
-  mutate(listing_group = case_when(
-    cbsa_title %in% top_metros ~ "Top 5",
-    cbsa_title %in% bottom_metros ~ "Bottom 5"))
-
-#plot
-ggplot(combined_metros, aes(x = cbsa_title, y = median_listing_price_per_square_foot, fill = listing_group)) +
-  geom_boxplot() +
-  scale_y_continuous(labels = scales::comma) +
-  scale_fill_manual(values = c("Top 5" = "lightblue", "Bottom 5" = "salmon")) +
-  labs(
-    title = "Median Listing Price: Top and Bottom 5 Metro Areas",
-    x = "Metro Area",
-    y = "Median Listing Price",
-    fill = "Listing Group"
-  ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```{r log price v log median household income}
+ggplot(full_dataset_clean) +
+  geom_point(aes(x = log(median_household_income), 
+                 y = log(median_listing_price_per_square_foot)),
+             alpha = 0.6, color = "steelblue") +
+  geom_smooth(aes(x = log(median_household_income), 
+                  y = log(median_listing_price_per_square_foot)),
+              method = "lm", se = TRUE, color = "darkred", linewidth = 1) +
+  scale_x_continuous(name = "Median Household Income (log scale)",
+    labels = function(x) scales::dollar(exp(x))) +
+  scale_y_continuous(name = "Median Price per Sq Ft (log scale)",
+    labels = function(y) scales::dollar(exp(y))) +
+  labs(title = "Log Price vs Log Median Household Income",
+    subtitle = "Standardizing both variables only emphasizes the relationship",
+    caption = "SOURCE: Realtor.com & ACS 2024") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face="bold", size=14, margin=ggplot2::margin(b=3)),
+    plot.subtitle = element_text(size=10, color="gray25", margin=ggplot2::margin(b=8)),
+    plot.caption  = element_text(size=8, color="gray40", hjust=0),
+    axis.title    = element_text(size=10, face="bold"),
+    axis.text     = element_text(size=9))
 
 ```
 
@@ -1332,7 +1301,7 @@ Modeling- linear regressions (alex)
 Modeling- lasso regression  (alex)
 -- probably lots of options here 
 Modeling- regression tree (steph)
-Modeling- regression forest (baylee) (ilgaz)
+Modeling- regression forest (ilgaz)
 
 
 
