@@ -50,6 +50,7 @@ library(rpart)
 library(rpart.plot)
 library(rattle)
 library(kableExtra)
+library(ModelMetrics)
 ```
 
 ## Introduction
@@ -1145,7 +1146,7 @@ summary(reg_model_by_1)
 
 ```{r}
 #reg d- "avg_log_median_listing_price" i- "total_active_listing_count" "area_type" "avg_pct_income_75k_plus" "avg_pct_units_built_2000_plus" "avg_pct_bachelors_or_higher" 
-reg_model_by_all <- lm(median_listing_price_per_square_foot ~ . -cbsa_title -log_median_price_sqft,
+reg_model_by_all <- lm(median_listing_price_per_square_foot ~ .-cbsa_title-log_median_price_sqft,
             data = train)
 
 summary(reg_model_by_all)
@@ -1223,29 +1224,29 @@ lasso_log_price_best_lambda
 ```
 
 ```{r lasso_log_price_plot}
-plot(cv_lasso_price)
+plot(cv_lasso_log_price)
 ```
 
 ```{r lasso_log_price_best}
-lasso_price_best_model = glmnet(X_train_matrix, price_train, alpha = 1, lambda=lasso_price_best_lambda)
-coef(lasso_price_best_model)
+lasso_log_price_best_model = glmnet(X_train_matrix, log_price_train, alpha = 1, lambda=lasso_log_price_best_lambda)
+coef(lasso_log_price_best_model)
 ```
 
 ##### Log Price No CBSA
 ```{r lasso_log_price_no_cbsa}
-cv_lasso_price_no_cbsa = cv.glmnet(X_train_no_cbsa_matrix, price_train, alpha = 1)
+cv_lasso_log_price_no_cbsa = cv.glmnet(X_train_no_cbsa_matrix, log_price_train, alpha = 1)
 
-lasso_price_no_cbsa_best_lambda = cv_lasso_price$lambda.min
-lasso_price_no_cbsa_best_lambda
+lasso_log_price_no_cbsa_best_lambda = cv_lasso_log_price$lambda.min
+lasso_log_price_no_cbsa_best_lambda
 ```
 
 ```{r lasso_log_price_no_cbsa_plot}
-plot(cv_lasso_price_no_cbsa)
+plot(cv_lasso_log_price_no_cbsa)
 ```
 
 ```{r lasso_log_price_no_cbsa_best}
-lasso_price_no_cbsa_best_model = glmnet(X_train_no_cbsa_matrix, price_train, alpha = 1, lambda=lasso_price_no_cbsa_best_lambda)
-coef(lasso_price_no_cbsa_best_model)
+lasso_log_price_no_cbsa_best_model = glmnet(X_train_no_cbsa_matrix, log_price_train, alpha = 1, lambda=lasso_log_price_no_cbsa_best_lambda)
+coef(lasso_log_price_no_cbsa_best_model)
 ```
 
 ### Regression Tree
@@ -1255,34 +1256,34 @@ coef(lasso_price_no_cbsa_best_model)
 ## ---- RT_simple ----
 options(scipen = 999)   # turn off scientific notation
 
-# Keep only interpretable economic drivers
-inventory_model_simple <- full_dataset_clean %>%
-  select(
-    median_listing_price_per_square_foot, 
-    total_listing_count,                   
-    pending_ratio,                        
-    median_days_on_market                 
-  )
-
-# Fit a simple, readable regression tree
-reg_tree_simple <- rpart(
-  median_listing_price_per_square_foot ~
-    total_listing_count + pending_ratio + median_days_on_market,
-  data = inventory_model_simple,
-  method = "anova",
-  control = rpart.control(maxdepth = 3, minbucket = 200)  
-)
-
-# Plot the tree
-rpart.plot(
-  reg_tree_simple,
-  type = 2,
-  extra = 101,
-  under = TRUE,
-  fallen.leaves = TRUE,
-  roundint = TRUE,
-  main = "Regression Tree: Price per Sq.Ft"
-)
+# # Keep only interpretable economic drivers
+# inventory_model_simple <- full_dataset_clean %>%
+#   select(
+#     median_listing_price_per_square_foot, 
+#     total_listing_count,                   
+#     pending_ratio,                        
+#     median_days_on_market                 
+#   )
+# 
+# # Fit a simple, readable regression tree
+# reg_tree_simple <- rpart(
+#   median_listing_price_per_square_foot ~
+#     total_listing_count + pending_ratio + median_days_on_market,
+#   data = inventory_model_simple,
+#   method = "anova",
+#   control = rpart.control(maxdepth = 3, minbucket = 200)  
+# )
+# 
+# # Plot the tree
+# rpart.plot(
+#   reg_tree_simple,
+#   type = 2,
+#   extra = 101,
+#   under = TRUE,
+#   fallen.leaves = TRUE,
+#   roundint = TRUE,
+#   main = "Regression Tree: Price per Sq.Ft"
+# )
 
 # Basic check: supply distribution
 summary(full_dataset_clean$total_listing_count)
@@ -1360,12 +1361,51 @@ imp_df %>%
 ## Model Evaluation
 
 ```{r generate predictors}
-reg_model_by_1_pred = predict(reg_model_by_1, newdata = X_test)
-cor(reg_model_by_1_pred, price_test)
+# models = list(reg_model_by_1, reg_model_by_all, lasso_price_best_model, lasso_price_no_cbsa_best_model, reg_tree_simple, reg_tree_exp_med, rf_exp_med)
+# 
+# log_models = list(reg_model_log_by_1, reg_model_log_by_all, lasso_log_price_best_model, lasso_log_price_no_cbsa_best_model)
 
-reg_model_by_all_pred = predict(reg_model_by_all, newdata = X_test)
-cor(reg_model_by_all_pred, price_test)
+reg_model_by_1_pred = predict(reg_model_by_1, newdata = test)
+reg_model_by_all_pred = predict(reg_model_by_all, newdata = test)
+lasso_price_best_model_pred = predict(lasso_price_best_model, newx=X_test_matrix)
+lasso_price_no_cbsa_best_model_pred = predict(lasso_price_no_cbsa_best_model, newx=X_test_no_cbsa_matrix)
+reg_tree_simple_pred = predict(reg_tree_simple, newdata = test)
+reg_tree_exp_med_pred = predict(reg_tree_exp_med, newdata = test)
+rf_exp_med_pred = predict(rf_exp_med, newdata = test)
+reg_model_log_by_1_pred = predict(reg_model_log_by_1, newdata = test)
+reg_model_log_by_all_pred = predict(reg_model_log_by_all, newdata = test)
+lasso_log_price_best_model_pred = predict(lasso_log_price_best_model, newx=X_test_matrix)
+lasso_log_price_no_cbsa_best_model_pred = predict(lasso_log_price_no_cbsa_best_model, newx=X_test_no_cbsa_matrix)
 
+reg_model_by_1_rmse = rmse(actual = price_test, predicted = reg_model_by_1_pred)
+reg_model_by_all_rmse = rmse(actual = price_test, predicted = reg_model_by_all_pred)
+lasso_price_best_model_rmse = rmse(actual = price_test, predicted = lasso_price_best_model_pred)
+lasso_price_no_cbsa_best_model_rmse = rmse(actual = price_test, predicted = lasso_price_no_cbsa_best_model_pred)
+reg_tree_simple_rmse = rmse(actual = price_test, predicted = reg_tree_simple_pred)
+reg_tree_exp_med_rmse = rmse(actual = price_test, predicted = reg_tree_exp_med_pred)
+rf_exp_med_rmse = rmse(actual = price_test, predicted = rf_exp_med_pred)
+reg_model_log_by_1_rmse = rmse(actual = price_test, predicted = exp(reg_model_log_by_1_pred))
+reg_model_log_by_all_rmse = rmse(actual = price_test, predicted = exp(reg_model_log_by_all_pred))
+lasso_log_price_best_model_rmse = rmse(actual = price_test, predicted = exp(lasso_log_price_best_model_pred))
+lasso_log_price_no_cbsa_best_model_rmse = rmse(actual = price_test, predicted = exp(lasso_log_price_no_cbsa_best_model_pred))
+
+rmse_df = data.frame(model = c("reg_model_by_1", "reg_model_by_all", "lasso_price_best_model", "lasso_price_no_cbsa_best_model", "reg_tree_simple", "reg_tree_exp_med", "rf_exp_med", "reg_model_log_by_1", "reg_model_log_by_all", "lasso_log_price_best_model", "lasso_log_price_no_cbsa_best_model"),
+                     rmse = c(reg_model_by_1_rmse, reg_model_by_all_rmse, lasso_price_best_model_rmse, lasso_price_no_cbsa_best_model_rmse, reg_tree_simple_rmse, reg_tree_exp_med_rmse, rf_exp_med_rmse, reg_model_log_by_1_rmse, reg_model_log_by_all_rmse, lasso_log_price_best_model_rmse, lasso_log_price_no_cbsa_best_model_rmse)
+                     )
+  # reg_model_by_1 = reg_model_by_1_rmse,
+  #                    reg_model_by_all = reg_model_by_all_rmse,
+  #                    lasso_price_best_model = lasso_price_best_model_rmse,
+  #                    lasso_price_no_cbsa_best_model = lasso_price_no_cbsa_best_model_rmse,
+  #                    reg_tree_simple = reg_tree_simple_rmse,
+  #                    reg_tree_exp_med = reg_tree_exp_med_rmse,
+  #                    rf_exp_med = rf_exp_med_rmse,
+  #                    reg_model_log_by_1 = reg_model_log_by_1_rmse,
+  #                    reg_model_log_by_all = reg_model_log_by_all_rmse,
+  #                    lasso_log_price_best_model = lasso_log_price_best_model_rmse,
+  #                    lasso_log_price_no_cbsa_best_model = lasso_log_price_no_cbsa_best_model_rmse
+  #                    )
+
+xkabledply(rmse_df)
 ```
 
 
