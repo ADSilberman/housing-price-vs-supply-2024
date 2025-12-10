@@ -67,9 +67,27 @@ library(ModelMetrics)
 
 <!-- Additionally, median home prices have more than doubled over the past decade, rising faster than both wages and inflation [@uschamber2024]. This growing affordability crisis hinders job creation, encourages corporate relocations, and causes states to lose billions of dollars in economic output [@pebbcap2024]. -->
 
+## Conclusion 
+<!-- In conducting this project, our team was reminded of our first day of class, going over the data science life cycle. We initially established a question we wanted to answer and identified data that we believed could enlighten us on this data. However, by conducting our EDA, we discovered that the metrics that AEI chose to include do not directly match the question we sought out to answer. -->
+
+<!-- ### Key Takeaways -->
+<!-- There is a clear connection between months supply of housing and median sale price. This could be due to high demand pushing sale prices higher or low supply pushing sale prices higher. We will need more data in order to identify which is the stronger driver, if either.  -->
+
+<!-- We also found interesting connections between the percent of houses in a county that are new constructions and the mortgage default rate in a county with our two key variables, months supply and median sale price.  -->
+
+<!-- ### Next Steps -->
+<!-- One next step for us might be to pull in additional data to help us add color to the picture we are painting and to also help us better address our original research question. We will need to do additional analysis to better identify the nature of the relationship between these primary and secondary variables.  -->
+
+<!-- We could also take straight from the source and attempt to pull public records data from First American via Data Tree and listings counts from Zillow and Realtor.com, perhaps adjusting for population. This would be a much better representation of supply than Months' Supply. -->
+
+
+
+
+# project 2 ####
+
 ## Data 
 
-This project uses the cbsa-level 2024 Realtor.com dataset referenced as the source data from our Project 1 data source. We enrich this dataset with 1-year 2024 data from the American Community Survey. The variables are:  
+This project uses the cbsa-level 2024 Realtor.com dataset referenced as the source data from our Project 1 data source: the American Enterprise Institute. We enrich this dataset with 1-year 2024 data from the American Community Survey. The variables are:  
 
 Original Variable Name | New Variable Name | Definition  
   :-: |  :-: | :-- 
@@ -127,26 +145,6 @@ DP04_0041PE | pct_2_bed | Percent 2-bedroom units
 DP04_0042PE | pct_3_bed | Percent 3-bedroom units 
 DP04_0043PE | pct_4_bed | Percent 4-bedroom units
 DP04_0044PE | pct_5plus_bed | Percent 5+ bedroom units 
-
-## Conclusion 
-<!-- In conducting this project, our team was reminded of our first day of class, going over the data science life cycle. We initially established a question we wanted to answer and identified data that we believed could enlighten us on this data. However, by conducting our EDA, we discovered that the metrics that AEI chose to include do not directly match the question we sought out to answer. -->
-
-<!-- ### Key Takeaways -->
-<!-- There is a clear connection between months supply of housing and median sale price. This could be due to high demand pushing sale prices higher or low supply pushing sale prices higher. We will need more data in order to identify which is the stronger driver, if either.  -->
-
-<!-- We also found interesting connections between the percent of houses in a county that are new constructions and the mortgage default rate in a county with our two key variables, months supply and median sale price.  -->
-
-<!-- ### Next Steps -->
-<!-- One next step for us might be to pull in additional data to help us add color to the picture we are painting and to also help us better address our original research question. We will need to do additional analysis to better identify the nature of the relationship between these primary and secondary variables.  -->
-
-<!-- We could also take straight from the source and attempt to pull public records data from First American via Data Tree and listings counts from Zillow and Realtor.com, perhaps adjusting for population. This would be a much better representation of supply than Months' Supply. -->
-
-
-
-
-# project 2 ####
-
-## Data
 
 ### Data Sources
 
@@ -305,12 +303,11 @@ head(acs1_2024_orig)
 ```
 <!-- The list of variables includes what should be the total population as a percent—"DP05_0001P"—but, as that would always be 100%, the wise people at the US Census Bureau made such equal to "DP05_0001E", the total population estimate, necessitating no further adjustment. -->
 
-This includes both percents as well as margins of error. I have included code to drop the margins of error.
-
 
 ```{r dropping margins of error}
 acs1_2024_no_M = select(acs1_2024_orig, -grepv("M$", names(acs1_2024_orig)))
 head(acs1_2024_no_M)
+#This includes both percents as well as margins of error. I (Alex) have included code to drop the margins of error.
 ```
 
 ```{r rename_acs_vars}
@@ -479,6 +476,13 @@ unique(acs1_2024$area_type)
 # 
 # vif_results_sorted
 
+
+
+
+
+
+#team, should we just delete this chunk?- BW
+
 ```
 
 
@@ -558,6 +562,9 @@ unique(acs1_2024$area_type)
 #   mutate(area_type = ifelse(grepl("Micro Area",NAME), "Micro", "Metro"))
 # 
 # unique(acs1_2024_filtered$area_type)
+
+
+#team, I think we should delete this chunk too. -BW
 ```
 
 
@@ -565,7 +572,7 @@ unique(acs1_2024$area_type)
 
 ```{r load_realtor}
 #loading in inventory data
-inventory_raw <- read_csv(here("../data/RDC_Inventory_Core_Metrics_Metro_History.csv"))
+inventory_raw <- read_csv(here("../RDC_Inventory_Core_Metrics_Metro_History.csv"))
 
 #cleaning names
 clean_names(inventory_raw)
@@ -692,6 +699,8 @@ full_dataset_clean <- full_dataset_clean %>%
 nrow(full_dataset_clean)
 ```
 
+After merging the data to create our holistic dataset, we only dropped 86 rows to remove NA values. This left us with 6,280 observations remaining- more than enough to run a reliable analysis. To prepare for our analysis, we started by creating a summary table of key metrics around some of our key variables. 
+
 ```{r summary stats}
 summary_long <- full_dataset_clean %>%
   summarise(median_price = median(median_listing_price_per_square_foot, na.rm = TRUE),
@@ -715,7 +724,11 @@ summary_table_kable
 
 ```
 
-## EDA
+Even before graphing and investigating our dataset further with exploratory data analysis (EDA), the summary statistics tell us that all of our key variables have a right-skew. For price, income, and pending ratio, this is a slight right-skew, likely as a result of a few, large outliers. However, for our supply variable, there is an extreme right-skew and a very large standard deviation. This is likely due to the structure of the variable instead of a fundamental error in the dataset, and the supply distribution plot in the EDA section will add further context to this variable summary. 
+
+## Exploratory Data Analysis
+
+As this is a new dataset to our team, we needed to start our project with some high-level exploratory data analysis. This data analysis helped us frame our approach to our statistical analysis and predictive models later in the project. For a few of our variables, we graphed both the raw variable distributions and also logged versions of these variables to ensure that we can capture larger relationships independent of influential outliers. 
 
 ```{r dist price}
 price_dist_plt= ggplot(inventory_2024_filtered, aes(x = median_listing_price_per_square_foot)) +
@@ -743,6 +756,7 @@ ggsave(filename = "price_distribution.png",
   height = 5,                            
   dpi = 300)
 
+price_dist_plt
 ```
 
 
@@ -773,10 +787,12 @@ ggsave(filename = "logged_price_distribution.png",
   width = 8,
   height = 5,
   dpi = 300)
+
+logged_price_dist
 ```
 
 ```{r housing count violin}
-ggplot(inventory_2024_filtered, aes(x = "", y = total_listing_count)) +
+housing_violion<- ggplot(inventory_2024_filtered, aes(x = "", y = total_listing_count)) +
   geom_violin(fill = "lightblue", color = "steelblue", alpha = 0.7) +
   geom_jitter(width = 0.1, alpha = 0.3, color = "darkblue") +
   labs(title = "Distribution of Total Listing Count",
@@ -794,12 +810,12 @@ ggplot(inventory_2024_filtered, aes(x = "", y = total_listing_count)) +
     panel.background  = element_blank(),
     plot.background   = element_blank())
 
-
+housing_violion
 ```
 
 
 ```{r log housing count violin}
-housing_violin_plt= ggplot(inventory_2024_filtered, aes(x = "", y = total_listing_count)) +
+log_housing_violin_plt= ggplot(inventory_2024_filtered, aes(x = "", y = total_listing_count)) +
   geom_violin(fill = "lightblue", color = "steelblue", alpha = 0.7) +
   geom_jitter(width = 0.1, alpha = 0.3, color = "darkblue") +
   scale_y_log10() +
@@ -820,10 +836,11 @@ housing_violin_plt= ggplot(inventory_2024_filtered, aes(x = "", y = total_listin
     plot.background   = element_blank())
 
 ggsave(filename = "logged_supply_violin.png",   
-  plot = housing_violin_plt,                 
+  plot = log_housing_violin_plt,                 
   width = 8,                             
   height = 5,                            
   dpi = 300)
+log_housing_violin_plt
 ```
 
 
@@ -852,10 +869,12 @@ ggsave(filename = "pricesupply_scatter.png",
   width = 8,                             
   height = 5,                            
   dpi = 300)
+
+price_supply_scatter
 ```
 
 ```{r EDA log price vs supply}
-ggplot(inventory_2024_filtered, aes(x = total_listing_count, y = log_median_price_sqft)) +
+log_price_supply_scatter <- ggplot(inventory_2024_filtered, aes(x = total_listing_count, y = log_median_price_sqft)) +
   geom_point(alpha = 0.6, color = "steelblue") +
   geom_smooth(method = "lm", se = FALSE, color = "darkred", linewidth = 1) +
   labs(title = "Log Price vs Total Supply",
@@ -873,11 +892,13 @@ ggplot(inventory_2024_filtered, aes(x = total_listing_count, y = log_median_pric
         panel.grid.minor = element_blank(),
         panel.background  = element_blank(),
         plot.background   = element_blank())
+
+log_price_supply_scatter
 ```
 
 ```{r EDA log price vs log supply scatter}
 #log by log scatter with a regression line on top and the actual values associated with the log transformation
-ggplot(inventory_2024_filtered,
+log_price_log_supply_scatter<- ggplot(inventory_2024_filtered,
        aes(x = log(total_listing_count),
            y = log(median_listing_price_per_square_foot))) +
   geom_point(alpha = 0.6, color = "steelblue") +
@@ -900,6 +921,7 @@ ggplot(inventory_2024_filtered,
     panel.background  = element_blank(),
     plot.background   = element_blank())
 
+log_price_log_supply_scatter
 ```
 
 
@@ -930,6 +952,8 @@ ggsave(filename = "logpricelogsupply_scatter.png",
   width = 8,                             
   height = 5,                            
   dpi = 300)
+
+logprice_logsupply_scatter
 ```
 
 
@@ -959,6 +983,8 @@ ggsave(filename = "pricedemand_scatter.png",
   width = 8,                             
   height = 5,                            
   dpi = 300)
+
+Price_demand_scatter
 ```
 
 
@@ -988,12 +1014,14 @@ ggsave(filename = "logpricedemand_scatter.png",
   width = 8,                             
   height = 5,                            
   dpi = 300)
+
+logprice_demand_scatter
 ```
 
 
 
 ```{r EDA price vs median_days_on_market}
-ggplot(inventory_2024_filtered, aes(x = median_days_on_market, y = median_listing_price_per_square_foot)) +
+price_market_hotness_plot <-ggplot(inventory_2024_filtered, aes(x = median_days_on_market, y = median_listing_price_per_square_foot)) +
   geom_point(alpha = 0.6, color = "steelblue") +
   geom_smooth(method = "lm", se = FALSE, color = "darkred", linewidth = 1) +
   scale_y_continuous(labels = dollar_format(accuracy = 1)) +
@@ -1012,11 +1040,12 @@ ggplot(inventory_2024_filtered, aes(x = median_days_on_market, y = median_listin
     panel.background  = element_blank(),
     plot.background   = element_blank())
 
+price_market_hotness_plot
 ```
 
 
 ```{r EDA log price vs median_days_on_market}
-ggplot(inventory_2024_filtered, aes(x = median_days_on_market, y = log_median_price_sqft)) +
+log_price_market_hotness_plot<- ggplot(inventory_2024_filtered, aes(x = median_days_on_market, y = log_median_price_sqft)) +
   geom_point(alpha = 0.6, color = "steelblue") +
   geom_smooth(method = "lm", se = FALSE, color = "darkred", linewidth = 1) +
   scale_y_continuous(labels = function(x) dollar(exp(x), accuracy = 1)) +
@@ -1035,6 +1064,7 @@ ggplot(inventory_2024_filtered, aes(x = median_days_on_market, y = log_median_pr
     panel.background  = element_blank(),
     plot.background   = element_blank())
 
+log_price_market_hotness_plot
 ```
 
 
@@ -1062,6 +1092,8 @@ ggsave(filename = "priceincome_scatter.png",
   width = 8,                             
   height = 5,                            
   dpi = 300)
+
+price_income_scatter
 ```
 
 
@@ -1092,6 +1124,8 @@ ggsave(filename = "logpricelogincome_scatter.png",
   width = 8,                             
   height = 5,                            
   dpi = 300)
+
+logprice_logincome_scatter
 ```
 
 
