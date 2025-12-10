@@ -759,7 +759,7 @@ ggsave(filename = "price_distribution.png",
 price_dist_plt
 ```
 
-
+The first distribution we plotted was median price per square foot- our main dependent variable. The graph shows that a majority of median listing prices per square foot fall below $500 with a handful of very high values pulling the mean of the graph higher than the median. 
 
 
 ```{r dist log price}
@@ -791,6 +791,9 @@ ggsave(filename = "logged_price_distribution.png",
 logged_price_dist
 ```
 
+Plotting the logged median price per square foot shows a distribution much closer to the normal curve. Logging the price mitigated the heavy influence of of outlier values and creates a more robust source from which to draw relationship insights between variables.
+
+
 ```{r housing count violin}
 housing_violion<- ggplot(inventory_2024_filtered, aes(x = "", y = total_listing_count)) +
   geom_violin(fill = "lightblue", color = "steelblue", alpha = 0.7) +
@@ -812,6 +815,9 @@ housing_violion<- ggplot(inventory_2024_filtered, aes(x = "", y = total_listing_
 
 housing_violion
 ```
+
+
+This graph attempts to draw further insights into the distribution of listing counts among our cbsa units, but the concentration falling so heavily near the bottom of the y-axis makes it difficult to specifically interpret the supply distribution. To address this, we also plotted the log of supply below. 
 
 
 ```{r log housing count violin}
@@ -843,13 +849,15 @@ ggsave(filename = "logged_supply_violin.png",
 log_housing_violin_plt
 ```
 
+This graph shows the log distribution of listing supply overlayed on top of a violin plot of the same data. This added dimension and logged variable adds much more insight into the distribution of the supply variable. As the graph demonstrates, a majority of the supply variables land near the bottom of the y-axis, indicating that there are vastly more cbsa with low listing counts than high listing counts. This is likely due to the structure of our cbsa data. Micro areas can be cbsa regions with 10,000-50,000 residents, and macro areas are any over 50,000 residents. Most small towns fall in the micro level, whereas some massive metropolitan areas (like New York, Chicago, Los Angeles) have millions of residents. This leads to a vast majority of the units falling on the lower end of the spectrum with large, meaninful outliers near the top. For further graphs, we also plotted the log of supply to help normalize this distribution and draw out the true nature of the relationships between variables. 
+
 
 ```{r EDA price vs supply}
 price_supply_scatter= ggplot(inventory_2024_filtered, aes(x = total_listing_count, y = median_listing_price_per_square_foot)) +
   geom_point(alpha = 0.6, color = "steelblue") +
   geom_smooth(method = "lm", se = FALSE, color = "darkred", linewidth = 1) +
   labs(title = "Price vs Total Supply",
-       subtitle = "Median price per square foot tends to decrease as total listings increase",
+       subtitle = "Median price per square foot tends to increase as total listings increase",
        x = "Total Listing Count",
        y = "Median Price per Square Foot",
        caption = "SOURCE: Realtor.com") +
@@ -873,6 +881,9 @@ ggsave(filename = "pricesupply_scatter.png",
 price_supply_scatter
 ```
 
+This graph plots the relationship between the un-transformed price and supply variables as this is the key relationship driving our SMART question. This plot shows how price appears to be positively correlated with total listing count, but we procedded with log transformations of the variables to be sure. 
+
+
 ```{r EDA log price vs supply}
 log_price_supply_scatter <- ggplot(inventory_2024_filtered, aes(x = total_listing_count, y = log_median_price_sqft)) +
   geom_point(alpha = 0.6, color = "steelblue") +
@@ -895,6 +906,9 @@ log_price_supply_scatter <- ggplot(inventory_2024_filtered, aes(x = total_listin
 
 log_price_supply_scatter
 ```
+
+
+After plotting the lof of our price variable against our supply variable, the positive relationship between price and supply appears even stronger than in our previous graph. However, the distribution of supply is still heavily skewed, so we also logged that variable for the next graph. 
 
 ```{r EDA log price vs log supply scatter}
 #log by log scatter with a regression line on top and the actual values associated with the log transformation
@@ -923,6 +937,8 @@ log_price_log_supply_scatter<- ggplot(inventory_2024_filtered,
 
 log_price_log_supply_scatter
 ```
+
+In this final version of our price/ supply scatterplot, we compare the log of price with the log of supply, and we see a clear positive trend between price and supply. Log of median price per square foot steadily increases as log of total listing count increases, supporting the idea that changes in housing supply- at least partially- influence changes in housing price. 
 
 
 ```{r log price by supply boxplot}
@@ -956,6 +972,7 @@ ggsave(filename = "logpricelogsupply_scatter.png",
 logprice_logsupply_scatter
 ```
 
+When separating unlogged supply into quantiles for a boxplot, the positive correlation between these two variables remains plainly visible. 
 
 
 ```{r EDA price vs demand}
@@ -986,6 +1003,8 @@ ggsave(filename = "pricedemand_scatter.png",
 
 Price_demand_scatter
 ```
+
+The next relationship we investigated was the relationship between housing price and market demand. As is clean in the graph above, plotting median listing price per square foot against pending ratio (our proxy for market demand), reveals a slight negative relationship between price and demand. This is in line with traditional models of supply and demand where where supply is held constant, and higher demand is associated with lower market prices. 
 
 
 ```{r EDA log price vs demand(pending ratio)}
@@ -1018,6 +1037,7 @@ ggsave(filename = "logpricedemand_scatter.png",
 logprice_demand_scatter
 ```
 
+We also graphed the relationship between log price and market demand, and the negative correlation between these relationships persists.
 
 
 ```{r EDA price vs median_days_on_market}
@@ -1043,6 +1063,7 @@ price_market_hotness_plot <-ggplot(inventory_2024_filtered, aes(x = median_days_
 price_market_hotness_plot
 ```
 
+The next set of variables that we investigated in our exploratory data analysis was price and market speed. The graph above shows a slight positive relationship between price and market speed (represented with the median days on market variable), although the magnitude of the relationship appears small. Additionally, we cannot claim causality in this relationship as the risk of reverse causality is very high between these variables. We would require a much more thorough study to investigate any causal relationship between these variables. 
 
 ```{r EDA log price vs median_days_on_market}
 log_price_market_hotness_plot<- ggplot(inventory_2024_filtered, aes(x = median_days_on_market, y = log_median_price_sqft)) +
@@ -1066,7 +1087,7 @@ log_price_market_hotness_plot<- ggplot(inventory_2024_filtered, aes(x = median_d
 
 log_price_market_hotness_plot
 ```
-
+When we graphed the log price against the market speed, the direction of the correlation changed. Instead of having a slightly negative relationship, there now appears to be a very very slight positive relationship between price and market speed. This graph simply adds complexity to the relationship between these two variables- if there is a noteworthy relationship between them at all. 
 
 ```{r price vs median household income}
 price_income_scatter= ggplot(full_dataset_clean, aes(x = median_household_income, 
@@ -1096,6 +1117,7 @@ ggsave(filename = "priceincome_scatter.png",
 price_income_scatter
 ```
 
+The final set of variables we analyzed was median price per square foot and median household income. We expected a strong, positive relationship between these variables, and as is plainly visible in the graph above, that is exactly what we found. Again, this is in line with classic models of supply and demand. However, neither of these variables have normal distributions, so we also compared their log transformations. 
 
 ```{r log price v log median household income}
 logprice_logincome_scatter= ggplot(full_dataset_clean) +
@@ -1127,9 +1149,11 @@ ggsave(filename = "logpricelogincome_scatter.png",
 
 logprice_logincome_scatter
 ```
-
+When plotting log price and log income, the positive relationship between the variables is of an even larger magnitude than the un-transformed versions of the variables. This demonstrates a clear and strong relationship and the potential significance of income as a predictor in our models. 
 
 ## Modeling
+
+EDA cannot establish causality by itself, but it does provide a strong starting point for more complex statistical testing of the data. 
 
 ### Split the Data into train and test
 
