@@ -1496,10 +1496,28 @@ rmse_df = data.frame(Model = c("reg_model_by_1", "reg_model_by_all", "lasso_pric
 xkabledply(rmse_df)
 ```
 
-```{r anova}
-anova(reg_model_by_1, reg_model_by_all, lasso_price_best_model, lasso_price_no_cbsa_best_model, reg_tree_simple, reg_tree_exp_med, rf_exp_med)
-# 
-# log_models = list(reg_model_log_by_1, reg_model_log_by_all, lasso_log_price_best_model, lasso_log_price_no_cbsa_best_model))
+```{r residual graphs}
+residual_graphs <- ggplot(data = data.frame(actual = price_test,
+                                            residual = reg_model_by_all_pred - price_test),
+                          aes(x = actual, y = residual)) +
+  geom_point(alpha = 0.6, color = "steelblue") +
+  labs(title = "Residual Plots",
+       # subtitle = "Log transformation reduces skew and reveals variation across listings",
+       x = "Actual",
+       y = "Residual",
+       caption = "SOURCE: Realtor.com") +
+  # scale_y_continuous(labels = function(x) dollar(exp(x), accuracy = 1)) +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face="bold", size=14, margin=ggplot2::margin(b=3)),
+        plot.subtitle = element_text(size=10, color="gray25", margin=ggplot2::margin(b=8)),
+        plot.caption  = element_text(size=8, color="gray40", hjust=0),
+        axis.title    = element_text(size=10, face="bold"),
+        axis.text     = element_text(size=9),
+        panel.grid.minor = element_blank(),
+        panel.background  = element_blank(),
+        plot.background   = element_blank())
+
+residual_graphs
 ```
 
 
