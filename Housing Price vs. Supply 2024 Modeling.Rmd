@@ -1380,7 +1380,6 @@ The plot reports Random Forest variable importance (MSE increase), indicating wh
 Percent under 18 (pct_under_18) and percent vacant units (pct_vacant_units) are the two most important predictors, suggesting that demographic structure and housing availability prior to a sale include substantial information to predict the price.
 The prominence of these variables indicates that the model primarily reflects  sociological factors and pre-sale occupancy conditions, rather than short-term transactional or pricing signals.
 
-
 ```{r}
 set.seed(42)
 rf_data_med <- train %>%
@@ -1408,12 +1407,15 @@ imp_df %>%
   ggplot(aes(x=reorder(Feature, Importance), y=Importance)) +
   geom_col(fill="steelblue") +
   coord_flip() +
-  labs(title="Random Forest: Top 25 Key Indicators",
+  labs(title="Random Forest for Median Price per sqft.",
        x="Feature",
        y="MSE-contribution (%)") +
   theme_minimal(base_size = 13)
 ```
 #### Random Forest with Log
+
+The Random Forest plot remains the same after using log(median_price) because the log transformation rescales the target without changing the order and structure for data splitting. As a result, the forest variable importance rankings stay unchanged (see Hastie, Tibshirani & Friedman (2009), Elements of Statistical Learning p.371).
+
 
 ```{r}
 set.seed(42)
@@ -1440,7 +1442,7 @@ imp_log_df %>%
   ggplot(aes(x=reorder(Feature, Importance), y=Importance)) +
   geom_col(fill="steelblue") +
   coord_flip() +
-  labs(title="Top 25 Key Indicators",
+  labs(title="Random Forest for log(Median Price) per sqft.",
        x="Feature",
        y="MSE-contribution (%)") +
   theme_minimal(base_size = 13)
