@@ -376,7 +376,7 @@ acs1_2024 <- acs1_2024 %>%
 unique(acs1_2024$area_type)
 ```
 
-```{r ilgaz' correlation check & steph's attempt at multiColl detection}
+```{r}
 #ilgaz' correlation stuff
 # acs_clean <- acs1_2024_pcts %>% drop_na()
 # num_df <- acs_clean %>% 
@@ -1376,6 +1376,10 @@ fancyRpartPlot(reg_tree_exp_med,
 
 ### Random Forest Regression
 
+The plot reports Random Forest variable importance (MSE increase), indicating which features the model relies on most for prediction.
+Percent under 18 (pct_under_18) and percent vacant units (pct_vacant_units) are the two most important predictors, suggesting that demographic structure and housing availability prior to a sale include substantial information to predict the price.
+The prominence of these variables indicates that the model primarily reflects  sociological factors and pre-sale occupancy conditions, rather than short-term transactional or pricing signals.
+
 
 ```{r}
 set.seed(42)
@@ -1404,7 +1408,7 @@ imp_df %>%
   ggplot(aes(x=reorder(Feature, Importance), y=Importance)) +
   geom_col(fill="steelblue") +
   coord_flip() +
-  labs(title="Top 25 Key Indicators",
+  labs(title="Random Forest: Top 25 Key Indicators",
        x="Feature",
        y="MSE-contribution (%)") +
   theme_minimal(base_size = 13)
