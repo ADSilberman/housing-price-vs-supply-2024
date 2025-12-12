@@ -1310,6 +1310,9 @@ coef(lasso_log_price_no_cbsa_best_model)
 ### Regression Tree
 
 
+We also estimated an expanded regression tree to capture nonlinear relationships between median price per square foot and socioeconomic and housing characteristics. The resulting tree makes one point very clear: income dominates every other predictor. The initial split occurs at median household income, separating a small group of high-income markets with substantially higher prices from the broader set of lower-income areas. Within the lower-income group, the model again splits on income, showing that income consistently outweighs other demographic factors in explaining price differences. Only after these income thresholds are established do additional variables add nuance. Overall, the regression tree suggests that price per square foot is primarily structured by income levels, with demographic and housing characteristics playing a secondary role.
+
+
 ```{r}
 ## ---- RT_simple ----
 options(scipen = 999)   # turn off scientific notation
