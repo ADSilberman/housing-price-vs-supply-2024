@@ -1414,8 +1414,7 @@ imp_df %>%
 ```
 #### Random Forest with Log
 
-The Random Forest plot remains the same after using log(median_price) because the log transformation rescales the target without changing the order and structure for data splitting. As a result, the forest variable importance rankings stay unchanged (see Hastie, Tibshirani & Friedman (2009), Elements of Statistical Learning p.371).
-
+The Random Forest plot remains the same after using log(median_price) because the log transformation rescales the target without changing the order and structure for data splitting. As a result, the forest variable importance rankings stay unchanged (see p.371 Hastie, Tibshirani & Friedman (2009), Elements of Statistical Learning ).
 
 ```{r}
 set.seed(42)
@@ -1534,6 +1533,10 @@ Modeling- lasso regression  (alex)
 -- probably lots of options here 
 Modeling- regression tree (steph)
 Modeling- regression forest (ilgaz)
+
+### Further Applications
+
+For further applications, the modeling approach can be extended beyond Random Forest estimation to explore feature selection and model comparison. Feature engineering using Random Forest indicators can be performed by selecting the most important variables identified by the Random Forest and reducing dimensionality to build interpretable linear models. Additionally, applying XGBoost may improve predictive accuracy relative to the Random Forest.
 
 
 
