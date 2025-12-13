@@ -1510,6 +1510,119 @@ residual_graphs <- ggplot(data = data.frame(actual = price_test,
         plot.background   = element_blank())
 
 residual_graphs
+
+residual_reg_by_1 <- ggplot(data = data.frame(actual = price_test,
+                                              residual = reg_model_by_1_pred - price_test),
+                            aes(x = actual, 
+                                y = residual)) +
+  geom_point(alpha = 0.6, 
+             color = "steelblue") +
+  labs(title = "Residual Plot: Linear Model (Supply Only)",
+       x = "Actual",
+       y = "Residual",
+       caption = "SOURCE: Realtor.com") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face="bold", 
+                                     size=14, 
+                                     margin=ggplot2::margin(b=3)),
+        plot.subtitle = element_text(size=10, 
+                                     color="gray25", 
+                                     margin=ggplot2::margin(b=8)),
+        plot.caption  = element_text(size=8, 
+                                     color="gray40", 
+                                     hjust=0),
+        axis.title    = element_text(size=10, 
+                                     face="bold"),
+        axis.text     = element_text(size=9),
+        panel.grid.minor = element_blank(),
+        panel.background  = element_blank(),
+        plot.background   = element_blank())
+
+residual_reg_by_1
+
+residual_lasso <- ggplot(data = data.frame(actual = price_test,
+                                           residual = as.numeric(lasso_price_no_cbsa_best_model_pred) - price_test),
+                         aes(x = actual, y = residual)) +
+  geom_point(alpha = 0.6, 
+             color = "steelblue") +
+  labs(title = "Residual Plot: LASSO (No CBSA)",
+       x = "Actual",
+       y = "Residual",
+       caption = "SOURCE: Realtor.com") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face="bold", 
+                                     size=14, 
+                                     margin=ggplot2::margin(b=3)),
+        plot.subtitle = element_text(size=10, 
+                                     color="gray25", 
+                                     margin=ggplot2::margin(b=8)),
+        plot.caption  = element_text(size=8, 
+                                     color="gray40", 
+                                     hjust=0),
+        axis.title    = element_text(size=10, 
+                                     face="bold"),
+        axis.text     = element_text(size=9),
+        panel.grid.minor = element_blank(),
+        panel.background  = element_blank(),
+        plot.background   = element_blank())
+
+residual_lasso
+
+residual_tree <- ggplot(data = data.frame(actual = price_test,
+                                          residual = reg_tree_exp_med_pred - price_test),
+                        aes(x = actual, y = residual)) +
+  geom_point(alpha = 0.6, 
+             color = "steelblue") +
+  labs(title = "Residual Plot: Regression Tree (Expanded)",
+       x = "Actual",
+       y = "Residual",
+       caption = "SOURCE: Realtor.com") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face="bold", 
+                                     size=14, 
+                                     margin=ggplot2::margin(b=3)),
+        plot.subtitle = element_text(size=10, 
+                                     color="gray25", 
+                                     margin=ggplot2::margin(b=8)),
+        plot.caption  = element_text(size=8, 
+                                     color="gray40", 
+                                     hjust=0),
+        axis.title    = element_text(size=10, 
+                                     face="bold"),
+        axis.text     = element_text(size=9),
+        panel.grid.minor = element_blank(),
+        panel.background  = element_blank(),
+        plot.background   = element_blank())
+
+residual_tree
+
+residual_rf <- ggplot(data = data.frame(actual = price_test,
+                                        residual = rf_exp_med_pred - price_test),
+                      aes(x = actual, y = residual)) +
+  geom_point(alpha = 0.6, 
+             color = "steelblue") +
+  labs(title = "Residual Plot: Random Forest (Median Price)",
+       x = "Actual",
+       y = "Residual",
+       caption = "SOURCE: Realtor.com") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face="bold", 
+                                     size=14, 
+                                     margin=ggplot2::margin(b=3)),
+        plot.subtitle = element_text(size=10, 
+                                     color="gray25", 
+                                     margin=ggplot2::margin(b=8)),
+        plot.caption  = element_text(size=8, 
+                                     color="gray40", 
+                                     hjust=0),
+        axis.title    = element_text(size=10, 
+                                     face="bold"),
+        axis.text     = element_text(size=9),
+        panel.grid.minor = element_blank(),
+        panel.background  = element_blank(),
+        plot.background   = element_blank())
+
+residual_rf
 ```
 
 
