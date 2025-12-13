@@ -1184,9 +1184,7 @@ reg_model_by_all <- lm(median_listing_price_per_square_foot ~ .-cbsa_title-log_m
 summary(reg_model_by_all)
 ```
 
-All CBSA title variables had to be eliminated, or there would be more columns than variables and it would be guaranteed to overfit.
-
-With more data, 
+All CBSA title variables had to be eliminated, or there would be more columns than observations and the model would overfit. With the full set of housing and demographic controls included, overall fit improves substantially. Several measures tied to income, housing composition, and vacancy are statistically significant, suggesting that price differences across markets reflect broader economic and housing structure rather than supply alone. Notably, the coefficient on total listing count changes sign once these controls are included, which points to confounding in the simple bivariate relationship.
 
 #### Log Median Listing Price per Square Foot
 ```{r}
@@ -1198,8 +1196,7 @@ reg_model_log_by_1 <- lm(log_median_price_sqft ~ total_listing_count,
 summary(reg_model_log_by_1)
 ```
 
-Nearly double the multiple R-squared.
-
+Logging the dependent variable nearly doubles the Multiple R-squared relative to the unlogged specification, indicating a modest improvement in fit. This suggests the log transformation reduces skew and the influence of extreme values. Even then, the model still explains only a limited share of the variation in price per square foot.
 
 ```{r}
 #reg d- "avg_log_median_listing_price" i- "total_active_listing_count" "area_type" "avg_pct_income_75k_plus" "avg_pct_units_built_2000_plus" "avg_pct_bachelors_or_higher" 
@@ -1209,9 +1206,7 @@ reg_model_log_by_all <- lm(log_median_price_sqft ~ . -cbsa_title -median_listing
 summary(reg_model_log_by_all)
 ```
 
-Have to eliminate cbsa_title or we would overfit
-
-Slightly better fit (also around 2% better, coincidentally)
+The CBSA title variable is excluded to avoid overfitting. Using the log-transformed outcome produces a slightly better overall fit than the unlogged version, consistent with variance being more stable in log terms. Many income, housing stock, and demographic variables remain statistically significant, and the coefficient on total listing count is again negative once these controls are included, reinforcing that the simple supply–price relationship does not persist after accounting for broader market structure.
 
 ### LASSO
 
