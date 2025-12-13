@@ -55,17 +55,11 @@ library(ModelMetrics)
 
 ## Introduction
 
-<!-- Supply and demand is a classic and well-known economic model. However, real life is far more nuanced than the simple version of this model that many are familiar with. We wanted to use real housing price and supply samples to explore how well that relationship fits economic theory. Our research question is: How is the supply of housing related to average home prices across U.S. metropolitan areas in the year 2024? -->
-
-<!-- In 2024, the housing market had more sellers than buyers. Normally, the excess supply in a buyer’s market would place downward pressure on prices, but concurrent economic monetary situation stalled that natural phenomenon. These unusual market conditions make it important to examine their wider economic and social impacts. -->
-
-<!-- Accordingly, the relevance of our question extends beyond economics, since housing prices directly affect households, companies, and wealth inequality. Rising home prices lead to wage increases, which in turn raise the cost of goods and services—creating a vicious cycle that fuels inflation. As uncontrolled inflation deteriorates living standards, companies struggle to attract and retain workers due to reduced labor mobility. Consequently, some firms relocate to more affordable states to balance operational costs. -->
-
-<!-- At the same time, while rising housing costs create financial burdens for renters, homeowners benefit from accumulating wealth through year-over-year appreciation and rental income. In fact, the wealth gap between homeowners and renters has reached a historic high, as housing costs have grown faster than incomes [@urban2023]. -->
-
-<!-- Throughout our analysis, we cross-checked our findings with existing research and market reports to better understand these dynamics. In 2024, there were nearly 500000 more sellers than buyers [@redfin2025]. Despite this apparent “buyer’s market,” prices did not decline as economic theory might predict. One possible explanation is that the elasticity of housing supply—the degree to which new construction responds to price changes—has been steadily declining since the Great Recession [@cepr2024]. -->
-
-<!-- Additionally, median home prices have more than doubled over the past decade, rising faster than both wages and inflation [@uschamber2024]. This growing affordability crisis hinders job creation, encourages corporate relocations, and causes states to lose billions of dollars in economic output [@pebbcap2024]. -->
+In the first project, we examined the relationship between months of supply and median home prices across U.S. metro areas in 2024 using data from the American Enterprise Institute (AEI).
+While the analysis identified a clear association between months of supply and median home prices, further exploratory analysis revealed that months of supply is not a raw measure but rather reflects the pace of inventory absorption. This limited our ability to fully understand housing price dynamics and motivated us to seek out new datasets.
+The second project uses raw supply measures while incorporating socioeconomic context. The analysis relies on the CBSA-level 2024 Realtor.com dataset as the core housing market dataset. This dataset is enriched with 2024 one-year estimates from the American Community Survey (ACS) to capture demographic, economic, and housing characteristics across U.S. metros.
+From the 2024 ACS 1-Year Estimates Data Profiles, we selected variables that provide an overview of population composition, income, and housing characteristics for each CBSA included in the Realtor.com data.
+By integrating housing market indicators with structural socioeconomic variables, this project aims to better distinguish whether observed housing price patterns in 2024 are primarily driven by supply constraints, demand-side pressures, or underlying demographic and economic conditions across U.S. metropolitan areas.
 
 ## Conclusion 
 <!-- In conducting this project, our team was reminded of our first day of class, going over the data science life cycle. We initially established a question we wanted to answer and identified data that we believed could enlighten us on this data. However, by conducting our EDA, we discovered that the metrics that AEI chose to include do not directly match the question we sought out to answer. -->
