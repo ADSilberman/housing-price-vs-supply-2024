@@ -148,7 +148,7 @@ DP04_0044PE | pct_5plus_bed | Percent 5+ bedroom units
 
 ### American Community Survey
 
-From the 2024 ACS 1-Year Estimates Data Profiles, demographic, economic, and housing variables are selected, giving a broad overview of the characteristics of each CBSA in the Realtor.com dataset. Additionally, where necessary, variables have been removed to eliminate multicollinearity.
+From the 2024 ACS 1-Year Estimates Data Profiles (U.S. Census Bureau, 2024), demographic, economic, and housing variables are selected, giving a broad overview of the characteristics of each CBSA in the Realtor.com dataset. Additionally, where necessary, variables have been removed to eliminate multicollinearity.
 
 ```{r future ACS variable dictionary}
 #ACS variable codes 
