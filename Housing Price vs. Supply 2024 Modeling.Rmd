@@ -1537,6 +1537,10 @@ Modeling- lasso regression  (alex)
 Modeling- regression tree (steph)
 Modeling- regression forest (ilgaz)
 
+###Conclusion
+
+Overall, the analysis shows that housing prices across U.S. metropolitan areas are most strongly associated with two structural factors: the amount of housing inventory available and median household income. Across all modeling approaches we applied, these variables consistently appeared as the most influential predictors of median price per square foot. Measures of market dynamics, such as pending ratio and days on market, helped differentiate between types of high-price markets, particularly those characterized by faster turnover versus those driven by higher incomes, but they did not outweigh the importance of income and supply. While the agreement across models increases confidence in these relationships, the analysis relies on cross-sectional, metro-level data. Consequently, the results should be interpreted as descriptive associations rather than causal effects, and variation within individual metropolitan areas may not be fully captured. Even with these limitations, the consistency of findings across methods suggests that differences in income levels and housing supply remain central to understanding variation in housing prices across U.S. markets.
+
 ### Further Applications
 
 For further applications, the modeling approach can be extended beyond Random Forest estimation to explore feature selection and model comparison. Feature engineering using Random Forest indicators can be performed by selecting the most important variables identified by the Random Forest and reducing dimensionality to build interpretable linear models. Additionally, applying XGBoost may improve predictive accuracy relative to the Random Forest.
