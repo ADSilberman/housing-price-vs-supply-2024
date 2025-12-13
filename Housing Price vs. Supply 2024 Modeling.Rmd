@@ -1625,16 +1625,7 @@ residual_rf <- ggplot(data = data.frame(actual = price_test,
 residual_rf
 ```
 
-
-#data manipulation 
-EDA- summary statistics(baylee)
-Modeling- linear regressions (alex)
-Modeling- lasso regression  (alex)
--- probably lots of options here 
-Modeling- regression tree (steph)
-Modeling- regression forest (ilgaz)
-
-###Conclusion
+## Conclusion
 
 Overall, the analysis shows that housing prices across U.S. metropolitan areas are most strongly associated with two structural factors: the amount of housing inventory available and median household income. Across all modeling approaches we applied, these variables consistently appeared as the most influential predictors of median price per square foot. Measures of market dynamics, such as pending ratio and days on market, helped differentiate between types of high-price markets, particularly those characterized by faster turnover versus those driven by higher incomes, but they did not outweigh the importance of income and supply. While the agreement across models increases confidence in these relationships, the analysis relies on cross-sectional, metro-level data. Consequently, the results should be interpreted as descriptive associations rather than causal effects, and variation within individual metropolitan areas may not be fully captured. Even with these limitations, the consistency of findings across methods suggests that differences in income levels and housing supply remain central to understanding variation in housing prices across U.S. markets.
 
