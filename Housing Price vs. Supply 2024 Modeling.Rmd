@@ -87,7 +87,7 @@ library(ModelMetrics)
 
 ## Data 
 
-This project uses the cbsa-level 2024 Realtor.com dataset referenced as the source data from our Project 1 data source: the American Enterprise Institute. We enrich this dataset with 1-year 2024 data from the American Community Survey. The variables are:  
+This project uses the cbsa-level 2024 Realtor.com dataset referenced as the source data from our Project 1 data source: the American Enterprise Institute. We enrich this dataset with the 1-year estimate data for 2024 from the American Community Survey (ACS). The variables are:  
 
 Original Variable Name | New Variable Name | Definition  
   :-: |  :-: | :-- 
@@ -116,14 +116,14 @@ DP02_0006PE | pct_male_householder | Percent male householder, no spouse
 DP02_0010PE | pct_female_householder | Percent female householder, no spouse 
 DP03_0005PE | pct_unemployed | Percent unemployed 
 DP03_0119PE | pct_below_poverty | Percent below poverty level 
-DP03_0053PE | pct_income_10_14999 | Percent income $10k–$14,999 
-DP03_0054PE | pct_income_15_24999 | Percent income $15k–$24,999 
-DP03_0055PE | pct_income_25_34999 | Percent income $25k–$34,999 
-DP03_0056PE | pct_income_35_49999 | Percent income $35k–$49,999 
-DP03_0057PE | pct_income_50_74999 | Percent income $50k–$74,999 
-DP03_0058PE | pct_income_75_99999 | Percent income $75k–$99,999 
-DP03_0059PE | pct_income_100_149k | Percent income $100k–$149k 
-DP03_0060PE | pct_income_150_199k | Percent income $150k–$199k 
+DP03_0053PE | pct_income_10_14999 | Percent income \$10k–\$14,999 
+DP03_0054PE | pct_income_15_24999 | Percent income \$15k–\$24,999 
+DP03_0055PE | pct_income_25_34999 | Percent income \$25k–\$34,999 
+DP03_0056PE | pct_income_35_49999 | Percent income \$35k–\$49,999 
+DP03_0057PE | pct_income_50_74999 | Percent income \$50k–\$74,999 
+DP03_0058PE | pct_income_75_99999 | Percent income \$75k–\$99,999 
+DP03_0059PE | pct_income_100_149k | Percent income \$100k–\$149k 
+DP03_0060PE | pct_income_150_199k | Percent income \$150k–\$199k 
 DP03_0061PE | pct_income_200k_plus | Percent income $200k+ 
 DP03_0062E | median_household_income | Median household income 
 DP02_0067PE | pct_high_school_plus | Percent high school or higher 
@@ -146,9 +146,9 @@ DP04_0042PE | pct_3_bed | Percent 3-bedroom units
 DP04_0043PE | pct_4_bed | Percent 4-bedroom units
 DP04_0044PE | pct_5plus_bed | Percent 5+ bedroom units 
 
-### Data Sources
+### American Community Survey
 
-#### American Community Survey
+From the 2024 ACS 1-Year Estimates Data Profiles, demographic, economic, and housing variables are selected, giving a broad overview of the characteristics of each CBSA in the Realtor.com dataset. Additionally, where necessary, variables have been removed to eliminate multicollinearity.
 
 ```{r future ACS variable dictionary}
 #ACS variable codes 
@@ -226,21 +226,8 @@ DP04_0044PE | pct_5plus_bed | Percent 5+ bedroom units
 #DP04_0044PE - % 5 Bedrooms or more
 ```
 
+
 ```{r load_acs}
-census_api_key("29e7dfea2f8b253a0a10ccd9626f78e49f4f0a4f")
-
-# census_vars = load_variables(year = 2024, dataset = "acs1/profile", cache = TRUE)
-# census_vars_limited = grepv("^(?!DP02PR).*P$", census_vars$name, perl=TRUE)
-# acs1_2024 = get_acs(geography = "metropolitan statistical area/micropolitan statistical area",
-#                     variables = census_vars_limited,
-#                     year = 2024,
-#                     survey = "acs1",
-#                     output = "wide")
-# head(acs1_2024)
-```
-
-
-```{r new_load_acs}
 vars_needed <- c("NAME",
                  "GEOID",
                  "DP05_0001E", 
@@ -475,14 +462,6 @@ unique(acs1_2024$area_type)
 # vif_results_sorted <- vif_results %>% arrange(desc(vif))
 # 
 # vif_results_sorted
-
-
-
-
-
-
-#team, should we just delete this chunk?- BW
-
 ```
 
 
@@ -1187,32 +1166,35 @@ X_test_no_cbsa = X_test %>% select(-cbsa_title)
 X_test_no_cbsa_matrix = model.matrix(~.-1,X_test_no_cbsa)
 ```
 
+The data is split, with 80% for training and 20% for testing. For the purposes of this study, both the median listing price per square foot and its log were used as target variables, so that they may be compared.
+
+Matrices are also prepared for use by LASSO.
 
 ### Linear Regression
 
-#### non-log
+#### Median Listing Price per Square Foot
 
 ```{r}
-# names(full_dataset_clean)
-#reg d- "avg_log_median_listing_price" i- "total_active_listing_count" 
 reg_model_by_1 <- lm(median_listing_price_per_square_foot ~ total_listing_count,
             data = train)
 
 summary(reg_model_by_1)
 ```
 
+First, a linear model is fit with `total_listing_count` as the only predictor. With such a simple model, it is perhaps not surprising that the Multiple R-squared is so low—0.0288—though this is still highly significant. However, as the estimate of this coefficient is positive, this model would seem to imply that increased supply is correlated with increased price per square foot. Perhaps more information will be more instructive.
 
 ```{r}
-#reg d- "avg_log_median_listing_price" i- "total_active_listing_count" "area_type" "avg_pct_income_75k_plus" "avg_pct_units_built_2000_plus" "avg_pct_bachelors_or_higher" 
 reg_model_by_all <- lm(median_listing_price_per_square_foot ~ .-cbsa_title-log_median_price_sqft,
             data = train)
 
 summary(reg_model_by_all)
 ```
 
-Have to eliminate cbsa_title or we would overfit
+All CBSA title variables had to be eliminated, or there would be more columns than variables and it would be guaranteed to overfit.
 
-#### log median listing price
+With more data, 
+
+#### Log Median Listing Price per Square Foot
 ```{r}
 # names(full_dataset_clean)
 #reg d- "avg_log_median_listing_price" i- "total_active_listing_count" 
@@ -1239,7 +1221,7 @@ Slightly better fit (also around 2% better, coincidentally)
 
 ### LASSO
 
-#### Price
+#### Median Listing Price per Square Foot
 ```{r lasso_price}
 cv_lasso_price = cv.glmnet(X_train_matrix, price_train, alpha = 1)
 
@@ -1256,7 +1238,7 @@ lasso_price_best_model = glmnet(X_train_matrix, price_train, alpha = 1, lambda=l
 coef(lasso_price_best_model)
 ```
 
-##### Price No CBSA
+##### Median Listing Price per Square Foot Without CBSA Codes
 ```{r lasso_price_no_cbsa}
 cv_lasso_price_no_cbsa = cv.glmnet(X_train_no_cbsa_matrix, price_train, alpha = 1)
 
@@ -1273,7 +1255,7 @@ lasso_price_no_cbsa_best_model = glmnet(X_train_no_cbsa_matrix, price_train, alp
 coef(lasso_price_no_cbsa_best_model)
 ```
 
-#### Log Price
+#### Log Median Listing Price per Square Foot
 ```{r lasso_log_price}
 cv_lasso_log_price = cv.glmnet(X_train_matrix, log_price_train, alpha = 1)
 
@@ -1290,7 +1272,7 @@ lasso_log_price_best_model = glmnet(X_train_matrix, log_price_train, alpha = 1, 
 coef(lasso_log_price_best_model)
 ```
 
-##### Log Price No CBSA
+##### Log Median Listing Price per Square Foot Without CBSA Codes
 ```{r lasso_log_price_no_cbsa}
 cv_lasso_log_price_no_cbsa = cv.glmnet(X_train_no_cbsa_matrix, log_price_train, alpha = 1)
 
@@ -1380,7 +1362,9 @@ fancyRpartPlot(reg_tree_exp_med,
 ### Random Forest Regression
 
 The plot reports Random Forest variable importance (MSE increase), indicating which features the model relies on most for prediction.
+
 Percent under 18 (pct_under_18) and percent vacant units (pct_vacant_units) are the two most important predictors, suggesting that demographic structure and housing availability prior to a sale include substantial information to predict the price.
+
 The prominence of these variables indicates that the model primarily reflects  sociological factors and pre-sale occupancy conditions, rather than short-term transactional or pricing signals.
 
 ```{r}
