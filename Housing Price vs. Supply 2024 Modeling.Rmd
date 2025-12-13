@@ -1227,6 +1227,8 @@ lasso_price_best_model = glmnet(X_train_matrix, price_train, alpha = 1, lambda=l
 coef(lasso_price_best_model)
 ```
 
+The LASSO model uses cross-validation to pick a penalty (0.0221) that balances fit and complexity. At that setting, many coefficients are shrunk exactly to zero (the “.” entries), so the model is doing built-in feature selection while keeping only the strongest signals. The remaining nonzero terms include a mix of socioeconomic variables and CBSA indicators, which suggests that a meaningful share of price differences is still place-specific even after accounting for observed market and demographic controls.
+
 ##### Median Listing Price per Square Foot Without CBSA Codes
 ```{r lasso_price_no_cbsa}
 cv_lasso_price_no_cbsa = cv.glmnet(X_train_no_cbsa_matrix, price_train, alpha = 1)
@@ -1234,7 +1236,6 @@ cv_lasso_price_no_cbsa = cv.glmnet(X_train_no_cbsa_matrix, price_train, alpha = 
 lasso_price_no_cbsa_best_lambda = cv_lasso_price_no_cbsa$lambda.min
 lasso_price_no_cbsa_best_lambda
 ```
-
 ```{r lasso_price_no_cbsa_plot}
 plot(cv_lasso_price_no_cbsa)
 ```
@@ -1243,6 +1244,8 @@ plot(cv_lasso_price_no_cbsa)
 lasso_price_no_cbsa_best_model = glmnet(X_train_no_cbsa_matrix, price_train, alpha = 1, lambda=lasso_price_no_cbsa_best_lambda)
 coef(lasso_price_no_cbsa_best_model)
 ```
+
+This version of the LASSO excludes CBSA fixed effects and therefore focuses only on observable housing and demographic characteristics. The cross-validated penalty (0.0087) retains a relatively broad set of predictors, indicating that many structural features still contribute meaningfully to price variation even without place-specific controls. Compared to the CBSA-inclusive model, the coefficients are more interpretable as general market relationships, and the negative coefficient on total listing count aligns with the expectation that higher supply is associated with lower prices once broader conditions are accounted for.
 
 #### Log Median Listing Price per Square Foot
 ```{r lasso_log_price}
@@ -1261,6 +1264,8 @@ lasso_log_price_best_model = glmnet(X_train_matrix, log_price_train, alpha = 1, 
 coef(lasso_log_price_best_model)
 ```
 
+For the log price LASSO, cross-validation selects a much smaller penalty (0.000093), which means the model shrinks less aggressively and keeps many CBSA indicators in play. Even so, several broad market factors still show up with non-zero coefficients, and total listing count remains slightly negative, consistent with a small downward association between supply and prices once other features are considered. Overall, this suggests the log scale is easier to fit with fine-grained location effects while still preserving a handful of general relationships outside of CBSA alone.
+
 ##### Log Median Listing Price per Square Foot Without CBSA Codes
 ```{r lasso_log_price_no_cbsa}
 cv_lasso_log_price_no_cbsa = cv.glmnet(X_train_no_cbsa_matrix, log_price_train, alpha = 1)
@@ -1277,6 +1282,7 @@ plot(cv_lasso_log_price_no_cbsa)
 lasso_log_price_no_cbsa_best_model = glmnet(X_train_no_cbsa_matrix, log_price_train, alpha = 1, lambda=lasso_log_price_no_cbsa_best_lambda)
 coef(lasso_log_price_no_cbsa_best_model)
 ```
+For the log model without CBSA codes, cross-validation again picks a very small penalty ((λ ≈ )0.000093), so most of the remaining predictors stay in the model rather than being heavily shrunk to zero. With location effects removed, the LASSO leans more on broad market fundamentals: income brackets and housing stock variables retain non-zero coefficients, vacancy and owner-occupancy remain important, and total listing count is still slightly negative, suggesting a small inverse association with prices even after regularization.
 
 ### Regression Tree
 
@@ -1435,7 +1441,7 @@ reg_model_by_1_pred = predict(reg_model_by_1, newdata = test)
 reg_model_by_all_pred = predict(reg_model_by_all, newdata = test)
 lasso_price_best_model_pred = predict(lasso_price_best_model, newx=X_test_matrix)
 lasso_price_no_cbsa_best_model_pred = predict(lasso_price_no_cbsa_best_model, newx=X_test_no_cbsa_matrix)
-reg_tree_simple_pred = predict(reg_tree_simple, newdata = test)
+#reg_tree_simple_pred = predict(reg_tree_simple, newdata = test)
 reg_tree_exp_med_pred = predict(reg_tree_exp_med, newdata = test)
 rf_exp_med_pred = predict(rf_exp_med, newdata = test)
 reg_model_log_by_1_pred = predict(reg_model_log_by_1, newdata = test)
@@ -1448,7 +1454,7 @@ reg_model_by_1_rmse = rmse(actual = price_test, predicted = reg_model_by_1_pred)
 reg_model_by_all_rmse = rmse(actual = price_test, predicted = reg_model_by_all_pred)
 lasso_price_best_model_rmse = rmse(actual = price_test, predicted = lasso_price_best_model_pred)
 lasso_price_no_cbsa_best_model_rmse = rmse(actual = price_test, predicted = lasso_price_no_cbsa_best_model_pred)
-reg_tree_simple_rmse = rmse(actual = price_test, predicted = reg_tree_simple_pred)
+#reg_tree_simple_rmse = rmse(actual = price_test, predicted = reg_tree_simple_pred)
 reg_tree_exp_med_rmse = rmse(actual = price_test, predicted = reg_tree_exp_med_pred)
 rf_exp_med_rmse = rmse(actual = price_test, predicted = rf_exp_med_pred)
 reg_model_log_by_1_rmse = rmse(actual = price_test, predicted = exp(reg_model_log_by_1_pred))
@@ -1458,8 +1464,12 @@ lasso_log_price_no_cbsa_best_model_rmse = rmse(actual = price_test, predicted = 
 rf_exp_log_rmse = rmse(actual = price_test, predicted = exp(rf_exp_log_pred))
 
 
-rmse_df = data.frame(Model = c("reg_model_by_1", "reg_model_by_all", "lasso_price_best_model", "lasso_price_no_cbsa_best_model", "reg_tree_simple", "reg_tree_exp_med", "rf_exp_med", "reg_model_log_by_1", "reg_model_log_by_all", "lasso_log_price_best_model", "lasso_log_price_no_cbsa_best_model", "rf_exp_log"),
-                     RMSE = c(reg_model_by_1_rmse, reg_model_by_all_rmse, lasso_price_best_model_rmse, lasso_price_no_cbsa_best_model_rmse, reg_tree_simple_rmse, reg_tree_exp_med_rmse, rf_exp_med_rmse, reg_model_log_by_1_rmse, reg_model_log_by_all_rmse, lasso_log_price_best_model_rmse, lasso_log_price_no_cbsa_best_model_rmse, rf_exp_log_rmse)
+rmse_df = data.frame(Model = c("reg_model_by_1", "reg_model_by_all", "lasso_price_best_model", "lasso_price_no_cbsa_best_model", 
+                               #"reg_tree_simple", 
+                               "reg_tree_exp_med", "rf_exp_med", "reg_model_log_by_1", "reg_model_log_by_all", "lasso_log_price_best_model", "lasso_log_price_no_cbsa_best_model", "rf_exp_log"),
+                     RMSE = c(reg_model_by_1_rmse, reg_model_by_all_rmse, lasso_price_best_model_rmse, lasso_price_no_cbsa_best_model_rmse, 
+                              #reg_tree_simple_rmse, 
+                              reg_tree_exp_med_rmse, rf_exp_med_rmse, reg_model_log_by_1_rmse, reg_model_log_by_all_rmse, lasso_log_price_best_model_rmse, lasso_log_price_no_cbsa_best_model_rmse, rf_exp_log_rmse)
                      )
   # reg_model_by_1 = reg_model_by_1_rmse,
   #                    reg_model_by_all = reg_model_by_all_rmse,
