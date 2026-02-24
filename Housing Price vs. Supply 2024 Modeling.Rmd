@@ -55,33 +55,19 @@ library(ModelMetrics)
 
 ## Introduction
 
-In the first project, we examined the relationship between months of supply and median home prices across U.S. metro areas in 2024 using data from the American Enterprise Institute (AEI).
+In the first project, we examined the relationship between months of supply and median home prices across U.S. metro areas in 2024 using data from the American Enterprise Institute (AEI). 
+
 While the analysis identified a clear association between months of supply and median home prices, further exploratory analysis revealed that months of supply is not a raw measure but rather reflects the pace of inventory absorption. This limited our ability to fully understand housing price dynamics and motivated us to seek out new datasets.
-The second project uses raw supply measures while incorporating socioeconomic context. The analysis relies on the CBSA-level 2024 Realtor.com dataset as the core housing market dataset. This dataset is enriched with 2024 one-year estimates from the American Community Survey (ACS) to capture demographic, economic, and housing characteristics across U.S. metros.
+
+The second project uses raw supply measures while incorporating socioeconomic context. The analysis relies on the CBSA-level 2024 Realtor.com dataset as the core housing market dataset. This dataset is enriched with 2024 one-year estimates from the American Community Survey (ACS) to capture demographic, economic, and housing characteristics across U.S. metros. 
+
 From the 2024 ACS 1-Year Estimates Data Profiles, we selected variables that provide an overview of population composition, income, and housing characteristics for each CBSA included in the Realtor.com data.
+
 By integrating housing market indicators with structural socioeconomic variables, this project aims to better distinguish whether observed housing price patterns in 2024 are primarily driven by supply constraints, demand-side pressures, or underlying demographic and economic conditions across U.S. metropolitan areas.
-
-## Conclusion 
-<!-- In conducting this project, our team was reminded of our first day of class, going over the data science life cycle. We initially established a question we wanted to answer and identified data that we believed could enlighten us on this data. However, by conducting our EDA, we discovered that the metrics that AEI chose to include do not directly match the question we sought out to answer. -->
-
-<!-- ### Key Takeaways -->
-<!-- There is a clear connection between months supply of housing and median sale price. This could be due to high demand pushing sale prices higher or low supply pushing sale prices higher. We will need more data in order to identify which is the stronger driver, if either.  -->
-
-<!-- We also found interesting connections between the percent of houses in a county that are new constructions and the mortgage default rate in a county with our two key variables, months supply and median sale price.  -->
-
-<!-- ### Next Steps -->
-<!-- One next step for us might be to pull in additional data to help us add color to the picture we are painting and to also help us better address our original research question. We will need to do additional analysis to better identify the nature of the relationship between these primary and secondary variables.  -->
-
-<!-- We could also take straight from the source and attempt to pull public records data from First American via Data Tree and listings counts from Zillow and Realtor.com, perhaps adjusting for population. This would be a much better representation of supply than Months' Supply. -->
-
-
-
-
-# project 2 ####
 
 ## Data 
 
-This project uses the cbsa-level 2024 Realtor.com dataset referenced as the source data from our Project 1 data source: the American Enterprise Institute. We enrich this dataset with the 1-year estimate data for 2024 from the American Community Survey (ACS). The variables are:  
+This project uses the CBSA-level 2024 Realtor.com dataset referenced as the source data from our Project 1 data source: the American Enterprise Institute. We enrich this dataset with the 1-year estimate data for 2024 from the American Community Survey (ACS). The variables are:  
 
 Original Variable Name | New Variable Name | Definition  
   :-: |  :-: | :-- 
